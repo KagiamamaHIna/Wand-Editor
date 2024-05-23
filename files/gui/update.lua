@@ -22,12 +22,26 @@ function GUIUpdata()
 		UI.TickEventFn["main"] = function(this)
 			if not GameIsInventoryOpen() then
 				GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween);
-				local status = this.ImageButtonCanMove(UI.NewID("MainButton"),"mods/world_editor/files/gui/images/menu.png",40,40,nil,nil,function ()
+				local status = this.ImageButtonCanMove(UI.NewID("MainButton1"),"mods/world_editor/files/gui/images/menu.png",40,50,nil,nil,function ()
 					UI.tooltips(function()
 						GuiText( this.gui, 0, 0, tipsTextTable[MainButtonStatus] );
 					end, -100, 12, 6 );
-				end)--22,5
-	
+				end)
+				local status = this.ImageButtonCanMove(UI.NewID("MainButton2"),"mods/world_editor/files/gui/images/menu.png",80,50,-12,nil,function ()
+					UI.tooltips(function()
+						GuiText( this.gui, 0, 0, tipsTextTable[MainButtonStatus] );
+					end, -100, 12, 6 );
+				end)
+				local status = this.ImageButtonCanMove(UI.NewID("MainButton3"),"mods/world_editor/files/gui/images/menu.png",120,50,nil,-12,function ()
+					UI.tooltips(function()
+						GuiText( this.gui, 0, 0, tipsTextTable[MainButtonStatus] );
+					end, -100, 12, 6 );
+				end)
+				local status = this.ImageButtonCanMove(UI.NewID("MainButton4"),"mods/world_editor/files/gui/images/menu.png",160,50,-12,-12,function ()
+					UI.tooltips(function()
+						GuiText( this.gui, 0, 0, tipsTextTable[MainButtonStatus] );
+					end, -100, 12, 6 );
+				end)
 				if status then--为真时就代表点了一下
 					MainButtonStatus = not MainButtonStatus
 				end

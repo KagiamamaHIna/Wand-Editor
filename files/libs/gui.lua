@@ -1,5 +1,6 @@
 dofile_once("mods/world_editor/files/libs/fn.lua")
 dofile_once("data/scripts/debug/keycodes.lua")
+local Nxml = dofile_once("mods/world_editor/files/libs/nxml.lua")
 
 local this = {
     private = {
@@ -9,7 +10,7 @@ local this = {
         CompToID = {},--组件转id
         NextFrNoClick = false,
         NextFrClick = 0,
-        Scale = 1,
+        Scale = nil,
         IDMax = 0xFFFFFFFF,--下一个id分配的数字
     },
     public = {
@@ -19,16 +20,15 @@ local this = {
         gui = GuiCreate(),--gui userdata
     }
 }
-local Scale = ModSettingGet(ModID.."_ScreenScale")
-if Scale then
-    this.private.Scale = Scale
-end
 
 local UI = {}
 setmetatable(UI, this)
 this.__index = this.public
 
-local function GetNewID(str)
+---将一个字符串拼接一下模组id的前缀然后返回
+---@param str string
+---@return string
+local function ConcatModID(str)
     return ModID..str
 end
 
@@ -63,7 +63,7 @@ end
 ---@param str string
 ---@return integer
 function UI.NewID(str)
-    str = GetNewID(str)--这个id很重要，最好不能重复
+    str = ConcatModID(str)--这个id很重要，最好不能重复
     if this.private.CompToID[str] == nil then
         local result = this.private.IDMax
         this.private.CompToID[str] = result
@@ -84,11 +84,11 @@ end
 function UI.ImageButtonCanMove(id,image,s_x,s_y,moveXoffset,moveYoffset,callback)
     local true_s_x = s_x
     local true_s_y = s_y
-    local newid = GetNewID(id)
+    local newid = ConcatModID(id)
     local moveid = "move_"..id
     local imageW,imageH = GuiGetImageDimensions(this.public.gui,image)
 
-    moveXoffset = Default(moveXoffset,imageW/2 + 1)
+    moveXoffset = Default(moveXoffset,imageW/2 + 1)--默认偏移参数，左上角
     moveYoffset = Default(moveYoffset,imageH/2 + 1)
     local Xname = newid.."x"
     local Yname = newid.."y"
@@ -105,23 +105,20 @@ function UI.ImageButtonCanMove(id,image,s_x,s_y,moveXoffset,moveYoffset,callback
         else
             s_y = ModSettingGet(Yname)
         end
-        local click,right = GuiImageButton(this.public.gui,UI.NewID(moveid),s_x-moveXoffset,s_y-moveYoffset,"","mods/world_editor/files/gui/images/move.png")
-        if click and (not this.private.NextFrNoClick) then
-            --尝试求出按钮的位置与屏幕的比例
-            local mx,my = InputGetMousePosOnScreen()
-            local scale = TruncateFloat(mx/s_x,3)
-            if s_x ~= 0 then--如果认为参数的精度合适，且s_x不能为0的时候
-                this.private.Scale = scale--设置比例关系
-                ModSettingSet(ModID.."_ScreenScale",this.private.Scale)
-            end
-            ModSettingSet(CanMoveStr,true)
-        elseif right then
-            ModSettingSet(Xname,true_s_x)
-            ModSettingSet(Yname,true_s_y)
-        end
+		local hasMove = ModSettingGet(ModID.."hasButtonMove")--其他按钮移动时，移动按钮将不显示
+		if not hasMove then
+			local click,right = GuiImageButton(this.public.gui,UI.NewID(moveid),s_x-moveXoffset,s_y-moveYoffset,"","mods/world_editor/files/gui/images/move.png")
+			if click and (not this.private.NextFrNoClick) then
+				ModSettingSet(ModID.."hasButtonMove",true)
+				ModSettingSet(CanMoveStr,true)
+			elseif right then--如果是右键恢复默认设置
+				ModSettingSet(Xname,true_s_x)
+				ModSettingSet(Yname,true_s_y)
+			end
+		end
     
         local result = {GuiImageButton(this.public.gui,UI.NewID(id),s_x,s_y,"",image)}
-        if callback ~= nil then
+        if callback ~= nil and (not hasMove) then--不执行函数操作
             callback()
         end
 
@@ -130,18 +127,25 @@ function UI.ImageButtonCanMove(id,image,s_x,s_y,moveXoffset,moveYoffset,callback
     end
     --移动中
     local mx,my = InputGetMousePosOnScreen()
-    print(mx,my)
-    mx = mx / this.private.Scale
-    my = my / this.private.Scale
+	mx = mx / this.private.Scale
+	my = my / this.private.Scale
+	if moveXoffset < 0 then
+		mx = mx + moveXoffset - 1
+	end
+    if moveYoffset < 0 then
+		my = my + moveYoffset - 1
+	end
+
     local click = InputIsMouseButtonDown(Mouse_left)
     if click then
         ModSettingSet(CanMoveStr,false)--设置移动状态
+		ModSettingSet(ModID.."hasButtonMove",false)
         ModSettingSet(Xname,mx)
         ModSettingSet(Yname,my)
 
         --暂停判断一段时间
         this.private.NextFrNoClick = true
-        this.private.NextFrClick = 30
+        this.private.NextFrClick = 15
         this.public.TickEventFn["___NextFrNoClick"] = function ()
             if this.private.NextFrClick == 0 then
                 this.private.NextFrNoClick = false
@@ -175,6 +179,10 @@ end
 function UI.DispatchMessage()
     GuiStartFrame(this.public.gui)
     this.public.ScreenWidth,this.public.ScreenHeight = GuiGetScreenDimensions( this.public.gui )
+	if this.private.Scale == nil then	--初始化设置缩放参数
+		local configXml = Nxml.parse(ReadFileAll(SavePath.."save_shared/config.xml"))
+		this.private.Scale = configXml.attr.internal_size_h/this.public.ScreenHeight
+	end
     for _, fn in pairs(this.public.TickEventFn) do
         if type(fn) == "function" then
             fn(UI)

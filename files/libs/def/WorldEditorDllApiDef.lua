@@ -1,5 +1,3 @@
---此处的均为声明，用于dll api声明，不会被游戏加载
-
 ---返回软件本身的路径
 ---@return string
 function Cpp.CurrentPath()end
