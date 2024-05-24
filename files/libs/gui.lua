@@ -132,7 +132,7 @@ end
 ---@param HoverUseCallBack function|nil
 ---@param ClickCallBack function|nil
 ---@param image string
----@param noSetting boolean|nil
+---@param noSetting boolean|nil noSetting = false
 ---@return boolean 返回是否移动的状态
 function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, noSetting)
 	local true_s_x = s_x

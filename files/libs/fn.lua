@@ -1,6 +1,18 @@
 dofile_once("mods/world_editor/files/libs/fp.lua")
 dofile_once("mods/world_editor/files/libs/define.lua")
 
+local noita_print = print
+
+---重新实现来模拟正确的print行为
+---@param ... any
+print = function(...)
+    local cache = {}
+    for _, v in pairs({ ... }) do
+        table.insert(cache, tostring(v))
+    end
+    noita_print(table.concat(cache))
+end
+
 ---打印一个表
 ---@param t table
 function TablePrint(t)
@@ -37,15 +49,6 @@ function TablePrint(t)
     print()
 end
 
----让指定小数位之后的规零
----@param num number
----@param decimalPlaces integer
----@return number
-function TruncateFloat(num, decimalPlaces)
-    local mult = 10^decimalPlaces
-    return math.floor(num * mult) / mult
-end
-
 ---如果为空则返回v（默认值），不为空返回本身的函数
 ---@param arg any
 ---@param v any
@@ -55,6 +58,42 @@ function Default(arg, v)
         return v
     end
     return arg
+end
+
+---序列化函数，将table转换成lua代码
+---@param tbl table
+---@param indent any|nil indent = ""
+---@return string
+function SerializeTable(tbl, indent)
+	indent = Default(indent,"")
+    local result = ""
+    local is_array = #tbl > 0
+    for k, v in pairs(tbl) do
+        local key
+        if is_array and type(k) == "number" then
+            key = ""
+        else
+            key = k .. " = "
+        end
+
+        if type(v) == "table" then
+            result = result .. string.format("%s%s{\n", indent, key)
+            result = result .. SerializeTable(v, indent .. "    ")
+            result = result .. string.format("%s},\n", indent)
+        else
+            result = result .. string.format("%s%s%q,\n", indent, key, v)
+        end
+    end
+    return result
+end
+
+---让指定小数位之后的归零
+---@param num number
+---@param decimalPlaces integer
+---@return number
+function TruncateFloat(num, decimalPlaces)
+    local mult = 10^decimalPlaces
+    return math.floor(num * mult) / mult
 end
 
 ---帧转秒
