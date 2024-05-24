@@ -1,4 +1,3 @@
-dofile_once("mods/world_editor/files/libs/unsafe.lua")
 dofile_once("mods/world_editor/files/gui/update.lua")
 dofile_once( "data/scripts/lib/utilities.lua" );
 
