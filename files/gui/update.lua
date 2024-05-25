@@ -41,19 +41,20 @@ function GUIUpdata()
 				else
 					
 				end]]
-
+				GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween)--你不要再飞啦！
 				UI.MoveImagePicker("MainButton",40,50,"世界编辑工具","mods/world_editor/files/gui/images/menu.png",
 				function (x,y)
 					ButtonX = x
 					ButtonY = y
 				end,
-				function (left_click,right_click,enable)
-					if left_click then--为真时就代表点了一下
-						--OnMoveImage = not OnMoveImage
-					end
-					if enable then
-					else
-						
+				function (left_click,right_click,x,y,enable)
+                        if enable then --开启状态
+                            UI.MoveImagePicker("MainButton2", x + 30, y, "测试文本1",
+                                "mods/world_editor/files/gui/images/menu.png", nil, nil, nil, true)
+                            UI.MoveImagePicker("MainButton3", x + 60, y, "测试文本2",
+                                "mods/world_editor/files/gui/images/menu.png", nil, nil, nil, true)
+                            UI.MoveImagePicker("MainButton4", x + 90, y, "测试文本3",
+                                "mods/world_editor/files/gui/images/menu.png", nil, nil, nil, true)
 					end
                         if OnMoveImage then
 						--[[

@@ -1,6 +1,4 @@
 #pragma once
-
-//未完全测试可行性
 #include <windows.h>
 #include <thread>
 #include <iostream>

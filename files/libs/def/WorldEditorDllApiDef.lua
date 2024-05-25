@@ -16,3 +16,7 @@ function Cpp.GetDirectoryPathAll(path)end
 ---@param path string
 ---@return string
 function Cpp.GetAbsPath(path)end
+
+---不知道该怎么描述
+---@param ptr integer
+function Cpp.OpenMonitorLoadLuaLib(ptr)end

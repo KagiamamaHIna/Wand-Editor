@@ -13,8 +13,9 @@ local this = {
 		FirstEventFn = {}, --用于内部优先级最高的回调函数
 		NextFrNoClick = false,
 		NextFrClick = 0,
-		Scale = nil,  --缩放参数
-		IDMax = 0xFFFFFFFF, --下一个id分配的数字
+        Scale = nil,  --缩放参数
+		ZDeep = -100,
+		IDMax = 0x7FFFFFFF, --下一个id分配的数字
 	},
 	public = {
 		ScreenWidth = -1, --当前屏宽
@@ -50,8 +51,6 @@ function UI.tooltips(callback, z, xOffset, yOffset)
 	if draw_y > this.public.ScreenHeight * 0.5 then
 		yOffset = yOffset - height
 	end
-	local halfScreenWidth = this.public.ScreenWidth / 2
-	local halfScreenHeight = this.public.ScreenHeight / 2
 
 	if hover then
 		GuiZSet(gui, z)
@@ -97,12 +96,13 @@ end
 ---@param HoverUseCallBack function|nil
 ---@param ClickCallBack function
 ---@param AlwaysCBClick boolean
+---@param noMove boolean?
 ---@return boolean
-function UI.MoveImageButton(id, x, y, image, AlwaysCallBack, HoverUseCallBack, ClickCallBack, AlwaysCBClick)
+function UI.MoveImageButton(id, x, y, image, AlwaysCallBack, HoverUseCallBack, ClickCallBack, AlwaysCBClick, noMove)
 	local function imageButton(gui, numId, InputX, InputY)
 		return GuiImageButton(gui, numId, InputX, InputY, "", image)
 	end
-	return UI.CanMove(id, x, y, imageButton, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, AlwaysCBClick)
+	return UI.CanMove(id, x, y, imageButton, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, AlwaysCBClick, nil, noMove)
 end
 
 ---绘制一个跟随鼠标移动的图片
@@ -128,7 +128,7 @@ function UI.OnMoveImage(id, x, y, image, scale)
 		ResultX = InputResultX
 		ResultY = InputResultY
 	end
-	return UI.CanMove(id, x, y, imageButton, GetXY, nil, nil, image, true, nil, scale), ResultX, ResultY
+	return UI.CanMove(id, x, y, imageButton, GetXY, nil, nil, image, true, nil, nil, scale), ResultX, ResultY
 end
 
 ---自带开关显示的按钮
@@ -141,7 +141,7 @@ end
 ---@param ClickCallBack function
 ---@param AlwaysCBClick boolean
 ---@return boolean
-function UI.MoveImagePicker(id, x, y, Content, image, AlwaysCallBack, ClickCallBack, AlwaysCBClick)
+function UI.MoveImagePicker(id, x, y, Content, image, AlwaysCallBack, ClickCallBack, AlwaysCBClick, noMove)
 	local newid = ConcatModID(id)
 	if this.private.CompToPickerBool[newid] == nil then
 		this.private.CompToPickerBool[newid] = false
@@ -151,27 +151,34 @@ function UI.MoveImagePicker(id, x, y, Content, image, AlwaysCallBack, ClickCallB
 	else
 		Content = "开启" .. Content
 	end
-
-	local function Hover()
-		UI.tooltips(function()
-			GuiText(this.public.gui, 0, 0, Content)
-			local shift = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
-			if shift then
-				GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-				GuiText(this.public.gui, 0, 0, "这是可移动按钮，按shift+鼠标左键可以移动\n再点击一次鼠标左键确定位置\n鼠标右键重置位置")
-			else
-				GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-				GuiText(this.public.gui, 0, 0, "按住ctrl查阅更多信息")
-			end
-		end, -100, 0, 0)
-	end
-	local function Click(left_click, right_click)
-		ClickCallBack(left_click, right_click, this.private.CompToPickerBool[newid]) --额外输入一个参数3，代表当前按钮启用状态
-		if left_click then
-			this.private.CompToPickerBool[newid] = not this.private.CompToPickerBool[newid]
-		end
-	end
-	return UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, AlwaysCBClick)
+	local TheZ = this.private.ZDeep
+    local function Hover()
+        UI.tooltips(function()
+            GuiText(this.public.gui, 0, 0, Content)
+            if not noMove then
+                local shift = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+                if shift then
+                    GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+                    GuiText(this.public.gui, 0, 0, "这是可移动按钮，按shift+鼠标左键可以移动\n再点击一次鼠标左键确定位置\n鼠标右键重置位置")
+                else
+                    GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+                    GuiText(this.public.gui, 0, 0, "按住ctrl查阅更多信息")
+                end
+            end
+        end, TheZ, 0, 0)
+    end
+	this.private.ZDeep = this.private.ZDeep + 1
+    local function Click(left_click, right_click, ix, iy)
+        if ClickCallBack ~= nil then
+            ClickCallBack(left_click, right_click, ix, iy, this.private.CompToPickerBool[newid]) --额外输入一个参数5，代表当前按钮启用状态
+        end
+        if left_click then
+            this.private.CompToPickerBool[newid] = not this.private.CompToPickerBool[newid]
+        end
+    end
+	GuiZSet(this.public.gui,this.private.ZDeep)
+    local result = { UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, AlwaysCBClick, noMove) }
+	return  unpack(result)
 end
 
 ---一个较为通用的让控件可以移动并设置的函数
@@ -185,23 +192,25 @@ end
 ---@param image string
 ---@param AlwaysCBClick boolean? AlwaysCBClick = false
 ---@param noSetting boolean? noSetting = false
+---@param noMove boolean? noMove = false
 ---@param scale number? scale = 1
 ---@return boolean 返回是否移动的状态
 function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, AlwaysCBClick,
-					noSetting, scale)
+					noSetting, noMove, scale)
 	local true_s_x = s_x
 	local true_s_y = s_y
 	local newid = ConcatModID(id)
 	local moveid = "move_" .. id
 	noSetting = Default(noSetting, false)
-	AlwaysCBClick = Default(AlwaysCBClick, false)
+    AlwaysCBClick = Default(AlwaysCBClick, false)
+	noMove = Default(noMove, false)
 	scale = Default(scale, 1)
 	local numID = UI.NewID(id)
 	local Xname = newid .. "x"
 	local Yname = newid .. "y"
 	local CanMoveStr = "on_move_" .. id
-	if not ModSettingGet(CanMoveStr) then --非移动状态
-		if not noSetting then
+	if not ModSettingGet(CanMoveStr) or noMove then --非移动状态
+		if not noSetting and not noMove then
 			if ModSettingGet(Xname) == nil then
 				ModSettingSet(Xname, s_x)
 			else
@@ -217,12 +226,12 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 		local hasMove = ModSettingGet(ModID .. "hasButtonMove")                    --其他按钮移动时，将无法触发按钮事件
 		local left_click, right_click = ButtonCallBack(this.public.gui, numID, s_x, s_y) --调用回调参数，用于新建想要的控件
 		local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
-		if shift and left_click and (not this.private.NextFrNoClick) then          --两者同时按下
+		if shift and left_click and (not this.private.NextFrNoClick) and not noMove then          --两者同时按下
 			--开始移动
 			ModSettingSet(ModID .. "hasButtonMove", true)
 			ModSettingSet(CanMoveStr, true)
 		elseif (not hasMove) or AlwaysCBClick then --其他按钮没有移动的时候
-			if right_click then              --如果按下右键
+			if right_click and not noMove then              --如果按下右键，且是非移动的
 				ModSettingSet(Xname, true_s_x) --恢复默认设置
 				ModSettingSet(Yname, true_s_y)
 			end
@@ -233,7 +242,7 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 				AlwaysCallBack(s_x, s_y)
 			end
 			if ClickCallBack ~= nil and ((not this.private.NextFrNoClick) or AlwaysCBClick) then
-				ClickCallBack(left_click, right_click)
+				ClickCallBack(left_click, right_click,s_x,s_y)
 			end
 		end
 		return ModSettingGet(CanMoveStr)

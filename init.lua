@@ -6,7 +6,6 @@ local gui = GuiCreate()
 function  OnPlayerSpawned(player)
     if not GameHasFlagRun("world_editor_init") then
         GameAddFlagRun("world_editor_init")
-		EntityLoadChild(player,"mods/world_editor/files/gui/test.xml")
     end
 end
 
