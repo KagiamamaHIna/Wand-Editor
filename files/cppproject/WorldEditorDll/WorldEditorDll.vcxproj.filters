@@ -24,6 +24,12 @@
     <ClCompile Include="fn.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="breakpoint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadAllLuaLib\LuaAllLoadLib.h">
+      <Filter>头文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -33,6 +39,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="fn.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="breakpoint.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

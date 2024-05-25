@@ -5,14 +5,15 @@ local Nxml = dofile_once("mods/world_editor/files/libs/nxml.lua")
 
 local this = {
 	private = {
-		TileTick = {},  --计划刻
+		CompToPickerBool = {}, --用于存储按钮点击状态
+		TileTick = {},   --计划刻
 		DestroyCallBack = {}, --销毁时的回调函数
 		destroy = false, --销毁状态
-		CompToID = {},  --组件转id
+		CompToID = {},   --组件转id
 		FirstEventFn = {}, --用于内部优先级最高的回调函数
 		NextFrNoClick = false,
 		NextFrClick = 0,
-		Scale = nil,
+		Scale = nil,  --缩放参数
 		IDMax = 0xFFFFFFFF, --下一个id分配的数字
 	},
 	public = {
@@ -37,28 +38,31 @@ end
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
 ---@param z integer
----@param x_offset integer
----@param y_offset integer
-function UI.tooltips(callback, z, x_offset, y_offset)
+---@param xOffset integer
+---@param yOffset integer
+function UI.tooltips(callback, z, xOffset, yOffset)
 	local gui = this.public.gui
-	if z == nil then z = -12; end
+	xOffset = Default(xOffset, 0)
+	yOffset = Default(yOffset, 0)
+	z = Default(z, -12)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
-		GuiGetPreviousWidgetInfo(gui);
-	if x_offset == nil then x_offset = 0; end
-	if y_offset == nil then y_offset = 0; end
+		GuiGetPreviousWidgetInfo(gui)
 	if draw_y > this.public.ScreenHeight * 0.5 then
-		y_offset = y_offset - height;
+		yOffset = yOffset - height
 	end
+	local halfScreenWidth = this.public.ScreenWidth / 2
+	local halfScreenHeight = this.public.ScreenHeight / 2
+
 	if hover then
-		GuiZSet(gui, z);
-		GuiLayoutBeginLayer(gui);
-		GuiLayoutBeginVertical(gui, (x + x_offset + width), (y + y_offset), true);
-		GuiBeginAutoBox(gui);
-		if callback ~= nil then callback(); end
-		GuiZSetForNextWidget(gui, z + 1);
-		GuiEndAutoBoxNinePiece(gui);
-		GuiLayoutEnd(gui);
-		GuiLayoutEndLayer(gui);
+		GuiZSet(gui, z)
+		GuiLayoutBeginLayer(gui)
+		GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
+		GuiBeginAutoBox(gui)
+		if callback ~= nil then callback() end
+		GuiZSetForNextWidget(gui, z + 1)
+		GuiEndAutoBoxNinePiece(gui)
+		GuiLayoutEnd(gui)
+		GuiLayoutEndLayer(gui)
 	end
 end
 
@@ -92,11 +96,13 @@ end
 ---@param AlwaysCallBack function
 ---@param HoverUseCallBack function|nil
 ---@param ClickCallBack function
-function UI.MoveImageButton(id, x, y, image, AlwaysCallBack, HoverUseCallBack, ClickCallBack)
+---@param AlwaysCBClick boolean
+---@return boolean
+function UI.MoveImageButton(id, x, y, image, AlwaysCallBack, HoverUseCallBack, ClickCallBack, AlwaysCBClick)
 	local function imageButton(gui, numId, InputX, InputY)
 		return GuiImageButton(gui, numId, InputX, InputY, "", image)
 	end
-	return UI.CanMove(id, x, y, imageButton, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image)
+	return UI.CanMove(id, x, y, imageButton, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, AlwaysCBClick)
 end
 
 ---绘制一个跟随鼠标移动的图片
@@ -104,15 +110,17 @@ end
 ---@param x number
 ---@param y number
 ---@param image string
+---@param scale number
 ---@return boolean
 ---@return number
 ---@return number
-function UI.OnMoveImage(id, x, y, image)
+function UI.OnMoveImage(id, x, y, image, scale)
+	scale = Default(scale, 1)
 	local CanMoveStr = "on_move_" .. id
 	ModSettingSet(CanMoveStr, true) --提前设置
 
 	local function imageButton(gui, numId, InputX, InputY)
-		GuiImageButton(gui, numId, InputX, InputY, "", image)
+		GuiImage(gui, numId, InputX, InputY, image, 1, scale)
 	end
 	local ResultX = x
 	local ResultY = y
@@ -120,7 +128,50 @@ function UI.OnMoveImage(id, x, y, image)
 		ResultX = InputResultX
 		ResultY = InputResultY
 	end
-	return UI.CanMove(id, x, y, imageButton, GetXY, nil, nil, image, true), ResultX, ResultY
+	return UI.CanMove(id, x, y, imageButton, GetXY, nil, nil, image, true, nil, scale), ResultX, ResultY
+end
+
+---自带开关显示的按钮
+---@param id string
+---@param x number
+---@param y number
+---@param Content string
+---@param image string
+---@param AlwaysCallBack function
+---@param ClickCallBack function
+---@param AlwaysCBClick boolean
+---@return boolean
+function UI.MoveImagePicker(id, x, y, Content, image, AlwaysCallBack, ClickCallBack, AlwaysCBClick)
+	local newid = ConcatModID(id)
+	if this.private.CompToPickerBool[newid] == nil then
+		this.private.CompToPickerBool[newid] = false
+	end
+	if this.private.CompToPickerBool[newid] then
+		Content = "关闭" .. Content
+	else
+		Content = "开启" .. Content
+	end
+
+	local function Hover()
+		UI.tooltips(function()
+			GuiText(this.public.gui, 0, 0, Content)
+			local shift = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+			if shift then
+				GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+				GuiText(this.public.gui, 0, 0, "这是可移动按钮，按shift+鼠标左键可以移动\n再点击一次鼠标左键确定位置\n鼠标右键重置位置")
+			else
+				GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+				GuiText(this.public.gui, 0, 0, "按住ctrl查阅更多信息")
+			end
+		end, -100, 0, 0)
+	end
+	local function Click(left_click, right_click)
+		ClickCallBack(left_click, right_click, this.private.CompToPickerBool[newid]) --额外输入一个参数3，代表当前按钮启用状态
+		if left_click then
+			this.private.CompToPickerBool[newid] = not this.private.CompToPickerBool[newid]
+		end
+	end
+	return UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, AlwaysCBClick)
 end
 
 ---一个较为通用的让控件可以移动并设置的函数
@@ -132,14 +183,19 @@ end
 ---@param HoverUseCallBack function|nil
 ---@param ClickCallBack function|nil
 ---@param image string
----@param noSetting boolean|nil noSetting = false
+---@param AlwaysCBClick boolean? AlwaysCBClick = false
+---@param noSetting boolean? noSetting = false
+---@param scale number? scale = 1
 ---@return boolean 返回是否移动的状态
-function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, noSetting)
+function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, AlwaysCBClick,
+					noSetting, scale)
 	local true_s_x = s_x
 	local true_s_y = s_y
 	local newid = ConcatModID(id)
 	local moveid = "move_" .. id
 	noSetting = Default(noSetting, false)
+	AlwaysCBClick = Default(AlwaysCBClick, false)
+	scale = Default(scale, 1)
 	local numID = UI.NewID(id)
 	local Xname = newid .. "x"
 	local Yname = newid .. "y"
@@ -160,13 +216,13 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 
 		local hasMove = ModSettingGet(ModID .. "hasButtonMove")                    --其他按钮移动时，将无法触发按钮事件
 		local left_click, right_click = ButtonCallBack(this.public.gui, numID, s_x, s_y) --调用回调参数，用于新建想要的控件
-		local Lshift = InputIsKeyDown(Key_LSHIFT)
-		if Lshift and left_click and (not this.private.NextFrNoClick) then         --两者同时按下
+		local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
+		if shift and left_click and (not this.private.NextFrNoClick) then          --两者同时按下
 			--开始移动
 			ModSettingSet(ModID .. "hasButtonMove", true)
 			ModSettingSet(CanMoveStr, true)
-		elseif not hasMove then    --其他按钮没有移动的时候
-			if right_click then    --如果按下右键
+		elseif (not hasMove) or AlwaysCBClick then --其他按钮没有移动的时候
+			if right_click then              --如果按下右键
 				ModSettingSet(Xname, true_s_x) --恢复默认设置
 				ModSettingSet(Yname, true_s_y)
 			end
@@ -176,7 +232,7 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 			if AlwaysCallBack ~= nil then
 				AlwaysCallBack(s_x, s_y)
 			end
-			if ClickCallBack ~= nil and (not this.private.NextFrNoClick) then
+			if ClickCallBack ~= nil and ((not this.private.NextFrNoClick) or AlwaysCBClick) then
 				ClickCallBack(left_click, right_click)
 			end
 		end
@@ -187,7 +243,7 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 	mx = mx / this.private.Scale
 	my = my / this.private.Scale
 	if image then --如果有图片
-		local w, h = GuiGetImageDimensions(this.public.gui, image)
+		local w, h = GuiGetImageDimensions(this.public.gui, image, scale)
 		mx = mx - w / 2
 		my = my - h / 2
 	end
