@@ -65,26 +65,28 @@ end
 ---@param indent any|nil indent = ""
 ---@return string
 function SerializeTable(tbl, indent)
-	indent = Default(indent, "")
-	local result = ""
-	local is_array = #tbl > 0
-	for k, v in pairs(tbl) do
-		local key
-		if is_array and type(k) == "number" then
-			key = ""
-		else
-			key = k .. " = "
-		end
+    indent = indent or ""
+    local result = ""
+    local is_array = #tbl > 0
+    for k, v in pairs(tbl) do
+        local key
+        if is_array and type(k) == "number" then
+            key = ""
+        else
+            key = k .. " = "
+        end
 
-		if type(v) == "table" then
-			result = result .. string.format("%s%s{\n", indent, key)
-			result = result .. SerializeTable(v, indent .. "    ")
-			result = result .. string.format("%s},\n", indent)
-		else
-			result = result .. string.format("%s%s%q,\n", indent, key, v)
-		end
-	end
-	return result
+        if type(v) == "table" then
+            result = result .. string.format("%s%s{\n", indent, key)
+            result = result .. SerializeTable(v, indent .. "    ")
+            result = result .. string.format("%s},\n", indent)
+        elseif type(v) == "boolean" or type(v) == "number" then
+            result = result .. string.format("%s%s%s,\n", indent, key, tostring(v))
+        else
+            result = result .. string.format("%s%s%q,\n", indent, key, v)
+        end
+    end
+    return result
 end
 
 ---让指定小数位之后的归零
@@ -344,7 +346,7 @@ end
 ---@return integer
 function InitWand(wandData, wand, x, y)
 	if wand == nil then
-		wand = EntityLoad("mods/wand_editor/files/entity/wand_base.xml", x, y)
+		wand = EntityLoad("mods/wand_editor/files/entity/WandBase.xml", x, y)
 	end
 	if not EntityGetIsAlive(wand) then
 		return 0

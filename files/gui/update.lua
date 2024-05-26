@@ -6,11 +6,17 @@ function GUIUpdata()
 		end
 		UI = dofile_once("mods/wand_editor/files/libs/gui.lua")
 		dofile_once("mods/wand_editor/files/libs/fn.lua")
-		dofile_once("data/scripts/lib/utilities.lua")
+        dofile_once("data/scripts/lib/utilities.lua")
+		
+		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua")
+        local function DarwSpellsScroll()
 
-		local function DarwSpellsScroll()
-
-		end
+        end
+		
+		--[[ debug用
+		local r_file = io.open("respawn_result.lua", "w")--写入文件
+		r_file:write("all_spells = {\n"..SerializeTable(data,"").."}")
+		r_file:close()]]
 
 		--获得玩家当前法杖数据
 		local GetPlayerHeldWandData = Compose(GetWandData, GetEntityHeldWand, GetPlayer)
@@ -29,8 +35,10 @@ function GUIUpdata()
 					end,
                     function(left_click, right_click, x, y, enable)
                         if left_click then
-							local x,y = EntityGetTransform(GetPlayer())
-                            local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())),nil,x,y)
+                            local x, y = EntityGetTransform(GetPlayer())
+                            local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)
+                            --EntityLoad("mods/wand_editor/files/entity/RemoveMaterial.xml",x,y)
+							TablePrint(data.ICEBALL)
 						end
                         if enable then --开启状态
 
