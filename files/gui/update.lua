@@ -29,10 +29,8 @@ function GUIUpdata()
 					end,
                     function(left_click, right_click, x, y, enable)
                         if left_click then
-							                            --[[
-                            local t = GetEntityAllData(GetEntityHeldWand(GetPlayer()))
-							TablePrint(t)]]
-                            local t = GetEntityAllComponentMembers(GetPlayer())
+							local x,y = EntityGetTransform(GetPlayer())
+                            local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())),nil,x,y)
 						end
                         if enable then --开启状态
 

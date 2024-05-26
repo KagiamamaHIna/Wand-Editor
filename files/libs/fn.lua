@@ -212,35 +212,42 @@ end
 ---@param entity integer
 ---@return table
 function GetWandSpellIDs(entity)
-	local result = { always = {}, spells = {} }
+	local result = { always = {}, spells = {}}
 	local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
 	local capacity = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity")
 	local spellList = {}
-	local spellEntitys = EntityGetChildWithTag(entity, "card_action")
-	local AlwaysCount = 0
-	if spellEntitys ~= nil then
-		for _, v in pairs(spellEntitys) do
-			local ItemActionComp = EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
-			local ItemComp = EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
-			local isAlways = ComponentGetValue2(ItemComp, "permanently_attached")
-			local index = ComponentGetValue2(ItemComp, "inventory_slot")
-			local spellid = ComponentGetValue2(ItemActionComp, "action_id")
-			local is_frozen = ComponentGetValue2(ItemComp, "is_frozen")
-			table.insert(spellList, { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen })
-			if isAlways then
-				AlwaysCount = AlwaysCount + 1
+    local spellEntitys = EntityGetChildWithTag(entity, "card_action")
+    local AlwaysCount = 0--统计正确的容量用
+	local IndexZeroCount = 0--有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
+    if spellEntitys ~= nil then
+        for _, v in pairs(spellEntitys) do
+            local ItemActionComp = EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
+            local ItemComp = EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
+            local isAlways = ComponentGetValue2(ItemComp, "permanently_attached")
+            local index = ComponentGetValue2(ItemComp, "inventory_slot")
+            local spellid = ComponentGetValue2(ItemActionComp, "action_id")
+            local is_frozen = ComponentGetValue2(ItemComp, "is_frozen")
+            if index == 0 then--当索引为0的时候
+				if IndexZeroCount > 0 then--判断数量
+					index = IndexZeroCount
+				end
+				IndexZeroCount = IndexZeroCount + 1--自增
 			end
-		end
-	end
-	for _ = 1, capacity - AlwaysCount do --初始化法术列表
-		table.insert(result.spells, "nil")
+            table.insert(spellList, { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen })
+            if isAlways then
+                AlwaysCount = AlwaysCount + 1
+            end
+        end
+    end
+	for i=1,capacity - AlwaysCount do
+		result.spells[i] = "nil"
 	end
 	--设置数据
 	for _, v in pairs(spellList) do
 		if v.isAlways then
 			table.insert(result.always, v)
 		else
-			result.spells[v.index + 1] = v
+            table.insert(result.spells, v)
 		end
 	end
 	return result
@@ -264,7 +271,8 @@ function GetWandData(entity)
 			shuffle_deck_when_empty = nil, --是否乱序
 			sprite_file = nil,       --贴图
 			speed_multiplier = nil,  --初速度加成
-			mana = nil,              --蓝
+            mana = nil,              --蓝
+			actions_per_round = nil, --施放数
 			shoot_pos = { x = 0, y = 0 } --发射位置
 		}
 		local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
@@ -279,16 +287,53 @@ function GetWandData(entity)
 		wand.mana_max = CompGetValue("mana_max")
 		wand.mana_charge_speed = CompGetValue("mana_charge_speed")
 		wand.mana = CompGetValue("mana")
-		wand.sprite_file = CompGetValue("sprite_file")
+        wand.sprite_file = CompGetValue("sprite_file")
+		wand.actions_per_round = GunConfigGetValue("actions_per_round")
 		wand.shuffle_deck_when_empty = GunConfigGetValue("shuffle_deck_when_empty")
 		wand.deck_capacity = GunConfigGetValue("deck_capacity")
 		wand.reload_time = GunConfigGetValue("reload_time")
 		wand.spread_degrees = GunActionGetValue("spread_degrees")
 		wand.fire_rate_wait = GunActionGetValue("fire_rate_wait")
-		wand.speed_multiplier = GunActionGetValue("speed_multiplier")
+        wand.speed_multiplier = GunActionGetValue("speed_multiplier")
 		return wand
 	end
 	--print_error("GetWandData param1 not a wand")
+end
+
+---comment
+---@param input table GetWandSpellIDs函数的返回值
+---@param Spells table<integer, string, boolean> 数字索引和id，第三个参数为是否是始终施放
+function SetTableSpells(input, Spells)
+	
+end
+
+---comment
+---@param input table GetWandSpellIDs函数的返回值
+function RemoveTableSpells(input, TableIndex, AlwaysIndex)
+    local NewIndex = {}
+	local NewAlwaysIndex = {}
+    for i = 1, #TableIndex do --初始化数据
+        NewIndex[i] = TableIndex[i] - 1
+    end
+	for i = 1, #AlwaysIndex do --初始化数据
+        NewAlwaysIndex[i] = AlwaysIndex[i] - 1
+    end
+    for _, v in pairs(AlwaysIndex) do
+        input.always[v] = nil
+    end
+	for _,v in pairs(NewIndex)do
+		
+	end
+end
+
+function UpDateWand(wandData,wand)
+    local SWandData = GetWandData(wand)
+	if SWandData then
+		for k, v in pairs(wandData) do
+			SWandData[k] = v --设置新的参数
+		end
+		return InitWand(SWandData,wand)
+	end
 end
 
 ---通过法杖数据初始化一根法杖并返回其实体id
@@ -319,15 +364,17 @@ function InitWand(wandData, wand, x, y)
 	CompSetValue("sprite_file", wandData.sprite_file)
 	GunConfigSetValue("shuffle_deck_when_empty", wandData.shuffle_deck_when_empty)
 	GunConfigSetValue("deck_capacity", wandData.deck_capacity)
-	GunConfigSetValue("reload_time", wandData.reload_time)
+    GunConfigSetValue("reload_time", wandData.reload_time)
+	GunConfigSetValue("actions_per_round", wandData.actions_per_round)
 	GunActionSetValue("spread_degrees", wandData.spread_degrees)
 	GunActionSetValue("fire_rate_wait", wandData.fire_rate_wait)
 	GunActionSetValue("speed_multiplier", wandData.speed_multiplier)
 	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item");
-	if sprite ~= nil then --刷新贴图
-		ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
-		EntityRefreshSprite(wand, sprite)
-	end
+    if sprite ~= nil then --刷新贴图
+        ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
+        EntityRefreshSprite(wand, sprite)
+    end
+	--TablePrint(wandData)
 	--初始化法术
 	for _, v in pairs(wandData.spells) do
 		for _, spell in pairs(v) do
