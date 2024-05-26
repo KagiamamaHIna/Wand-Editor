@@ -7,8 +7,8 @@ namespace bplib {
 		DWORD oldProtect;
 		BYTE Command;
 		VirtualProtectEx(process, Address, 1, PAGE_EXECUTE_READWRITE, &oldProtect);
-		ReadProcessMemory(process, Address, &Command, 1, NULL); // 保存原始字节
-		WriteProcessMemory(process, Address, "\xCC", 1, NULL); // \xCC 是 INT 3 指令，用于产生软件断点
+		ReadProcessMemory(process, Address, &Command, 1, NULL); //保存原始字节
+		WriteProcessMemory(process, Address, "\xCC", 1, NULL); //\xCC 是 INT3 指令
 		VirtualProtectEx(process, Address, 1, oldProtect, &oldProtect);
 		if (!OriginalCommand.count(Address)) {//如果没保存过
 			OriginalCommand[Address] = Command;//存储地址

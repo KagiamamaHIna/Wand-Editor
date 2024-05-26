@@ -40,7 +40,7 @@ namespace bplib {
 		static bool InitExceptionFilter;
 
 		static LONG WINAPI ExceptionFilter(EXCEPTION_POINTERS* pExceptionInfo) {
-			// 检查是否为INT3断点异常
+			//检查是否为INT3断点异常
 			if (pExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
 				PVOID address = pExceptionInfo->ExceptionRecord->ExceptionAddress;
 				
@@ -51,17 +51,13 @@ namespace bplib {
 							v(pExceptionInfo->ContextRecord);
 						}
 						v.first->UpAddress = address;
-						// 设置单步执行
-						#ifdef _M_IX86
-							pExceptionInfo->ContextRecord->EFlags |= 0x100;
-						#elif defined(_M_X64)
-							pExceptionInfo->ContextRecord->EFlags |= 0x100;
-						#endif
+						//设置单步执行
+						pExceptionInfo->ContextRecord->EFlags |= 0x100;
 					}
 				}
-				return EXCEPTION_CONTINUE_EXECUTION; // 继续执行程序
+				return EXCEPTION_CONTINUE_EXECUTION; //继续执行程序
 			}
-			// 检查是否为单步执行异常
+			//检查是否为单步执行异常
 			else if (pExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_SINGLE_STEP) {
 				for (auto& v : AllBreakPoint) {
 					if (v.first->UpAddress) {//如果存有则代表有
@@ -71,7 +67,7 @@ namespace bplib {
 				}
 				return EXCEPTION_CONTINUE_EXECUTION;
 			}
-			return EXCEPTION_CONTINUE_SEARCH; // 其他异常继续搜索处理程序
+			return EXCEPTION_CONTINUE_SEARCH; //其他异常继续搜索处理程序
 		}
 	};
 }

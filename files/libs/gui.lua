@@ -14,7 +14,7 @@ local this = {
 		NextFrNoClick = false,
 		NextFrClick = 0,
         Scale = nil,  --缩放参数
-		ZDeep = -100,
+		ZDeep = -114514,
 		IDMax = 0x7FFFFFFF, --下一个id分配的数字
 	},
 	public = {
