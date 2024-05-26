@@ -1,5 +1,5 @@
-dofile_once("mods/world_editor/files/libs/fp.lua")
-dofile_once("mods/world_editor/files/libs/define.lua")
+dofile_once("mods/wand_editor/files/libs/fp.lua")
+dofile_once("mods/wand_editor/files/libs/define.lua")
 
 local noita_print = print
 
@@ -115,7 +115,7 @@ function GetStorageComp(entity, VariableName)
 	if comps == nil then
 		return
 	end
-	for _, comp in pairs(comps) do   --遍历存储组件表
+	for _, comp in pairs(comps) do --遍历存储组件表
 		local name = ComponentGetValue2(comp, "name")
 		if name == VariableName then --如果是状态就取值
 			local value = ComponentGetValue2(comp, "value_int")
@@ -146,7 +146,7 @@ function SetStorageComp(entity, VariableName, i_value)
 	if comps == nil then
 		return
 	end
-	for _, comp in pairs(comps) do   --遍历存储组件表
+	for _, comp in pairs(comps) do --遍历存储组件表
 		local name = ComponentGetValue2(comp, "name")
 		if name == VariableName then --如果是就取值
 			ComponentSetValue2(comp, "value_int", i_value)
@@ -184,20 +184,6 @@ function EntityGetChildWithTag(entity, tag)
 	return result
 end
 
-
-function GetEntityAllComponentMembers(eneity)
-	local result = {}
-	local CompIDs = EntityGetAllComponents(eneity)
-	for _, id in pairs(CompIDs) do
-		local Members = ComponentGetMembers(id)
-		local name = ComponentGetTypeName(id)
-		if Members ~= nil then
-			result[name] = { Members = Members, CompID = id }
-		end
-	end
-	return result
-end
-
 ---获取当前拿着的法杖
 ---@param entity integer EntityID
 ---@return integer|nil
@@ -206,7 +192,7 @@ function GetEntityHeldWand(entity)
 	local inventory2 = EntityGetFirstComponent(entity, "Inventory2Component")
 	if inventory2 ~= nil then
 		local active = ComponentGetValue2(inventory2, "mActiveItem");
-		if EntityHasTag(active, "wand") then
+		if EntityHasTag(active, "wand") then --如果是魔杖
 			result = active
 		end
 	end
@@ -246,9 +232,10 @@ function GetWandSpellIDs(entity)
 			end
 		end
 	end
-	for _ = 1, capacity - AlwaysCount do
+	for _ = 1, capacity - AlwaysCount do --初始化法术列表
 		table.insert(result.spells, "nil")
 	end
+	--设置数据
 	for _, v in pairs(spellList) do
 		if v.isAlways then
 			table.insert(result.always, v)
@@ -268,23 +255,27 @@ function GetWandData(entity)
 			wandEntity = entity,
 			item_name = nil,
 			spells = GetWandSpellIDs(entity), --法术表
-			mana_charge_speed = nil,          --回蓝速度
-			mana_max = nil,                   --蓝上限
-			fire_rate_wait = nil,             --施放延迟
-			reload_time = nil,                --充能延迟
-			deck_capacity = nil,              --容量
-			spread_degrees = nil,             --散射
-			shuffle_deck_when_empty = nil,    --是否乱序
-			sprite_file = nil,                --贴图
-			speed_multiplier = nil,           --初速度加成
-			mana = nil,                       --蓝
+			mana_charge_speed = nil, --回蓝速度
+			mana_max = nil,          --蓝上限
+			fire_rate_wait = nil,    --施放延迟
+			reload_time = nil,       --充能延迟
+			deck_capacity = nil,     --容量
+			spread_degrees = nil,    --散射
+			shuffle_deck_when_empty = nil, --是否乱序
+			sprite_file = nil,       --贴图
+			speed_multiplier = nil,  --初速度加成
+			mana = nil,              --蓝
+			shoot_pos = { x = 0, y = 0 } --发射位置
 		}
 		local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
 		local CompGetValue = Curry(ComponentGetValue2, 2)(Ability)
 		local GunConfigGetValue = Curry(ComponentObjectGetValue2, 3)(Ability, "gun_config")
 		local GunActionGetValue = Curry(ComponentObjectGetValue2, 3)(Ability, "gunaction_config")
-		local item = EntityGetFirstComponentIncludingDisabled(entity, "ItemComponent");
+		local item = EntityGetFirstComponentIncludingDisabled(entity, "ItemComponent")
+		local hotspot = EntityGetFirstComponentIncludingDisabled(entity, "HotspotComponent", "shoot_pos")
+		wand.shoot_pos.x, wand.shoot_pos.y = ComponentGetValueVector2(hotspot, "offset") --发射偏移量
 		wand.item_name = ComponentGetValue2(item, "item_name")
+
 		wand.mana_max = CompGetValue("mana_max")
 		wand.mana_charge_speed = CompGetValue("mana_charge_speed")
 		wand.mana = CompGetValue("mana")
@@ -302,14 +293,14 @@ end
 
 ---通过法杖数据初始化一根法杖并返回其实体id
 ---@param wandData table 由GetWandData函数自动生成
----@param wand integer|nil EntityID，当wand为nil的时候将自动生成一个实体用于加载魔杖
+---@param wand integer|nil? EntityID，当wand为nil的时候将自动生成一个实体用于加载魔杖
 ---@param x number? x = 0
 ---@param y number? y = 0
 ---@return integer
 function InitWand(wandData, wand, x, y)
-    if wand == nil then
-        wand = EntityLoad("mods/world_editor/files/entity/wand_base.xml", x, y)
-    end
+	if wand == nil then
+		wand = EntityLoad("mods/wand_editor/files/entity/wand_base.xml", x, y)
+	end
 	if not EntityGetIsAlive(wand) then
 		return 0
 	end
@@ -318,7 +309,9 @@ function InitWand(wandData, wand, x, y)
 	local CompSetValue = Curry(ComponentSetValue2, 3)(ability)
 	local GunConfigSetValue = Curry(ComponentObjectSetValue2, 4)(ability, "gun_config")
 	local GunActionSetValue = Curry(ComponentObjectSetValue2, 4)(ability, "gunaction_config")
+	local hotspot = EntityGetFirstComponentIncludingDisabled(wand, "HotspotComponent", "shoot_pos")
 	--初始化数据
+	ComponentSetValueVector2(hotspot, "offset", wandData.shoot_pos.x, wandData.shoot_pos.y)
 	ComponentSetValue2(item, "item_name", wandData.item_name)
 	CompSetValue("mana_max", wandData.mana_max)
 	CompSetValue("mana_charge_speed", wandData.mana_charge_speed)
@@ -329,25 +322,25 @@ function InitWand(wandData, wand, x, y)
 	GunConfigSetValue("reload_time", wandData.reload_time)
 	GunActionSetValue("spread_degrees", wandData.spread_degrees)
 	GunActionSetValue("fire_rate_wait", wandData.fire_rate_wait)
-    GunActionSetValue("speed_multiplier", wandData.speed_multiplier)
-    local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item");
-	if sprite ~= nil then--刷新贴图
-        ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
-        EntityRefreshSprite(wand, sprite)
+	GunActionSetValue("speed_multiplier", wandData.speed_multiplier)
+	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item");
+	if sprite ~= nil then --刷新贴图
+		ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
+		EntityRefreshSprite(wand, sprite)
 	end
 	--初始化法术
-    for _, v in pairs(wandData.spells) do
-        for _, spell in pairs(v) do
-            if spell.id and spell.id ~= "nil" then
-                local action = CreateItemActionEntity(spell.id)
-                local item = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
-                ComponentSetValue2(item, "permanently_attached", spell.isAlways)
-                ComponentSetValue2(item, "is_frozen", spell.is_frozen)
-                ComponentSetValue2(item, "inventory_slot", spell.index, 0)
-                EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false);
-                EntityAddChild(wand, action);
-            end
-        end
-    end
+	for _, v in pairs(wandData.spells) do
+		for _, spell in pairs(v) do
+			if spell.id and spell.id ~= "nil" then
+				local action = CreateItemActionEntity(spell.id)
+				local item = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
+				ComponentSetValue2(item, "permanently_attached", spell.isAlways)
+				ComponentSetValue2(item, "is_frozen", spell.is_frozen)
+				ComponentSetValue2(item, "inventory_slot", spell.index, 0)
+				EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false);
+				EntityAddChild(wand, action);
+			end
+		end
+	end
 	return wand
 end

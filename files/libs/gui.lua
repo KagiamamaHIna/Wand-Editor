@@ -1,7 +1,7 @@
-dofile_once("mods/world_editor/files/libs/unsafe.lua")
-dofile_once("mods/world_editor/files/libs/fn.lua")
+dofile_once("mods/wand_editor/files/libs/unsafe.lua")
+dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/debug/keycodes.lua")
-local Nxml = dofile_once("mods/world_editor/files/libs/nxml.lua")
+local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 
 local this = {
 	private = {

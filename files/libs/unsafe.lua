@@ -1,4 +1,4 @@
-dofile_once("mods/world_editor/files/libs/define.lua")
+dofile_once("mods/wand_editor/files/libs/define.lua")
 
 SavePath = "%userprofile%/AppData/LocalLow/Nolla_Games_Noita/"
 
@@ -8,7 +8,7 @@ else
 	package.cpath = package.cpath..";./"..ModDir.."/files/moudle/?.dll"
 end
 
-Cpp = require("WorldEditorDll")--加载模块
+Cpp = require("WandEditorDll")--加载模块
 
 --初始化为绝对路径
 SavePath = Cpp.GetAbsPath(SavePath)
