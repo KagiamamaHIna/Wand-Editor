@@ -181,7 +181,7 @@ local file = io.open("mods/wand_editor/cache/ModEnable.lua", "w") --将模组启
 file:write("return {\n" .. SerializeTable(ModIdToEnable, "") .. "}")
 file:close()
 
-local file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --写入文件
+local file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓存写入文件
 file:write("return {\n" .. SerializeTable(result, "") .. "}")
 file:close()
 

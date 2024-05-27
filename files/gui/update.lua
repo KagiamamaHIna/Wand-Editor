@@ -24,14 +24,23 @@ function GUIUpdata()
 		local OnMoveImage = false
 		local ButtonX = 0
 		local ButtonY = 0
-
+		local MainButtonEnable = nil
 		UI.TickEventFn["main"] = function(this)
 			if not GameIsInventoryOpen() then
 				GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 				UI.MoveImagePicker("MainButton", 40, 50, "世界编辑工具", "mods/wand_editor/files/gui/images/menu.png",
 					function(x, y)
 						ButtonX = x
-						ButtonY = y
+                        ButtonY = y
+						if MainButtonEnable then
+							
+							UI.MoveImagePicker("MainButton2", x + 30, y, "测试文本1",
+								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
+							UI.MoveImagePicker("MainButton3", x + 60, y, "测试文本2",
+								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
+							UI.MoveImagePicker("MainButton4", x + 90, y, "测试文本3",
+								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
+						end
 					end,
                     function(left_click, right_click, x, y, enable)
                         if left_click then
@@ -39,16 +48,10 @@ function GUIUpdata()
                             local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)
                             --EntityLoad("mods/wand_editor/files/entity/RemoveMaterial.xml",x,y)
                             --TablePrint(data.ICEBALL)
-							print(Cpp.CurrentPath())
-						end
+                        end
+						MainButtonEnable = enable
                         if enable then --开启状态
 
-							UI.MoveImagePicker("MainButton2", x + 30, y, "测试文本1",
-								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
-							UI.MoveImagePicker("MainButton3", x + 60, y, "测试文本2",
-								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
-							UI.MoveImagePicker("MainButton4", x + 90, y, "测试文本3",
-								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
 						end
 						if OnMoveImage then
 							--[[
