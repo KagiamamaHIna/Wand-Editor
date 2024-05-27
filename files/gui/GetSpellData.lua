@@ -3,30 +3,30 @@ dofile_once("mods/wand_editor/files/libs/unsafe.lua")
 dofile_once("data/scripts/gun/gun.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 
+local TypeTable = {
+	ACTION_TYPE_PROJECTILE = GameTextGetTranslatedOrNot("inventory_actiontype_projectile"),
+	ACTION_TYPE_STATIC_PROJECTILE = GameTextGetTranslatedOrNot("inventory_actiontype_staticprojectile"),
+	ACTION_TYPE_MODIFIER = GameTextGetTranslatedOrNot("inventory_actiontype_modifier"),
+	ACTION_TYPE_DRAW_MANY = GameTextGetTranslatedOrNot("inventory_actiontype_drawmany"),
+	ACTION_TYPE_MATERIAL = GameTextGetTranslatedOrNot("inventory_actiontype_material"),
+	ACTION_TYPE_OTHER = GameTextGetTranslatedOrNot("inventory_actiontype_other"),
+	ACTION_TYPE_UTILITY = GameTextGetTranslatedOrNot("inventory_actiontype_utility"),
+	ACTION_TYPE_PASSIVE = GameTextGetTranslatedOrNot("inventory_actiontype_passive")
+}
+
 ---输入类型枚举量获得其对应的字符串
 ---@param type integer
 ---@return string
 function SpellTypeEnumToStr(type)
-	if type == ACTION_TYPE_PROJECTILE then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_projectile")
-	elseif type == ACTION_TYPE_STATIC_PROJECTILE then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_staticprojectile")
-	elseif type == ACTION_TYPE_MODIFIER then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_modifier")
-	elseif type == ACTION_TYPE_DRAW_MANY then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_drawmany")
-	elseif type == ACTION_TYPE_MATERIAL then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_material")
-	elseif type == ACTION_TYPE_OTHER then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_other")
-	elseif type == ACTION_TYPE_UTILITY then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_utility")
-	elseif type == ACTION_TYPE_PASSIVE then
-		return GameTextGetTranslatedOrNot("inventory_actiontype_passive")
+    local result = TypeTable[type]
+	if result ~= nil then
+		return result
 	end
 	return "unknown"
 end
 
+---返回模组加载情况
+---@return table<string, boolean>
 local function GetModEnableList()
 	local ModIdToEnable = {}
 	local ModsPath = Cpp.GetDirectoryPath(Cpp.CurrentPath() .. "/mods/")
@@ -76,7 +76,7 @@ if HasCahce then
 	end
 end
 --print("Init Spell Data")
-
+--需要重新加载
 local result = {}
 
 --监听的数据
