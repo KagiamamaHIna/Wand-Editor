@@ -68,6 +68,22 @@ namespace lua {
 		return 1;
 	}
 
+	int lua_PathGetFileName(lua_State* L) {
+		std::string str = luaL_checkstring(L, 1);
+		size_t pos = str.rfind('/');
+		if (pos == -1) {//如果等于-1就搜索另一个
+			pos = str.rfind('\\');
+		}
+		if (pos == -1) {
+			std::cerr << "not found file name\n";
+			return 0;
+		}
+		//有结果
+		str = str.substr(pos + 1);
+		lua_pushstring(L, str.c_str());
+		return 1;
+	}
+
 	int lua_GetAbsPath(lua_State* L) {
 		if (lua_isstring(L, 1)) {
 			std::string arg = luaL_checkstring(L, 1);

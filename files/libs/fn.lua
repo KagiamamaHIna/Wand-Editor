@@ -72,8 +72,8 @@ function SerializeTable(tbl, indent)
         local key
         if is_array and type(k) == "number" then
             key = ""
-        else
-            key = k .. " = "
+        else -- 当键名是字符串时，使用方括号和双引号
+            key = string.format("[%q] = ", k)
         end
 
         if type(v) == "table" then

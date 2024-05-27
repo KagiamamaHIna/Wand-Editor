@@ -20,3 +20,8 @@ function Cpp.GetAbsPath(path)end
 ---不知道该怎么描述
 ---@param address integer
 function Cpp.OpenMonitorLoadLuaLib(address)end
+
+---返回路径下的文件名
+---@param path string
+---@return string
+function Cpp.PathGetFileName(path)end

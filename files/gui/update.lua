@@ -38,7 +38,8 @@ function GUIUpdata()
                             local x, y = EntityGetTransform(GetPlayer())
                             local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)
                             --EntityLoad("mods/wand_editor/files/entity/RemoveMaterial.xml",x,y)
-							TablePrint(data.ICEBALL)
+                            --TablePrint(data.ICEBALL)
+							print(Cpp.CurrentPath())
 						end
                         if enable then --开启状态
 
