@@ -1,3 +1,4 @@
+---@diagnostic disable: missing-return
 ---返回软件本身的绝对路径
 ---@return string
 function Cpp.CurrentPath()end

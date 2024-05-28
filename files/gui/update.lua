@@ -1,9 +1,7 @@
+local UI
 function GUIUpdata()
 	if UI == nil then
 		--初始化
-		if not ModIsEnabled("wand_editor") then --先确定是否启用模组
-			EntityKill(GetUpdatedEntityID())
-		end
 		UI = dofile_once("mods/wand_editor/files/libs/gui.lua")
 		dofile_once("mods/wand_editor/files/libs/fn.lua")
         dofile_once("data/scripts/lib/utilities.lua")
@@ -12,26 +10,17 @@ function GUIUpdata()
         local function DarwSpellsScroll()
 
         end
-		
-		--[[ debug用
-		local r_file = io.open("respawn_result.lua", "w")--写入文件
-		r_file:write("all_spells = {\n"..SerializeTable(data,"").."}")
-		r_file:close()]]
 
 		--获得玩家当前法杖数据
 		local GetPlayerHeldWandData = Compose(GetWandData, GetEntityHeldWand, GetPlayer)
 
 		local OnMoveImage = false
-		local ButtonX = 0
-		local ButtonY = 0
 		local MainButtonEnable = nil
 		UI.TickEventFn["main"] = function(this)
 			if not GameIsInventoryOpen() then
 				GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 				UI.MoveImagePicker("MainButton", 40, 50, "世界编辑工具", "mods/wand_editor/files/gui/images/menu.png",
 					function(x, y)
-						ButtonX = x
-                        ButtonY = y
 						if MainButtonEnable then
 							
 							UI.MoveImagePicker("MainButton2", x + 30, y, "测试文本1",
@@ -43,13 +32,13 @@ function GUIUpdata()
 						end
 					end,
                     function(left_click, right_click, x, y, enable)
+						MainButtonEnable = enable
                         if left_click then
                             local x, y = EntityGetTransform(GetPlayer())
                             local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)
                             --EntityLoad("mods/wand_editor/files/entity/RemoveMaterial.xml",x,y)
                             --TablePrint(data.ICEBALL)
                         end
-						MainButtonEnable = enable
                         if enable then --开启状态
 
 						end

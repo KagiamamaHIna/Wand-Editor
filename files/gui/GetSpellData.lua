@@ -31,7 +31,7 @@ local function GetModEnableList()
 	local ModIdToEnable = {}
 	local ModsPath = Cpp.GetDirectoryPath(Cpp.CurrentPath() .. "/mods/")
     for _, v in pairs(ModsPath.Path) do
-        if Cpp.PathExists(v.."/mod.xml") then--判断是否存在
+        if Cpp.PathExists(v.."/mod.xml") then--判断是否存在，通过这个判断是否为一个模组
 			local modid = Cpp.PathGetFileName(v)
 			ModIdToEnable[modid] = ModIsEnabled(modid)
 		end
@@ -61,11 +61,11 @@ if HasCahce then
         end
     end
 	if not Change then--可以直接读取缓存！
-		print("Cache Get")
+		--print("Cache Get")
 		return dofile_once("mods/wand_editor/cache/SpellsData.lua")
 	end
 end
-print("Init Spell Data")
+--print("Init Spell Data")
 --需要重新加载
 local result = {}
 
@@ -175,7 +175,7 @@ local file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓�
 file:write("return {\n" .. SerializeTable(result, "") .. "}")
 file:close()
 
-reflecting = nil
+reflecting = nil--删除变量
 current_reload_time = nil
 Reflection_RegisterProjectile = nil
 EntityAddTag(player, "player_unit") --恢复状态
