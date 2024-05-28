@@ -1,13 +1,13 @@
----返回软件本身的路径
+---返回软件本身的绝对路径
 ---@return string
 function Cpp.CurrentPath()end
 
----返回某一路径下的所有文件夹和文件
+---返回某一绝对路径下的所有文件夹和文件
 ---@param path string
 ---@return table
 function Cpp.GetDirectoryPath(path)end
 
----返回某一路径下的所有文件夹和文件以及其子文件夹和子文件
+---返回某一绝对路径下的所有文件夹和文件以及其子文件夹和子文件
 ---@param path string
 ---@return table
 function Cpp.GetDirectoryPathAll(path)end
@@ -25,3 +25,8 @@ function Cpp.OpenMonitorLoadLuaLib(address)end
 ---@param path string
 ---@return string
 function Cpp.PathGetFileName(path)end
+
+---返回绝对路径下是否存在文件或文件夹
+---@param path string
+---@return boolean
+function Cpp.PathExists(path)end

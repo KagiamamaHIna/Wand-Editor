@@ -162,7 +162,6 @@
     <ClCompile Include="breakpoint.cpp" />
     <ClCompile Include="fn.cpp" />
     <ClCompile Include="LuaFilesApi.cpp" />
-    <ClCompile Include="LuaThread.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -173,7 +172,6 @@
     <ClInclude Include="fn.h" />
     <ClInclude Include="LoadAllLuaLib.h" />
     <ClInclude Include="LuaFilesApi.h" />
-    <ClInclude Include="LuaThread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

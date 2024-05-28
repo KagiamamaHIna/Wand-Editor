@@ -31,51 +31,41 @@ local function GetModEnableList()
 	local ModIdToEnable = {}
 	local ModsPath = Cpp.GetDirectoryPath(Cpp.CurrentPath() .. "/mods/")
     for _, v in pairs(ModsPath.Path) do
-        local ModsFile = Cpp.GetDirectoryPath(v) --用于确定是不是模组
-        local modid = Cpp.PathGetFileName(v)
-        ModIdToEnable[modid] = ModIsEnabled(modid)
+        if Cpp.PathExists(v.."/mod.xml") then--判断是否存在
+			local modid = Cpp.PathGetFileName(v)
+			ModIdToEnable[modid] = ModIsEnabled(modid)
+		end
     end
 	return ModIdToEnable
 end
 
 --判断是否有缓存文件
-local HasCahce = false
-local ModEnableCache = false
-local HasSpellCache = false
-local list = Cpp.GetDirectoryPath(Cpp.CurrentPath() .. "/mods/wand_editor/cache/")
-for _, v in pairs(list.File) do
-    if Cpp.PathGetFileName(v) == "SpellsData.lua" then
-        HasSpellCache = true
-    end
-    if Cpp.PathGetFileName(v) == "ModEnable.lua" then--怕手多的乱删掉缓存文件
-        ModEnableCache = true
-    end
-	if ModEnableCache and HasSpellCache then
-		HasCahce = true
-	end
-end
+local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache/"
+local HasCahce = Cpp.PathExists(cachePath.."SpellsData.lua") and Cpp.PathExists(cachePath.."ModEnable.lua")
 
 --检查是否需要更新缓存
 local ModIdToEnable = GetModEnableList()
 if HasCahce then
     local UpModEnable = dofile_once("mods/wand_editor/cache/ModEnable.lua")
 	local Change = false
-    for k, v in pairs(UpModEnable) do
-        if ModIdToEnable[k] == nil then --代表有新模组
-            Change = true
-            break                       --退出
-        elseif ModIdToEnable[k] ~= v then
+    for k, v in pairs(ModIdToEnable) do
+        if UpModEnable[k] == nil then --代表有新模组
+            Change = ModIsEnabled(k)
+			if Change then--如果启动了这个模组就退出
+				break
+			end
+        elseif UpModEnable[k] ~= v then
             --代表模组变动
             Change = true
             break
         end
     end
 	if not Change then--可以直接读取缓存！
-		--print("Cache Get")
+		print("Cache Get")
 		return dofile_once("mods/wand_editor/cache/SpellsData.lua")
 	end
 end
---print("Init Spell Data")
+print("Init Spell Data")
 --需要重新加载
 local result = {}
 
@@ -87,12 +77,12 @@ reset_modifiers(c)                      --初始化
 shot_effects = {}
 ConfigGunShotEffects_Init(shot_effects) --初始化
 
-draw_actions = function(draw)           --设置抽取数，当被调用时
-	result.draw_actions = draw
-end
-
 local CurrentID = nil
 local hasProj = {}
+draw_actions = function(draw)           --设置抽取数，当被调用时
+	result[CurrentID].draw_actions = draw
+end
+
 
 reflecting = true
 Reflection_RegisterProjectile = function(filepath)

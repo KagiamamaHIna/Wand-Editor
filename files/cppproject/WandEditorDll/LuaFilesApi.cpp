@@ -63,8 +63,14 @@ namespace lua {
 		return 1;//代表lua函数的返回参数，从栈索引-1为第一个返回值，刚才的lua_rawseti函数执行完后result表的栈索引为-1，所以会返回result表
 	}
 
-	int lua_current_path(lua_State* L) {
+	int lua_CurrentPath(lua_State* L) {
 		lua_pushstring(L, std::filesystem::current_path().string().c_str());
+		return 1;
+	}
+
+	int lua_PathExists(lua_State* L) {
+		std::string str = luaL_checkstring(L, 1);
+		lua_pushboolean(L, std::filesystem::exists(str));
 		return 1;
 	}
 
