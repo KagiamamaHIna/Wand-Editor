@@ -16,6 +16,7 @@ local this = {
         Scale = nil,  --缩放参数
 		ZDeep = -114514,
 		IDMax = 0x7FFFFFFF, --下一个id分配的数字
+		ScrollData = {},
 	},
 	public = {
 		ScreenWidth = -1, --当前屏宽
@@ -286,7 +287,35 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 end
 
 function UI.ScrollContainer(id, x, y, w, h)
-	
+	local newid = ConcatModID(id)
+	if this.private.ScrollData[newid] == nil then--判断是否有数据
+        this.private.ScrollData[newid] = { id = id, x = x, y = y, w = w, h = h }--初始化数据
+        this.private.ScrollData[newid].Item = {}
+	end
+end
+
+---设置参数
+---@param id string
+---@param x number|nil?
+---@param y number|nil?
+---@param w number|nil?
+---@param h number|nil?
+function UI.SetScrollContainer(id, x, y, w, h)
+	local newid = ConcatModID(id)
+	if this.private.ScrollData[newid] then--判断是否有数据
+        if x then
+            this.private.ScrollData[newid].x = x
+        end
+        if y then
+            this.private.ScrollData[newid].y = y
+        end
+        if w then
+            this.private.ScrollData[newid].w = w
+        end
+		if h then
+			this.private.ScrollData[newid].h = h
+		end
+	end
 end
 
 ---为一个指定id的Scroll控件添加图片项目
@@ -294,7 +323,10 @@ end
 ---@param image string
 ---@param callback function
 function UI.AddScrollImageItem(id, image, callback)
-	
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+		table.insert(this.private.ScrollData[newid].Item, {CB = callback,image = image})
+	end
 end
 
 ---为一个指定id的Scroll控件添加文本项目
@@ -302,13 +334,38 @@ end
 ---@param text string
 ---@param callback function
 function UI.AddScrollTextItem(id, text, callback)
-	
+	local newid = ConcatModID(id)
+	if this.private.ScrollData[newid] then--判断是否有数据
+		table.insert(this.private.ScrollData[newid].Item, {CB = callback,text = text})
+	end
+end
+
+---获得Item表
+---@param id string
+---@return table
+function GetScrollItemList(id)
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+		return this.private.ScrollData[newid].Item
+	end
 end
 
 ---根据指定id开始绘制Scroll控件
 ---@param id string
 function UI.DrawScrollContainer(id)
-	
+	local newid = ConcatModID(id)
+	if this.private.ScrollData[newid] then--如果有数据
+        local ItemWidth = 0
+        GuiLayoutBeginLayer(this.public.gui) --先开启这个
+		GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x, this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h)
+        GuiLayoutBeginVertical(this.public.gui, 0, 0, true) --垂直布局
+		
+
+
+		GuiLayoutEnd(this.gui)
+		GuiEndScrollContainer(this.public.gui)
+		GuiLayoutEndLayer(this.public.gui)
+	end
 end
 
 ---添加计划刻事件

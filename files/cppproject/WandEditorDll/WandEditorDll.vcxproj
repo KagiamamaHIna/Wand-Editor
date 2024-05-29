@@ -46,11 +46,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ExternalIncludePath>..\lua\src;$(ExternalIncludePath)</ExternalIncludePath>
-    <OutDir>..\..\moudle\debug\</OutDir>
+    <OutDir>..\..\module\debug\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ExternalIncludePath>..\lua\src;$(ExternalIncludePath)</ExternalIncludePath>
-    <OutDir>..\..\moudle\</OutDir>
+    <OutDir>..\..\module\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
