@@ -31,3 +31,8 @@ function Cpp.PathGetFileName(path)end
 ---@param path string
 ---@return boolean
 function Cpp.PathExists(path)end
+
+---创建一个路径，返回的是 是否创建成功
+---@param path string
+---@return boolean
+function Cpp.CreateDir(path)end

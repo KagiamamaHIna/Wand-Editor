@@ -74,6 +74,12 @@ namespace lua {
 		return 1;
 	}
 
+	int lua_CreateDir(lua_State* L) {
+		std::string str = luaL_checkstring(L, 1);
+		lua_pushboolean(L, std::filesystem::create_directory(str));
+		return 1;
+	}
+
 	int lua_PathGetFileName(lua_State* L) {
 		std::string str = luaL_checkstring(L, 1);
 		size_t pos = str.rfind('/');

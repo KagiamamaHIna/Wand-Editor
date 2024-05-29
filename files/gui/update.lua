@@ -6,7 +6,7 @@ function GUIUpdata()
 		dofile_once("mods/wand_editor/files/libs/fn.lua")
         dofile_once("data/scripts/lib/utilities.lua")
 		
-		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua")
+		--local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua")
         local function DarwSpellsScroll()
 
         end
@@ -22,25 +22,46 @@ function GUIUpdata()
 				UI.MoveImagePicker("MainButton", 40, 50, "世界编辑工具", "mods/wand_editor/files/gui/images/menu.png",
 					function(x, y)
 						if MainButtonEnable then
-							
+							--[[
 							UI.MoveImagePicker("MainButton2", x + 30, y, "测试文本1",
 								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
 							UI.MoveImagePicker("MainButton3", x + 60, y, "测试文本2",
 								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
 							UI.MoveImagePicker("MainButton4", x + 90, y, "测试文本3",
-								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
+								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)]]
 						end
 					end,
                     function(left_click, right_click, x, y, enable)
 						MainButtonEnable = enable
                         if left_click then
+							--[[
                             local x, y = EntityGetTransform(GetPlayer())
-                            local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)
-                            --EntityLoad("mods/wand_editor/files/entity/RemoveMaterial.xml",x,y)
-                            --TablePrint(data.ICEBALL)
+                            local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)]]
                         end
                         if enable then --开启状态
+							GuiLayoutBeginLayer(this.gui)--先开启这个
+                            GuiBeginScrollContainer(this.gui, this.NewID("TestScroll"), 50, 80, 100, 100)--然后可滚动框
 
+                            GuiLayoutBeginVertical(this.gui, 0, 0, true)                                  --垂直自动分布
+							
+							GuiLayoutBeginHorizontal(this.gui, 0 , 0, true)--横向自动分布 
+							GuiText(this.gui, 0, 0, "1919810")
+							GuiText(this.gui, 0, 0, "1919810")
+                            GuiText(this.gui, 0, 0, "1919810")
+							GuiText(this.gui, 0, 0, "1919810")
+							GuiText(this.gui, 0, 0, "1919810")
+                            GuiText(this.gui, 0, 0, "1919810")
+							GuiText(this.gui, 0, 0, "1919810")
+							GuiText(this.gui, 0, 0, "1919810")
+                            GuiText(this.gui, 0, 0, "1919810")
+							GuiText(this.gui, 0, 0, "1919810")
+							GuiText(this.gui, 0, 0, "1919810")
+                            GuiText(this.gui, 0, 0, "1919810")
+                            GuiLayoutEnd(this.gui)
+
+							GuiLayoutEnd(this.gui)
+							GuiEndScrollContainer(this.gui)
+							GuiLayoutEndLayer(this.gui)
 						end
 						if OnMoveImage then
 							--[[

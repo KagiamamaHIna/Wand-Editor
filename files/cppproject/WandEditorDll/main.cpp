@@ -14,6 +14,7 @@ static luaL_Reg luaLibs[] = {
 	{ "GetAbsPath", lua::lua_GetAbsPath},
 	{ "PathGetFileName", lua::lua_PathGetFileName},
 	{ "PathExists", lua::lua_PathExists},
+	{ "CreateDir", lua::lua_CreateDir},
 	{ "OpenMonitorLoadLuaLib",lua::MonitorNoitaLuaLoad},
 	{ NULL, NULL }
 };

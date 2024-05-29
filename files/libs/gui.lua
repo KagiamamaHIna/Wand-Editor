@@ -285,6 +285,32 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 	return ModSettingGet(CanMoveStr)
 end
 
+function UI.ScrollContainer(id, x, y, w, h)
+	
+end
+
+---为一个指定id的Scroll控件添加图片项目
+---@param id string
+---@param image string
+---@param callback function
+function UI.AddScrollImageItem(id, image, callback)
+	
+end
+
+---为一个指定id的Scroll控件添加文本项目
+---@param id string
+---@param text string
+---@param callback function
+function UI.AddScrollTextItem(id, text, callback)
+	
+end
+
+---根据指定id开始绘制Scroll控件
+---@param id string
+function UI.DrawScrollContainer(id)
+	
+end
+
 ---添加计划刻事件
 ---@param fn function
 function UI.OnceCallOnExecute(fn)

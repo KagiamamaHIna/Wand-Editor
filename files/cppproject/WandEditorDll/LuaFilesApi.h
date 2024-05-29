@@ -14,4 +14,5 @@ namespace lua {
 	int lua_GetAbsPath(lua_State* L);
 	int lua_PathGetFileName(lua_State* L);
 	int lua_PathExists(lua_State* L);
+	int lua_CreateDir(lua_State* L);
 }
