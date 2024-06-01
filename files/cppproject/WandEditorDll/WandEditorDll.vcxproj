@@ -61,6 +61,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\rapidfuzz-cpp-3.0.4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -79,6 +80,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\rapidfuzz-cpp-3.0.4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,7 +95,9 @@
     <ClCompile Include="breakpoint.cpp" />
     <ClCompile Include="fn.cpp" />
     <ClCompile Include="LuaFilesApi.cpp" />
+    <ClCompile Include="LuaRatioStr.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pinyin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -103,6 +107,8 @@
     <ClInclude Include="fn.h" />
     <ClInclude Include="LoadAllLuaLib.h" />
     <ClInclude Include="LuaFilesApi.h" />
+    <ClInclude Include="LuaRatioStr.h" />
+    <ClInclude Include="pinyin.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

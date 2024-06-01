@@ -36,3 +36,21 @@ function Cpp.PathExists(path)end
 ---@param path string
 ---@return boolean
 function Cpp.CreateDir(path)end
+
+---计算两个字符串的相似程度。区间[0,100]
+---@param s1 string
+---@param s2 string
+---@return number
+function Cpp.Ratio(s1,s2)end
+
+---计算一个字符串和另一个字符串的部分相似程度，比如"ab"和"abc"返回100。区间[0,100]
+---@param s1 string
+---@param s2 string
+---@return number
+function Cpp.PartialRatio(s1,s2)end
+
+---用于拼音匹配相似度。区间[0,100]，s1为输入的带中文的字符串，s2为输入的拼音字符串，s2不会进行转拼音匹配
+---@param s1 string
+---@param s2 string
+---@return number
+function Cpp.PinyinRatio(s1,s2)end

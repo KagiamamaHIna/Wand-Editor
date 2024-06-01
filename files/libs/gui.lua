@@ -342,12 +342,12 @@ end
 
 ---获得Item表
 ---@param id string
----@return table
+---@return table|nil
 function GetScrollItemList(id)
 	local newid = ConcatModID(id)
     if this.private.ScrollData[newid] then --判断是否有数据
-		return this.private.ScrollData[newid].Item
-	end
+        return this.private.ScrollData[newid].Item
+    end
 end
 
 ---根据指定id开始绘制Scroll控件

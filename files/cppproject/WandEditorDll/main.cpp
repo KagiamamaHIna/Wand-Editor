@@ -1,9 +1,12 @@
+#define NOMINMAX
+
 #include <iostream>
 #include <string>
 #include <filesystem>
 
 #include "LuaFilesApi.h"
 #include "LoadAllLuaLib.h"
+#include "LuaRatioStr.h"
 #include "lua.hpp"
 
 //提供给lua的函数
@@ -15,7 +18,13 @@ static luaL_Reg luaLibs[] = {
 	{ "PathGetFileName", lua::lua_PathGetFileName},
 	{ "PathExists", lua::lua_PathExists},
 	{ "CreateDir", lua::lua_CreateDir},
+
 	{ "OpenMonitorLoadLuaLib",lua::MonitorNoitaLuaLoad},
+	
+	{ "Ratio",lua::lua_Ratio},
+	{ "PartialRatio",lua::lua_PartialRatio},
+	{ "PinyinRatio", lua::lua_PinyinRatio},
+
 	{ NULL, NULL }
 };
 
