@@ -49,8 +49,10 @@ namespace lua {
 		for (const auto& v : AllScore) {//计算总值
 			FinalScore += v;
 		}
-		FinalScore /= AllScore.size();//计算平均数
-		if (FinalScore > score) {
+		if (AllScore.size()) {
+			FinalScore /= AllScore.size();//计算平均数，还有不能除以0
+		}
+		if (FinalScore > score && AllScore.size()) {//顺带判断容器空不空
 			lua_pushnumber(L, FinalScore);
 		}
 		else {

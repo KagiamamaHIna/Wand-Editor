@@ -4,14 +4,14 @@ dofile_once("data/scripts/gun/gun.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 
 local TypeTable = {
-	ACTION_TYPE_PROJECTILE = GameTextGetTranslatedOrNot("inventory_actiontype_projectile"),
-	ACTION_TYPE_STATIC_PROJECTILE = GameTextGetTranslatedOrNot("inventory_actiontype_staticprojectile"),
-	ACTION_TYPE_MODIFIER = GameTextGetTranslatedOrNot("inventory_actiontype_modifier"),
-	ACTION_TYPE_DRAW_MANY = GameTextGetTranslatedOrNot("inventory_actiontype_drawmany"),
-	ACTION_TYPE_MATERIAL = GameTextGetTranslatedOrNot("inventory_actiontype_material"),
-	ACTION_TYPE_OTHER = GameTextGetTranslatedOrNot("inventory_actiontype_other"),
-	ACTION_TYPE_UTILITY = GameTextGetTranslatedOrNot("inventory_actiontype_utility"),
-	ACTION_TYPE_PASSIVE = GameTextGetTranslatedOrNot("inventory_actiontype_passive")
+	[ACTION_TYPE_PROJECTILE] = GameTextGetTranslatedOrNot("$inventory_actiontype_projectile"),
+	[ACTION_TYPE_STATIC_PROJECTILE] = GameTextGetTranslatedOrNot("$inventory_actiontype_staticprojectile"),
+	[ACTION_TYPE_MODIFIER] = GameTextGetTranslatedOrNot("$inventory_actiontype_modifier"),
+	[ACTION_TYPE_DRAW_MANY] = GameTextGetTranslatedOrNot("$inventory_actiontype_drawmany"),
+	[ACTION_TYPE_MATERIAL] = GameTextGetTranslatedOrNot("$inventory_actiontype_material"),
+	[ACTION_TYPE_OTHER] = GameTextGetTranslatedOrNot("$inventory_actiontype_other"),
+	[ACTION_TYPE_UTILITY] = GameTextGetTranslatedOrNot("$inventory_actiontype_utility"),
+	[ACTION_TYPE_PASSIVE] = GameTextGetTranslatedOrNot("$inventory_actiontype_passive")
 }
 
 ---输入类型枚举量获得其对应的字符串
@@ -41,7 +41,7 @@ end
 
 --判断是否有缓存文件
 local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache/"
-local HasCahce = Cpp.PathExists(cachePath.."SpellsData.lua") and Cpp.PathExists(cachePath.."ModEnable.lua")
+local HasCahce = Cpp.PathExists(cachePath.."SpellsData.lua") and Cpp.PathExists(cachePath.."ModEnable.lua") and Cpp.PathExists(cachePath.."TypeToSpellList.lua")
 
 --检查是否需要更新缓存
 local ModIdToEnable = GetModEnableList()
@@ -62,7 +62,9 @@ if HasCahce then
     end
 	if not Change then--可以直接读取缓存！
 		--print("Cache Get")
-		return dofile_once("mods/wand_editor/cache/SpellsData.lua")
+		local result1 = dofile_once("mods/wand_editor/cache/SpellsData.lua")
+		local result2 = dofile_once("mods/wand_editor/cache/TypeToSpellList.lua")
+		return {result1,result2}
 	end
 end
 --print("Init Spell Data")
@@ -91,9 +93,15 @@ Reflection_RegisterProjectile = function(filepath)
 		local proj = EntityLoad(filepath, 14600, -45804)
 		hasProj[filepath] = {}
 		local projComp = EntityGetFirstComponent(proj, "ProjectileComponent")
-		if projComp then
-			result[CurrentID].lifetime = ComponentGetValue2(projComp, "mStartingLifetime")
-			hasProj[filepath].lifetime = result[CurrentID].lifetime
+        if projComp then
+            local projXML = Nxml.parse(ModTextFileGetContent(filepath))
+			for _,v in pairs(projXML.children)do
+				if v.name == "ProjectileComponent" then
+                    result[CurrentID].lifetime = v.attr.lifetime
+                    hasProj[filepath].lifetime = result[CurrentID].lifetime
+					break
+				end
+			end
 
 			ComponentSetValue2(projComp, "on_death_explode", false)
 			ComponentSetValue2(projComp, "on_lifetime_out_explode", false)
@@ -118,10 +126,10 @@ Reflection_RegisterProjectile = function(filepath)
 			end
 			local config_explosion = ComponentObjectGetMembers(projComp, "config_explosion")
 			if config_explosion ~= nil then
-				result[CurrentID].projExplosion = tonumber(ComponentObjectGetValue2(projComp, "config_explosion",
-					"damage"))
-
-				hasProj[filepath].projExplosion = result[CurrentID].projExplosion
+				result[CurrentID].projExplosion = tonumber(ComponentObjectGetValue2(projComp, "config_explosion", "damage"))
+                hasProj[filepath].projExplosion = result[CurrentID].projExplosion
+				result[CurrentID].projExplosionRadius = tonumber(ComponentObjectGetValue2(projComp, "config_explosion", "explosion_radius"))
+				hasProj[filepath].projExplosionRadius = result[CurrentID].projExplosionRadius
 			end
 		end
 		--杀死实体
@@ -137,12 +145,19 @@ end
 local player = GetPlayer()
 EntityRemoveTag(player, "player_unit")
 
+local TypeToSpellList = {}
+
 for _, v in pairs(actions) do
 	result[v.id] = {}
 	CurrentID = v.id
-	result[v.id].type = v.type
-	result[v.id].name = GameTextGetTranslatedOrNot(v.name)
-	result[v.id].description = GameTextGetTranslatedOrNot(v.description)
+    result[v.id].type = v.type
+    if TypeToSpellList[v.type] == nil then
+        TypeToSpellList[v.type] = {}
+    end
+    table.insert(TypeToSpellList[v.type], v.id)
+	
+	result[v.id].name = v.name
+	result[v.id].description = v.description
 	result[v.id].sprite = v.sprite
 	result[v.id].mana = v.mana
 	result[v.id].max_uses = v.max_uses
@@ -175,9 +190,13 @@ local file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓�
 file:write("return {\n" .. SerializeTable(result, "") .. "}")
 file:close()
 
+local file = io.open("mods/wand_editor/cache/TypeToSpellList.lua", "w") --法术缓存写入文件
+file:write("return {\n" .. SerializeTable(TypeToSpellList, "") .. "}")
+file:close()
+
 reflecting = nil--删除变量
 current_reload_time = nil
 Reflection_RegisterProjectile = nil
 EntityAddTag(player, "player_unit") --恢复状态
 
-return result
+return {result, TypeToSpellList}

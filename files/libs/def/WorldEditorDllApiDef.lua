@@ -49,7 +49,7 @@ function Cpp.Ratio(s1,s2)end
 ---@return number
 function Cpp.PartialRatio(s1,s2)end
 
----用于拼音匹配相似度。区间[0,100]，s1为输入的带中文的字符串，s2为输入的拼音字符串，s2不会进行转拼音匹配
+---用于计算拼音匹配相似度。区间[0,100]，s1为输入的带中文的字符串，s2为输入的拼音字符串，s2不会进行转拼音匹配
 ---@param s1 string
 ---@param s2 string
 ---@return number

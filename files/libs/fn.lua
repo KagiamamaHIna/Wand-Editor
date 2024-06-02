@@ -13,6 +13,18 @@ print = function(...)
 	noita_print(table.concat(cache))
 end
 
+local noita_game_print = GamePrint
+
+--重新实现一个
+---@param ... any
+GamePrint = function(...)
+	local cache = {}
+	for _, v in pairs({ ... }) do
+		table.insert(cache, tostring(v))
+	end
+	noita_game_print(table.concat(cache))
+end
+
 ---打印一个表
 ---@param t table
 function TablePrint(t)
@@ -60,18 +72,19 @@ function Default(arg, v)
 	return arg
 end
 
----序列化函数，将table转换成lua代码
+--- 序列化函数，将table转换成lua代码
 ---@param tbl table
 ---@param indent any|nil indent = ""
 ---@return string
 function SerializeTable(tbl, indent)
     indent = indent or ""
     local result = ""
-    local is_array = #tbl > 0
+    local is_array = #tbl > 0 or tbl[0] ~= nil
     for k, v in pairs(tbl) do
         local key
         if is_array and type(k) == "number" then
-            key = ""
+            -- 当键名是数字时，使用中括号但不使用引号
+            key = string.format("[%s] = ", k)
         else -- 当键名是字符串时，使用方括号和双引号
             key = string.format("[%q] = ", k)
         end
@@ -184,6 +197,21 @@ function EntityGetChildWithTag(entity, tag)
 		end
 	end
 	return result
+end
+
+---返回一个实体其子实体有对应名字的数据
+---@param entity integer EntityID
+---@param name string
+---@return integer|nil
+function EntityGetChildWithName(entity, name)
+	local child = EntityGetAllChildren(entity)
+	if child ~= nil then
+		for _, v in pairs(child) do
+			if EntityGetName(v) == name then
+				return v
+			end
+		end
+	end
 end
 
 ---获取当前拿着的法杖

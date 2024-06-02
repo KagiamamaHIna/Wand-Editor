@@ -38,7 +38,6 @@ int luaopen_WandEditorDll(lua_State * L) {
 	lua_setfield(L, -2, "__index");//会执行弹出操作
 	luaL_register(L, NULL, lua::Monitor);
 
-	const char* const LIBRARY_NAME = "WandEditorDll"; //模块名
-	luaL_register(L, LIBRARY_NAME, luaLibs);  //注册函数
+	luaL_register(L, "WandEditorDll", luaLibs);  //注册函数，参数2是模块名
 	return 1;
 }
