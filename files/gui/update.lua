@@ -6,7 +6,7 @@ function GUIUpdata()
 		dofile_once("mods/wand_editor/files/libs/fn.lua")
 		dofile_once("data/scripts/lib/utilities.lua")
 		dofile_once("mods/wand_editor/files/gui/SpellsScroll.lua")
-		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua")
+		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua")--读取法术数据
 		local spellData = data[1]
 		local typelist = data[2]
 
@@ -46,7 +46,8 @@ function GUIUpdata()
 							print(x,y)
 						end]]
 						end
-					end)
+                    end)
+				
 			end
 		end
 	end

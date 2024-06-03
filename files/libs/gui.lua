@@ -130,8 +130,9 @@ function UI.OnMoveImage(id, x, y, image, isClose, scale, ZDeep, AlwaysCallBack)
 	isClose = Default(isClose, false)
 	scale = Default(scale, 1)
     local CanMoveStr = "on_move_" .. id
-	if isClose then
-		ModSettingSet(CanMoveStr, false) --提前设置
+	if isClose then--这个参数是代表要关闭这个悬浮窗的
+        ModSettingSet(CanMoveStr, false) --提前设置
+		return--所以退出
 	end
 	ModSettingSet(CanMoveStr, true) --提前设置
 
