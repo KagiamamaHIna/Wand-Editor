@@ -15,7 +15,7 @@ function GUIUpdata()
             local function NewLine(str1, str2)
                 local text = GameTextGetTranslatedOrNot(str1)
 				local w = GuiGetTextDimensions(this.gui,text)
-                GuiLayoutBeginHorizontal(this.gui, 0, 0, true)
+                GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
 				GuiText(this.gui, 0, 0, text)--耗蓝
 				GuiText(this.gui, rightMargin - w, 0, str2)
 				GuiLayoutEnd(this.gui)
@@ -26,7 +26,7 @@ function GUIUpdata()
                 if num >= 0 then
                     result = "+" .. tostring(num)
                 else
-                    result = "-" .. tostring(num)
+                    result = tostring(num)
                 end
 				return result
 			end
@@ -39,9 +39,12 @@ function GUIUpdata()
             GuiText(this.gui, 0, 0, SpellTypeEnumToStr(idata.type))
 			
             GuiLayoutBeginVertical(this.gui, 0, 7, true) --垂直布局
-			
+
 			NewLine("$inventory_manadrain", tostring(idata.mana))--耗蓝
-            if idata.projComp and idata.projComp.damage ~= "0" then --如果有投射物伤害
+			if idata.max_uses and idata.max_uses ~= -1 then
+				NewLine("使用次数", tostring(idata.max_uses))--使用次数
+			end
+			if idata.projComp and idata.projComp.damage ~= "0" then --如果有投射物伤害
 				NewLine("$inventory_damage", tostring(tonumber(idata.projComp.damage) * 25))
 			end
 			
@@ -51,7 +54,7 @@ function GUIUpdata()
 			if idata.projExplosionRadius and idata.projExplosionRadius ~= 0 then --如果有爆炸半径
 				NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
 			end
-			if idata.projComp then
+            if idata.projComp then
                 for k, v in pairs(idata.projDmg) do --伤害参数
                     if v ~= 0 then
                         if k == "electricity" then
@@ -61,30 +64,32 @@ function GUIUpdata()
                         end
                     end
                 end
-				--散射(实在是看不出来哪里来的，先放着)
+                --散射(实在是看不出来哪里来的，先放着)
 
                 --速度
                 local speed_min = tonumber(idata.projComp.speed_min)
                 local speed_max = tonumber(idata.projComp.speed_max)
                 if (speed_min == speed_max) and speed_min ~= 0 and speed_max ~= 0 then
                     NewLine("$inventory_speed", tostring(speed_max))
-				elseif speed_min ~= 0 and speed_max ~= 0 then
+                elseif speed_min ~= 0 and speed_max ~= 0 then
                     NewLine("$inventory_speed", tostring(speed_min) .. "~" .. tostring(speed_max))
                 end
-				if idata.lifetime then
+                if idata.lifetime then
                     local randomness = tonumber(idata.projComp.lifetime_randomness)
-					if randomness ~= 0 then
-                        NewLine("存在时间", tostring(idata.lifetime - randomness) .. "~" .. tostring(idata.lifetime + randomness))
+                    if randomness ~= 0 then
+                        NewLine("存在时间",
+                            tostring(idata.lifetime - randomness) .. "f~" .. tostring(idata.lifetime + randomness).."f")
                     else
-						NewLine("存在时间", idata.lifetime)
-					end
-				end
-			end
+                        NewLine("存在时间", idata.lifetime.."f")
+                    end
+                end
+            end
+			local SecondWithSign = Compose(NumToWithSignStr, tonumber, FrToSecondStr)
             if idata.c.fire_rate_wait ~= 0 then--施放延迟
-                NewLine("$inventory_castdelay", NumToWithSignStr(idata.c.fire_rate_wait))
+                NewLine("$inventory_castdelay", SecondWithSign(idata.c.fire_rate_wait)  .. "s("..idata.c.fire_rate_wait.."f)" )
             end
             if idata.reload_time ~= 0 then --充能延迟
-                NewLine("$inventory_rechargetime", NumToWithSignStr(idata.reload_time))
+                NewLine("$inventory_rechargetime", SecondWithSign(idata.reload_time) .. "s("..idata.reload_time.."f)" )
             end
 			
 			GuiLayoutEnd(this.gui)
@@ -101,16 +106,10 @@ function GUIUpdata()
 			if not GameIsInventoryOpen() then
                 GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 				GuiZSetForNextWidget(this.gui, UI.GetZDeep())--设置深度，确保行为正确
-				UI.MoveImagePicker("MainButton", 40, 50, "法杖编辑器", "mods/wand_editor/files/gui/images/menu.png",
+				UI.MoveImagePicker("MainButton", 40, 50, 8, 0, "法杖编辑器", "mods/wand_editor/files/gui/images/menu.png",
 					function(x, y)
 						if MainButtonEnable then
-							--[[
-							UI.MoveImagePicker("MainButton2", x + 30, y, "测试文本1",
-								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
-							UI.MoveImagePicker("MainButton3", x + 60, y, "测试文本2",
-								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)
-							UI.MoveImagePicker("MainButton4", x + 90, y, "测试文本3",
-								"mods/wand_editor/files/gui/images/menu.png", nil, nil, nil, true)]]
+
 						end
 					end,
 					function(left_click, right_click, x, y, enable)
@@ -123,6 +122,7 @@ function GUIUpdata()
                             local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)]]
 						end
                         if enable then --开启状态
+                            local ZDeepest = UI.GetZDeep()
                             UI.ScrollContainer("TestScroll", 30, 60, 178, 170, nil, 0, 1.2)
                             for _, id in pairs(typelist[ACTION_TYPE_PROJECTILE]) do
                                 UI.SetZDeep(UI.GetZDeep() + 3)--设置深度，确保行为正确
@@ -130,14 +130,14 @@ function GUIUpdata()
                                 UI.AddScrollImageItem("TestScroll", sprite, function()                 --绘制容器
                                     GuiZSetForNextWidget(this.gui, UI.GetZDeep())
                                     UI.MoveImageButton("__SPELL_" .. id, 0, 2, sprite, nil, function() --绘制法术图标
-                                        if not hasMove then
+                                        if not hasMove then --法术悬浮窗绘制
                                             UI.tooltips(function()
                                                 DarwSpellText(this, id, spellData[id])
                                             end, UI.GetZDeep() - 12, 7)
                                         end
-                                    end, function(left_click, right_click, x, y) --左键点击
+                                    end, function(left_click, right_click, x, y) --点击效果
                                         local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
-                                        if left_click and shift then
+                                        if left_click and shift then --shift+左键
                                             local inventory_full = EntityGetChildWithName(GetPlayer(), "inventory_full")
                                             if inventory_full then
                                                 local px, py = GetPlayerXY()
@@ -146,7 +146,7 @@ function GUIUpdata()
                                                 EntityAddChild(inventory_full, spell)
                                                 GamePrint(GameTextGetTranslatedOrNot(spellData[id].name), "已添加到物品栏中")
                                             end
-                                        elseif left_click then
+                                        elseif left_click then --纯左键
                                             hasMove = true
                                             UI.TickEventFn["MoveSpellFn"] = function() --分离出一个事件，用于表示法术点击后的效果
                                                 local click = InputIsMouseButtonDown(Mouse_right)
@@ -157,9 +157,9 @@ function GUIUpdata()
                                                     return
                                                 end
                                                 --绘制悬浮图标
-                                                local status = UI.OnMoveImage("MoveSpell", x, y, sprite, nil, nil,
+                                                local status = UI.OnMoveImage("MoveSpell", x, y, sprite, nil, nil, ZDeepest-1,
                                                     function(movex, movey)
-                                                        GuiZSetForNextWidget(this.gui, UI.GetZDeep())
+                                                        GuiZSetForNextWidget(this.gui, ZDeepest)
                                                         GuiImage(this.gui, UI.NewID("MoveSpell_BG"), movex - 2,
                                                             movey - 2, "data/ui_gfx/inventory/item_bg_projectile.png", 1,
                                                             1) --绘制背景
@@ -172,7 +172,8 @@ function GUIUpdata()
                                                 end
                                             end
                                         end
-                                    end, nil, true)
+                                    end, nil, true)--最后两个参数是不始终调用点击回调和禁止移动
+
                                     --绘制背景，深度要控制好
                                     GuiZSetForNextWidget(this.gui, UI.GetZDeep() + 2)
                                     GuiImage(this.gui, UI.NewID("__SPELL_" .. id .. "_BG"), -20, 0,
@@ -184,31 +185,6 @@ function GUIUpdata()
                             end
 							GuiZSetForNextWidget(this.gui, UI.GetZDeep()+ 1)--设置深度，确保行为正确
 							UI.DrawScrollContainer("TestScroll")
-
-							--[[
-							GuiLayoutBeginLayer(this.gui)--先开启这个
-                            GuiBeginScrollContainer(this.gui, this.NewID("TestScroll"), 50, 80, 100, 100)--然后可滚动框
-
-                            GuiLayoutBeginVertical(this.gui, 0, 0, true)                                  --垂直自动分布
-							
-							GuiLayoutBeginHorizontal(this.gui, 0 , 0, true)--横向自动分布
-							GuiText(this.gui, 0, 0, "1919810")
-							GuiText(this.gui, 0, 0, "1919810")
-                            GuiText(this.gui, 0, 0, "1919810")
-							GuiText(this.gui, 0, 0, "1919810")
-							GuiText(this.gui, 0, 0, "1919810")
-                            GuiText(this.gui, 0, 0, "1919810")
-							GuiText(this.gui, 0, 0, "1919810")
-							GuiText(this.gui, 0, 0, "1919810")
-                            GuiText(this.gui, 0, 0, "1919810")
-							GuiText(this.gui, 0, 0, "1919810")
-							GuiText(this.gui, 0, 0, "1919810")
-                            GuiText(this.gui, 0, 0, "1919810")
-                            GuiLayoutEnd(this.gui)
-
-							GuiLayoutEnd(this.gui)
-							GuiEndScrollContainer(this.gui)
-							GuiLayoutEndLayer(this.gui)]]
 						end
                         if OnMoveImage then
 							--[[

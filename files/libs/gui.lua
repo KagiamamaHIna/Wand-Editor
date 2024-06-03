@@ -121,11 +121,12 @@ end
 ---@param isClose boolean
 ---@param image string
 ---@param scale number?
+---@param ZDeep number?
 ---@param AlwaysCallBack function?
 ---@return boolean|nil
 ---@return number|nil
 ---@return number|nil
-function UI.OnMoveImage(id, x, y, image, isClose, scale, AlwaysCallBack)
+function UI.OnMoveImage(id, x, y, image, isClose, scale, ZDeep, AlwaysCallBack)
 	isClose = Default(isClose, false)
 	scale = Default(scale, 1)
     local CanMoveStr = "on_move_" .. id
@@ -135,9 +136,14 @@ function UI.OnMoveImage(id, x, y, image, isClose, scale, AlwaysCallBack)
 	ModSettingSet(CanMoveStr, true) --提前设置
 
     local function imageButton(gui, numId, InputX, InputY)
-		this.private.ZDeep = this.private.ZDeep + 1
-		GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
-		GuiImage(gui, numId, InputX, InputY, image, 1, scale)
+		if ZDeep == nil then
+			this.private.ZDeep = this.private.ZDeep + 1
+			GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+            GuiImage(gui, numId, InputX, InputY, image, 1, scale)
+        else
+            GuiZSetForNextWidget(this.public.gui, ZDeep)
+			GuiImage(gui, numId, InputX, InputY, image, 1, scale)
+		end
 	end
 	local ResultX = x
 	local ResultY = y
@@ -155,13 +161,15 @@ end
 ---@param id string
 ---@param x number
 ---@param y number
+---@param mx number
+---@param my number
 ---@param Content string
 ---@param image string
 ---@param AlwaysCallBack function
 ---@param ClickCallBack function
 ---@param AlwaysCBClick boolean
 ---@return boolean
-function UI.MoveImagePicker(id, x, y, Content, image, AlwaysCallBack, ClickCallBack, AlwaysCBClick, noMove)
+function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, AlwaysCBClick, noMove)
 	local newid = ConcatModID(id)
 	if this.private.CompToPickerBool[newid] == nil then
 		this.private.CompToPickerBool[newid] = false
@@ -185,7 +193,7 @@ function UI.MoveImagePicker(id, x, y, Content, image, AlwaysCallBack, ClickCallB
                     GuiText(this.public.gui, 0, 0, "按住ctrl查阅更多信息")
                 end
             end
-        end, TheZ, 0, 0)
+        end, TheZ, mx, my)
     end
 	this.private.ZDeep = this.private.ZDeep + 1
     local function Click(left_click, right_click, ix, iy)
