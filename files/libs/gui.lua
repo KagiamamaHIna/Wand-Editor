@@ -423,8 +423,11 @@ function UI.DrawScrollContainer(id)
 				if v.CB then
 					v.CB()
 				end
-            else--重置
+            else --重置
                 RowCount = 1
+				if v.CB then
+					v.CB()
+				end
                 ElemWidth = 0
                 GuiLayoutEnd(this.public.gui)--结束这次绘制
 				GuiLayoutBeginHorizontal(this.public.gui, 0 , 0, true)--横向自动分布。开始下次绘制
