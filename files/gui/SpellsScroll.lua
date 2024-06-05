@@ -1,3 +1,5 @@
+dofile_once("mods/wand_editor/files/libs/fn.lua")
+dofile_once("data/scripts/gun/gun.lua")
 local GetPlayerXY = Compose(EntityGetTransform, GetPlayer)
 local hasMove = false --控制法术的Hover是否启用
 
@@ -11,7 +13,8 @@ local function DarwSpellText(this, id, idata)
 		local text = GameTextGetTranslatedOrNot(str1)
 		local w = GuiGetTextDimensions(this.gui,text)
 		GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
-		GuiText(this.gui, 0, 0, text)--耗蓝
+        GuiText(this.gui, 0, 0, text)
+		GuiRGBAColorSetForNextWidget(this.gui, 210, 180, 140, 255)
 		GuiText(this.gui, rightMargin - w, 0, str2)
 		GuiLayoutEnd(this.gui)
 	end
@@ -34,11 +37,16 @@ local function DarwSpellText(this, id, idata)
 	GuiText(this.gui, 0, 0, SpellTypeEnumToStr(idata.type))
 	
 	GuiLayoutBeginVertical(this.gui, 0, 7, true) --垂直布局
-
+    if idata.max_uses and idata.max_uses ~= -1 then
+        NewLine("使用次数", tostring(idata.max_uses)) --使用次数
+    end
+	
 	NewLine("$inventory_manadrain", tostring(idata.mana))--耗蓝
-	if idata.max_uses and idata.max_uses ~= -1 then
-		NewLine("使用次数", tostring(idata.max_uses))--使用次数
+
+	if idata.draw_actions and idata.draw_actions ~= 0 then
+		NewLine("抽取数", tostring(idata.draw_actions))
 	end
+
 	if idata.projComp and idata.projComp.damage ~= "0" then --如果有投射物伤害
 		NewLine("$inventory_damage", tostring(tonumber(idata.projComp.damage) * 25))
 	end
@@ -46,9 +54,14 @@ local function DarwSpellText(this, id, idata)
 	if idata.projExplosion and idata.projExplosion ~= 0 then --如果有爆炸伤害
 		NewLine("$inventory_dmg_explosion", tostring(math.floor(idata.projExplosion * 25)))
 	end
-	if idata.projExplosionRadius and idata.projExplosionRadius ~= 0 then --如果有爆炸半径
-		NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
+    if idata.projExplosionRadius and idata.projExplosionRadius ~= 0 then --如果有爆炸半径
+        NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
+    end
+	
+	if idata.shot.recoil_knockback ~= 0 then
+		NewLine("后坐力", tostring(idata.shot.recoil_knockback))
 	end
+
 	if idata.projComp then
 		for k, v in pairs(idata.projDmg) do --伤害参数
 			if v ~= 0 then
@@ -72,8 +85,7 @@ local function DarwSpellText(this, id, idata)
 		if idata.lifetime then
 			local randomness = tonumber(idata.projComp.lifetime_randomness)
 			if randomness ~= 0 then
-				NewLine("存在时间",
-					tostring(idata.lifetime - randomness) .. "f~" .. tostring(idata.lifetime + randomness).."f")
+				NewLine("存在时间", tostring(idata.lifetime - randomness) .. "f~" .. tostring(idata.lifetime + randomness).."f")
 			else
 				NewLine("存在时间", idata.lifetime.."f")
 			end
@@ -87,16 +99,85 @@ local function DarwSpellText(this, id, idata)
 		NewLine("$inventory_rechargetime", SecondWithSign(idata.reload_time) .. "s("..idata.reload_time.."f)" )
 	end
 	
+	if idata.c.damage_critical_chance ~= 0 then --暴击几率
+		NewLine("$inventory_mod_critchance", NumToWithSignStr(idata.c.damage_critical_chance) .. "%" )
+	end
+
+	if idata.c.spread_degrees ~= 0 then--散射修正
+		NewLine("$inventory_spread", NumToWithSignStr(idata.c.spread_degrees) .. "°" )
+	end
+
+	if idata.c.speed_multiplier ~= 1 then--投射物速度修正
+		NewLine("$inventory_mod_speed", "x "..tostring(idata.c.speed_multiplier))
+	end
+
+	if idata.c.bounces ~= 0 then --弹跳次数
+		NewLine("$inventory_mod_bounces", NumToWithSignStr(idata.c.bounces))
+	end
+
+	if idata.c.damage_projectile_add ~= 0 then--投射物伤害修正
+		NewLine("$inventory_mod_damage", NumToWithSignStr(idata.c.damage_projectile_add * 25))
+	end
+
+	if idata.c.damage_healing_add ~= 0 then--治疗伤害修正
+		NewLine("$inventory_mod_damage_healing", NumToWithSignStr(idata.c.damage_healing_add * 25))
+	end
+
+	if idata.c.damage_curse_add ~= 0 then--诅咒伤害修正
+		NewLine("$inventory_mod_damage_curse", NumToWithSignStr(idata.c.damage_curse_add * 25))
+	end
+
+	if idata.c.damage_explosion_add ~= 0 then--爆炸伤害修正
+		NewLine("$inventory_mod_damage_explosion", NumToWithSignStr(idata.c.damage_explosion_add * 25))
+	end
+
+	if idata.c.damage_slice_add ~= 0 then--切割伤害修正
+		NewLine("$inventory_mod_damage_slice", NumToWithSignStr(idata.c.damage_slice_add * 25))
+	end
+
+	if idata.c.damage_ice_add ~= 0 then--冰冻伤害修正
+		NewLine("$inventory_mod_damage_ice", NumToWithSignStr(idata.c.damage_ice_add * 25))
+	end
+
+	if idata.c.damage_melee_add ~= 0 then--近战伤害修正
+		NewLine("$inventory_mod_damage_melee", NumToWithSignStr(idata.c.damage_melee_add * 25))
+	end
+
+	if idata.c.damage_drill_add ~= 0 then--穿凿伤害修正
+		NewLine("$inventory_mod_damage_drill", NumToWithSignStr(idata.c.damage_drill_add * 25))
+	end
+
+	if idata.c.damage_fire_add ~= 0 then--火焰伤害修正
+		NewLine("$inventory_mod_damage_fire", NumToWithSignStr(idata.c.damage_fire_add * 25))
+	end
+
+	if idata.c.damage_electricity_add ~= 0 then--雷电伤害修正
+		NewLine("$inventory_mod_damage_electric", NumToWithSignStr(idata.c.damage_electricity_add * 25))
+	end
+
 	GuiLayoutEnd(this.gui)
 end
+
+local TypeBG = {
+	[ACTION_TYPE_PROJECTILE] = "data/ui_gfx/inventory/item_bg_projectile.png",
+	[ACTION_TYPE_STATIC_PROJECTILE] = "data/ui_gfx/inventory/item_bg_static_projectile.png",
+	[ACTION_TYPE_MODIFIER] = "data/ui_gfx/inventory/item_bg_modifier.png",
+	[ACTION_TYPE_DRAW_MANY] = "data/ui_gfx/inventory/item_bg_draw_many.png",
+	[ACTION_TYPE_MATERIAL] = "data/ui_gfx/inventory/item_bg_material.png",
+	[ACTION_TYPE_OTHER] = "data/ui_gfx/inventory/item_bg_other.png",
+	[ACTION_TYPE_UTILITY] = "data/ui_gfx/inventory/item_bg_utility.png",
+	[ACTION_TYPE_PASSIVE] = "data/ui_gfx/inventory/item_bg_passive.png"
+}
 
 ---用于绘制法术容器
 ---@param this table
 ---@param spellData table 法术数据
 ---@param spellTable table 法术列表
-function DrawSpellContainer(this, spellData, spellTable)
-	local ZDeepest = this.GetZDeep()
-	this.ScrollContainer("SpellsScroll", 30, 60, 178, 170, nil, 0, 1.3)
+---@param type integer|string
+function DrawSpellContainer(this, spellData, spellTable, type)
+    local ZDeepest = this.GetZDeep()
+	local ContainerName = "SpellsScroll"..tostring(type)
+	this.ScrollContainer(ContainerName, 30, 60, 178, 180, nil, 0, 1.3)
 	for _, id in pairs(spellTable) do
 		this.SetZDeep(this.GetZDeep() + 3)--设置深度，确保行为正确
 		local sprite = spellData[id].sprite
@@ -134,7 +215,7 @@ function DrawSpellContainer(this, spellData, spellTable)
 					local status = this.OnMoveImage("MoveSpell", x, y, sprite, nil, nil, ZDeepest-1,
 						function(movex, movey)
 							GuiZSetForNextWidget(this.gui, ZDeepest)
-							GuiImage(this.gui, this.NewID("MoveSpell_BG"), movex - 2, movey - 2, "data/ui_gfx/inventory/item_bg_projectile.png", 1, 1) --绘制背景
+							GuiImage(this.gui, this.NewID("MoveSpell_BG"), movex - 2, movey - 2, TypeBG[spellData[id].type], 1, 1) --绘制背景
 						end)
 					if not status then
 						this.TickEventFn["MoveSpellFn"] = nil
@@ -146,17 +227,17 @@ function DrawSpellContainer(this, spellData, spellTable)
 			end
 		end
 
-		this.AddScrollImageItem("SpellsScroll", sprite, function()--添加图片项目的回调绘制
+		this.AddScrollImageItem(ContainerName, sprite, function()--添加图片项目的回调绘制
 			GuiZSetForNextWidget(this.gui, this.GetZDeep())
 			this.MoveImageButton("__SPELL_" .. id, 0, 2, sprite, nil, SpellHover, SpellCilck, nil, true)--最后两个参数是不始终调用点击回调和禁止移动
 			--绘制法术背景，深度要控制好
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
 			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_BG"), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_SPELLBG"), -22, 0, "data/ui_gfx/inventory/item_bg_projectile.png", 1, 1)
+			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_SPELLBG"), -22, 0, TypeBG[spellData[id].type], 1, 1)
         end)
 		
 	end
 	GuiZSetForNextWidget(this.gui, this.GetZDeep()+ 1)--设置深度，确保行为正确
-	this.DrawScrollContainer("SpellsScroll")
+	this.DrawScrollContainer(ContainerName)
 end

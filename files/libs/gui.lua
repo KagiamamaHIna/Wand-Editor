@@ -9,7 +9,8 @@ local this = {
 		TileTick = {},   --计划刻
 		DestroyCallBack = {}, --销毁时的回调函数
 		destroy = false, --销毁状态
-		CompToID = {},   --组件转id
+        CompToID = {},   --组件转id
+		TextInputIDtoStr = {}, --输入框id转其文本
 		FirstEventFn = {}, --用于内部优先级最高的回调函数
 		NextFrNoClick = false,
 		NextFrClick = 0,
@@ -400,6 +401,7 @@ function UI.DrawScrollContainer(id)
 	local newid = ConcatModID(id)
 	if this.private.ScrollData[newid] then--如果有数据
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
+		GuiOptionsAddForNextWidget( this.gui, GUI_OPTION.ScrollContainer_Smooth )
         GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
 			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
@@ -440,6 +442,66 @@ function UI.DrawScrollContainer(id)
 		GuiEndScrollContainer(this.public.gui)
 		GuiLayoutEndLayer(this.public.gui)
 	end
+end
+
+---文本输入框
+---@param id string
+---@param x number
+---@param y number
+---@param w number
+---@param l number
+---@param str string? str=""
+---@return string
+function UI.TextInput(id, x, y, w, l, str)
+	str = Default(str, "")
+    local newid = ConcatModID(id)
+    if this.private.TextInputIDtoStr[newid] == nil then
+        this.private.TextInputIDtoStr[newid] = {s_str = str,str = str}
+    end
+    local newStr = GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l)
+	if this.private.TextInputIDtoStr[newid] ~= newStr then--如果新文本和旧文本不匹配，那么就重新设置
+        this.private.TextInputIDtoStr[newid].str = newStr
+    end
+    local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)--获得当前控件是否悬浮
+    if hover then
+        if this.private.TextInputIDtoStr[newid].DelFr == nil then --如果在悬浮，就分配一个帧检测时间
+            this.private.TextInputIDtoStr[newid].DelFr = 30
+        else
+            if InputIsKeyDown(Key_BACKSPACE) then --如果按了退格键
+                if this.private.TextInputIDtoStr[newid].DelFr ~= 0 then
+                    this.private.TextInputIDtoStr[newid].DelFr = this.private.TextInputIDtoStr[newid].DelFr - 1
+                else --如果到了0
+                    local input = this.private.TextInputIDtoStr[newid].str
+                    this.private.TextInputIDtoStr[newid].str = string.sub(input, 1, #input - 1)--删除字符
+                end
+            else
+                this.private.TextInputIDtoStr[newid].DelFr = 30 --如果不按退格键就重置时间
+            end
+        end
+    elseif this.private.TextInputIDtoStr[newid].DelFr then --如果未悬浮就设为空
+        this.private.TextInputIDtoStr[newid].DelFr = nil
+    end
+	
+	return this.private.TextInputIDtoStr[newid].str
+end
+
+---获取文本
+---@param id string
+---@return string|nil
+function UI.GetInputText(id)
+    local newid = ConcatModID(id)
+	if this.private.TextInputIDtoStr[newid] ~= nil then
+        return this.private.TextInputIDtoStr[newid].str
+    end
+end
+
+---恢复文本
+---@param id string
+function UI.TextInputRestore(id)
+	local newid = ConcatModID(id)
+    if this.private.TextInputIDtoStr[newid] ~= nil then
+        this.private.TextInputIDtoStr[newid].str = this.private.TextInputIDtoStr[newid].s_str
+    end
 end
 
 ---添加计划刻事件

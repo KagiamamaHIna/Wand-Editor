@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <stack>
 #include "pinyin.h"
 #include "lua.hpp"
 

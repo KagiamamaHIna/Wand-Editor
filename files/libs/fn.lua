@@ -120,6 +120,23 @@ function FrToSecondStr(num)
 	return result
 end
 
+---将[0,255]之间的整数转换成小数表示
+---@param num number
+---@return number
+function ColorToDecimal(num)
+    return num / 255
+end
+
+---不数小数，输入整数
+---@param gui userdata
+---@param red integer
+---@param green integer
+---@param blue integer
+---@param alpha integer
+function GuiRGBAColorSetForNextWidget(gui, red, green, blue, alpha)
+    GuiColorSetForNextWidget(gui, ColorToDecimal(red), ColorToDecimal(green), ColorToDecimal(blue), ColorToDecimal(alpha))
+end
+
 ---获得Storage组件和对应值
 ---@param entity integer EntityID
 ---@param VariableName string

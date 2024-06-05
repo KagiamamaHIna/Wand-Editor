@@ -146,7 +146,7 @@ local player = GetPlayer()
 EntityRemoveTag(player, "player_unit")
 
 local TypeToSpellList = {}
-
+TypeToSpellList.AllSpells = {}
 for _, v in pairs(actions) do
 	result[v.id] = {}
 	CurrentID = v.id
@@ -155,7 +155,7 @@ for _, v in pairs(actions) do
         TypeToSpellList[v.type] = {}
     end
     table.insert(TypeToSpellList[v.type], v.id)
-	
+	table.insert(TypeToSpellList.AllSpells, v.id)
 	result[v.id].name = v.name
 	result[v.id].description = v.description
 	result[v.id].sprite = v.sprite
