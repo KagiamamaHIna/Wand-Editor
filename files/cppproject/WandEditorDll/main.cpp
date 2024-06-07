@@ -9,6 +9,30 @@
 #include "LuaRatioStr.h"
 #include "lua.hpp"
 
+namespace lua {
+	int lua_UTF8StringSub(lua_State* L) {
+		pinyin::Utf8String s1 = pinyin::Utf8String(luaL_checkstring(L, 1));
+		int pos1 = luaL_checkinteger(L, 2)-1;
+		int pos2 = luaL_checkinteger(L, 3)-1;
+		if (pos1-1 > pos2) {
+			lua_pushstring(L, luaL_checkstring(L,1));
+			return 1;
+		}
+		std::string result = "";
+		for (int i = pos1; i < pos2; i++) {
+			result += s1[i];
+		}
+		lua_pushstring(L, result.c_str());
+		return 1;
+	}
+
+	int lua_UTF8StringSize(lua_State* L) {
+		pinyin::Utf8String s1 = pinyin::Utf8String(luaL_checkstring(L, 1));
+		lua_pushnumber(L, s1.size());
+		return 1;
+	}
+}
+
 //提供给lua的函数
 static luaL_Reg luaLibs[] = {
 	{ "CurrentPath", lua::lua_CurrentPath},
@@ -19,11 +43,15 @@ static luaL_Reg luaLibs[] = {
 	{ "PathExists", lua::lua_PathExists},
 	{ "CreateDir", lua::lua_CreateDir},
 
+	{ "UTF8StringSize", lua::lua_UTF8StringSize},
+	{ "UTF8StringSub", lua::lua_UTF8StringSub},
+
 	{ "OpenMonitorLoadLuaLib",lua::MonitorNoitaLuaLoad},
 	
-	{ "Ratio",lua::lua_Ratio},
-	{ "PartialRatio",lua::lua_PartialRatio},
+	{ "Ratio", lua::lua_Ratio},
+	{ "PartialRatio", lua::lua_PartialRatio},
 	{ "PinyinRatio", lua::lua_PinyinRatio},
+	{ "AbsPartialPinyinRatio", lua::lua_AbsPartialPinyinRatio},
 
 	{ NULL, NULL }
 };

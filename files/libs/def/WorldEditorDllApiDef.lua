@@ -13,15 +13,6 @@ function Cpp.GetDirectoryPath(path)end
 ---@return table
 function Cpp.GetDirectoryPathAll(path)end
 
----可以通过解析系统变量，返回一个绝对路径
----@param path string
----@return string
-function Cpp.GetAbsPath(path)end
-
----不知道该怎么描述
----@param address integer
-function Cpp.OpenMonitorLoadLuaLib(address)end
-
 ---返回路径下的文件名
 ---@param path string
 ---@return string
@@ -37,6 +28,15 @@ function Cpp.PathExists(path)end
 ---@return boolean
 function Cpp.CreateDir(path)end
 
+---可以通过解析系统变量，返回一个绝对路径
+---@param path string
+---@return string
+function Cpp.GetAbsPath(path)end
+
+---不知道该怎么描述
+---@param address integer
+function Cpp.OpenMonitorLoadLuaLib(address)end
+
 ---计算两个字符串的相似程度。区间[0,100]
 ---@param s1 string
 ---@param s2 string
@@ -49,8 +49,26 @@ function Cpp.Ratio(s1,s2)end
 ---@return number
 function Cpp.PartialRatio(s1,s2)end
 
----用于计算拼音匹配相似度。区间[0,100]，s1为输入的带中文的字符串，s2为输入的拼音字符串，s2不会进行转拼音匹配
+---用于计算拼音或原始字符串的匹配相似度。区间[0,100]，s1为输入的带中文的字符串，s2为输入的拼音字符串，s2不会进行转拼音匹配
 ---@param s1 string
 ---@param s2 string
 ---@return number
 function Cpp.PinyinRatio(s1,s2)end
+
+---用于计算拼音或原始字符串的匹配相似度。区间[0,100]，s1为输入的带中文的字符串，s2为输入的拼音字符串，s2不会进行转拼音匹配，如果s2为s1(或拼音)的子串，则返回值才会>0，否则是0，因此它返回值大于0都是绝对包含的
+---@param s1 string
+---@param s2 string
+---@return number
+function Cpp.AbsPartialPinyinRatio(s1,s2)end
+
+---返回utf8编码格式的字符串的长度
+---@param s1 string
+---@return integer
+function Cpp.UTF8StringSize(s1)end
+
+---类似string.sub，区别是根据utf8编码进行分割操作
+---@param str string
+---@param pos1 integer
+---@param pos2 integer
+---@return string
+function Cpp.UTF8StringSub(str,pos1,pos2)end

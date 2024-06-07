@@ -48,24 +48,26 @@ end
 
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
----@param z integer
----@param xOffset integer
----@param yOffset integer
-function UI.tooltips(callback, z, xOffset, yOffset)
+---@param z integer?
+---@param xOffset integer?
+---@param yOffset integer?
+---@param NoYAutoMove boolean?
+function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove)
 	local gui = this.public.gui
 	xOffset = Default(xOffset, 0)
-	yOffset = Default(yOffset, 0)
-	z = Default(z, -12)
+    yOffset = Default(yOffset, 0)
+	NoYAutoMove = Default(NoYAutoMove, false)
+	z = Default(z, this.private.ZDeep)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
 		GuiGetPreviousWidgetInfo(gui)
-	if draw_y > this.public.ScreenHeight * 0.5 then
+	if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
 		yOffset = yOffset - height
 	end
 
 	if hover then
 		GuiZSet(gui, z)
 		GuiLayoutBeginLayer(gui)
-		GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
+        GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
 		if callback ~= nil then callback() end
 		GuiZSetForNextWidget(gui, z + 1)
@@ -109,7 +111,7 @@ end
 ---@param noMove boolean?
 ---@return boolean
 function UI.MoveImageButton(id, x, y, image, AlwaysCallBack, HoverUseCallBack, ClickCallBack, AlwaysCBClick, noMove)
-	local function imageButton(gui, numId, InputX, InputY)
+    local function imageButton(gui, numId, InputX, InputY)
 		return GuiImageButton(gui, numId, InputX, InputY, "", image)
 	end
 	return UI.CanMove(id, x, y, imageButton, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, AlwaysCBClick, nil, noMove)
@@ -167,19 +169,20 @@ end
 ---@param my number
 ---@param Content string
 ---@param image string
----@param AlwaysCallBack function
----@param ClickCallBack function
+---@param AlwaysCallBack function?
+---@param ClickCallBack function?
+---@param OpenImage string?
 ---@param AlwaysCBClick boolean
 ---@return boolean
-function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, AlwaysCBClick, noMove)
+function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, AlwaysCBClick, noMove)
 	local newid = ConcatModID(id)
 	if this.private.CompToPickerBool[newid] == nil then
 		this.private.CompToPickerBool[newid] = false
 	end
 	if this.private.CompToPickerBool[newid] then
-		Content = "关闭" .. Content
+		Content = GameTextGetTranslatedOrNot("$wand_editor_picker_close") .. Content
 	else
-		Content = "开启" .. Content
+		Content = GameTextGetTranslatedOrNot("$wand_editor_picker_open") .. Content
 	end
 	local TheZ = this.private.ZDeep
     local function Hover()
@@ -189,24 +192,26 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
                 local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
                 if CTRL then
                     GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                    GuiText(this.public.gui, 0, 0, "这是可移动按钮，按shift+鼠标左键可以移动\n再点击一次鼠标左键确定位置\n鼠标右键重置位置")
+                    GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
                 else
                     GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                    GuiText(this.public.gui, 0, 0, "按住ctrl查阅更多信息")
+                    GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
                 end
             end
         end, TheZ, mx, my)
     end
-	this.private.ZDeep = this.private.ZDeep + 1
     local function Click(left_click, right_click, ix, iy)
         if ClickCallBack ~= nil then
             ClickCallBack(left_click, right_click, ix, iy, this.private.CompToPickerBool[newid]) --额外输入一个参数5，代表当前按钮启用状态
         end
         if left_click then
             this.private.CompToPickerBool[newid] = not this.private.CompToPickerBool[newid]
+			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
         end
     end
-	GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+	if OpenImage and this.private.CompToPickerBool[newid] then
+		image = OpenImage
+	end
     local result = { UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, AlwaysCBClick, noMove) }
 	return  unpack(result)
 end
@@ -318,13 +323,15 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 	return ModSettingGet(CanMoveStr)
 end
 
-function UI.ScrollContainer(id, x, y, w, h, margin_x, margin_y,scale)
+function UI.ScrollContainer(id, x, y, w, h, margin_x, margin_y, scale)
 	margin_x = Default(margin_x, 2)
-	margin_y = Default(margin_y, 2)
+    margin_y = Default(margin_y, 2)
+	scale = Default(scale, 1)
 	local newid = ConcatModID(id)
 	if this.private.ScrollData[newid] == nil then--判断是否有数据
         this.private.ScrollData[newid] = { id = id, x = x, y = y, w = w, h = h, margin_x = margin_x, margin_y = margin_y,scale = scale }--初始化数据
         this.private.ScrollData[newid].Item = {}
+		this.private.ScrollData[newid].Any = {}
 	end
 end
 
@@ -355,6 +362,16 @@ function UI.SetScrollContainer(id, x, y, w, h, margin_x, margin_y)
 		if margin_y then
 			this.private.ScrollData[newid].margin_y = margin_y
 		end
+	end
+end
+
+---为一个指定id的Scroll控件添加任意位置的项目
+---@param id string
+---@param callback function
+function UI.AddAnywhereItem(id, callback)
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+		table.insert(this.private.ScrollData[newid].Any, callback)
 	end
 end
 
@@ -405,7 +422,11 @@ function UI.DrawScrollContainer(id)
         GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
 			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
-		)
+        )
+		for _,v in pairs(this.private.ScrollData[newid].Any)do
+			v()
+		end
+
         GuiLayoutBeginVertical(this.public.gui, 0, 0, true) --垂直布局
 		if this.private.ScrollData[newid].f then
 			this.private.ScrollData[newid].f()
@@ -459,7 +480,7 @@ function UI.TextInput(id, x, y, w, l, str)
         this.private.TextInputIDtoStr[newid] = {s_str = str,str = str}
     end
     local newStr = GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l)
-	if this.private.TextInputIDtoStr[newid] ~= newStr then--如果新文本和旧文本不匹配，那么就重新设置
+	if this.private.TextInputIDtoStr[newid] ~= newStr and this.private.TextInputIDtoStr[newid].DelFr ~= 0 then--如果新文本和旧文本不匹配，那么就重新设置
         this.private.TextInputIDtoStr[newid].str = newStr
     end
     local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)--获得当前控件是否悬浮
@@ -472,7 +493,7 @@ function UI.TextInput(id, x, y, w, l, str)
                     this.private.TextInputIDtoStr[newid].DelFr = this.private.TextInputIDtoStr[newid].DelFr - 1
                 else --如果到了0
                     local input = this.private.TextInputIDtoStr[newid].str
-                    this.private.TextInputIDtoStr[newid].str = string.sub(input, 1, #input - 1)--删除字符
+                    this.private.TextInputIDtoStr[newid].str = Cpp.UTF8StringSub(input, 1, Cpp.UTF8StringSize(input) - 1)--删除字符
                 end
             else
                 this.private.TextInputIDtoStr[newid].DelFr = 30 --如果不按退格键就重置时间
@@ -502,6 +523,60 @@ function UI.TextInputRestore(id)
     if this.private.TextInputIDtoStr[newid] ~= nil then
         this.private.TextInputIDtoStr[newid].str = this.private.TextInputIDtoStr[newid].s_str
     end
+end
+
+function UI.GetCheckboxEnable(id)
+    local newid = ConcatModID(id)
+    local CheckboxEnableKey = newid .. "_enabled"
+	return ModSettingGet(CheckboxEnableKey)
+end
+
+---checkbox
+---@param id string
+---@param x number
+---@param y number
+---@param text string
+---@param RightOrLeft boolean? RightOrLeft = true 默认右
+---@param HoverUseCallBack function?
+---@param TextHoverUse function?
+---@param StatusCallBack function?
+function UI.checkbox(id, x, y, text, RightOrLeft, HoverUseCallBack, TextHoverUse, StatusCallBack)
+    local newid = ConcatModID(id)
+	RightOrLeft = Default(RightOrLeft, true)
+    local CheckboxEnableKey = newid .. "_enabled"
+	local Margin = 10
+    local TextX = x + Margin
+    if not RightOrLeft then
+        local w = GuiGetTextDimensions(this.public.gui, text)
+        TextX = x - w - 2
+    end
+    local checkboxImage
+	if ModSettingGet(CheckboxEnableKey) then
+        checkboxImage = "mods/wand_editor/files/gui/images/checkbox_fill.png"
+    elseif ModSettingGet(CheckboxEnableKey) == nil then--初始化
+		ModSettingSet(CheckboxEnableKey,false)
+        checkboxImage = "mods/wand_editor/files/gui/images/checkbox.png"
+    else
+		checkboxImage = "mods/wand_editor/files/gui/images/checkbox.png"
+	end
+    local left_click = GuiImageButton(this.public.gui, UI.NewID(id), x, y, "", checkboxImage)
+	if HoverUseCallBack ~= nil then
+		HoverUseCallBack(x, y)
+	end
+    if left_click then --如果点击了
+        GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+        ModSettingSet(CheckboxEnableKey, not ModSettingGet(CheckboxEnableKey))
+    end
+    local status = ModSettingGet(CheckboxEnableKey)
+	GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.NoSound)
+	GuiButton(this.public.gui,UI.NewID(id.."TEXT"), TextX, y - 1, text) --绘制文本
+
+	if TextHoverUse ~= nil then
+		TextHoverUse(TextX, y)
+	end
+	if StatusCallBack ~= nil then
+		StatusCallBack(status)
+	end
 end
 
 ---添加计划刻事件
@@ -542,7 +617,7 @@ function UI.DispatchMessage()
 
 	local max = table.maxn(this.private.TileTick)
 	if max >= 0 then
-		for i = max, -1 do
+		for i = max, 1, -1 do
 			local fn = this.private.TileTick[i]
 			if type(fn) == "function" then
 				fn(UI)

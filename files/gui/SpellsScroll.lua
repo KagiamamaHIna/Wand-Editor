@@ -1,7 +1,97 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
-dofile_once("data/scripts/gun/gun.lua")
+dofile_once("data/scripts/gun/gun_enums.lua")
 local GetPlayerXY = Compose(EntityGetTransform, GetPlayer)
 local hasMove = false --控制法术的Hover是否启用
+
+local LastSearch = ""--上一次的搜索记录，用于确认是否改变了搜索内容
+local LastList--上一次的列表，缓存的数据
+local LastType        --上一次的类型，用于判断是否需要重新搜索
+local LastFn          --上一次调用的匹配函数，用于判断设置是否更改
+local LastRatioMinScore --上一次的匹配分数，用于判断设置是否更改
+
+local UesSearchRatio = Cpp.AbsPartialPinyinRatio
+if ModSettingGet("wand_editor_RatioMinScore") == nil then
+	ModSettingSet("wand_editor_RatioMinScore", 60)
+end
+local RatioMinScore = ModSettingGet("wand_editor_RatioMinScore")
+
+function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
+    local SearchSettingFn = function(_, _, posX, posY, SettingEnable)
+        if SettingEnable then
+            this.ScrollContainer("SearchSettingSrcoll", posX - 20, posY + 16, 180, 30, nil, 0)--绘制一个框
+            this.AddAnywhereItem("SearchSettingSrcoll", function()
+                this.checkbox("SearchMode", 0, 2, GameTextGetTranslatedOrNot("$wand_editor_search_fuzzy_setting"), nil,--一个checkbox，用于设置方面的选项
+                    nil, function()
+                    this.tooltips(function()
+                        GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_fuzzy_setting_info"))
+                    end)
+                end)
+            end)
+            this.AddAnywhereItem("SearchSettingSrcoll", function()
+                ModSettingSet("wand_editor_RatioMinScore",
+                    GuiSlider(this.gui, this.NewID("FuzzySlider"), 0, 15,
+                        GameTextGetTranslatedOrNot("$wand_editor_search_fuzzy_score_min_info"),
+                        ModSettingGet("wand_editor_RatioMinScore"), 0, 99, 60, 1, "", 80))
+            end)
+            this.DrawScrollContainer("SearchSettingSrcoll")
+        end
+    end
+	if this.GetCheckboxEnable("SearchMode") then--设置搜索函数
+        UesSearchRatio = Cpp.PinyinRatio
+		RatioMinScore = ModSettingGet("wand_editor_RatioMinScore")
+    else
+        UesSearchRatio = Cpp.AbsPartialPinyinRatio
+		RatioMinScore = 0
+	end
+	this.MoveImagePicker("SearchSetting", 50, 245, 5, 0, GameTextGetTranslatedOrNot("$wand_editor_search_setting"), "mods/wand_editor/files/gui/images/button_fold_open.png", nil, SearchSettingFn, "mods/wand_editor/files/gui/images/button_fold_close.png", nil, true)
+
+	GuiZSetForNextWidget(this.gui, this.GetZDeep()+114514)--不要再覆盖啦！
+    local Search = this.TextInput("input", 63, 245, 123, 26)
+	local _,_, hover = GuiGetPreviousWidgetInfo(this.gui)
+    if hover and InputIsMouseButtonDown(Mouse_right) then
+		this.TextInputRestore("input")
+	end
+	this.tooltips(function ()
+		GuiText(this.gui,0,0,GameTextGetTranslatedOrNot("$wand_editor_search_info"))
+    end, nil, 8, 16)
+    local DrawSpellList = TypeToSpellList[SpellDrawType]
+	--当搜索内容不为空且上一次搜索内容不等于现在的输入内容，或类型变化时搜索，或匹配分数变化时搜索，或搜索方式函数变化时搜索
+    if (Search ~= "" and LastSearch ~= Search) or LastType ~= SpellDrawType or LastFn ~= UesSearchRatio or LastRatioMinScore ~= RatioMinScore then
+        LastSearch = Search
+		LastType = SpellDrawType
+        local ScoreToSpellID = {}
+        local ScoreList = {}
+        local HasScore = {}
+        for _, v in pairs(DrawSpellList) do
+            local score = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), string.lower(Search))--大小写不敏感
+            if ScoreToSpellID[score] == nil then
+                ScoreToSpellID[score] = {}
+            end
+            table.insert(ScoreToSpellID[score], v)
+            if HasScore[score] == nil then
+                table.insert(ScoreList, score)
+                HasScore[score] = true
+            end
+        end
+        table.sort(ScoreList)
+        DrawSpellList = {}
+        for i = #ScoreList, 1, -1 do
+            if ScoreList[i] > RatioMinScore then --匹配度超过60就进入结果中
+                for _, v in pairs(ScoreToSpellID[ScoreList[i]]) do
+                    table.insert(DrawSpellList, v)
+                end
+            else
+                break
+            end
+        end
+        LastList = DrawSpellList
+        LastFn = UesSearchRatio
+		LastRatioMinScore = RatioMinScore
+    elseif LastSearch == Search and LastType == SpellDrawType and Search ~= "" then
+        DrawSpellList = LastList
+    end
+	return DrawSpellList
+end
 
 ---用于绘制法杖文本
 ---@param this table
@@ -38,13 +128,13 @@ local function DarwSpellText(this, id, idata)
 	
 	GuiLayoutBeginVertical(this.gui, 0, 7, true) --垂直布局
     if idata.max_uses and idata.max_uses ~= -1 then
-        NewLine("使用次数", tostring(idata.max_uses)) --使用次数
+        NewLine("$wand_editor_max_uses", tostring(idata.max_uses)) --使用次数
     end
 	
 	NewLine("$inventory_manadrain", tostring(idata.mana))--耗蓝
 
 	if idata.draw_actions and idata.draw_actions ~= 0 then
-		NewLine("抽取数", tostring(idata.draw_actions))
+		NewLine("$wand_editor_draw_many", tostring(idata.draw_actions))
 	end
 
 	if idata.projComp and idata.projComp.damage ~= "0" then --如果有投射物伤害
@@ -59,7 +149,7 @@ local function DarwSpellText(this, id, idata)
     end
 	
 	if idata.shot.recoil_knockback ~= 0 then
-		NewLine("后坐力", tostring(idata.shot.recoil_knockback))
+		NewLine("$wand_editor_recoil_knockback", tostring(idata.shot.recoil_knockback))
 	end
 
 	if idata.projComp then
@@ -80,14 +170,14 @@ local function DarwSpellText(this, id, idata)
 		if (speed_min == speed_max) and speed_min ~= 0 and speed_max ~= 0 then
 			NewLine("$inventory_speed", tostring(speed_max))
 		elseif speed_min ~= 0 and speed_max ~= 0 then
-			NewLine("$inventory_speed", tostring(speed_min) .. "~" .. tostring(speed_max))
+			NewLine("$inventory_speed", tostring(speed_min) .. GameTextGetTranslatedOrNot("$wand_editor_to") .. tostring(speed_max))
 		end
 		if idata.lifetime then
 			local randomness = tonumber(idata.projComp.lifetime_randomness)
 			if randomness ~= 0 then
-				NewLine("存在时间", tostring(idata.lifetime - randomness) .. "f~" .. tostring(idata.lifetime + randomness).."f")
+				NewLine("$wand_editor_lifetime", tostring(idata.lifetime - randomness) .. "f".. GameTextGetTranslatedOrNot("$wand_editor_to") .. tostring(idata.lifetime + randomness).."f")
 			else
-				NewLine("存在时间", idata.lifetime.."f")
+				NewLine("$wand_editor_lifetime", idata.lifetime.."f")
 			end
 		end
 	end
@@ -104,7 +194,7 @@ local function DarwSpellText(this, id, idata)
 	end
 
 	if idata.c.spread_degrees ~= 0 then--散射修正
-		NewLine("$inventory_spread", NumToWithSignStr(idata.c.spread_degrees) .. "°" )
+		NewLine("$inventory_spread", NumToWithSignStr(idata.c.spread_degrees) .. GameTextGetTranslatedOrNot("$wand_editor_deg") )
 	end
 
 	if idata.c.speed_multiplier ~= 1 then--投射物速度修正
@@ -199,19 +289,19 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 					local spell = CreateItemActionEntity(id, px, py)
 					EntitySetComponentsWithTagEnabled(spell, "enabled_in_world", false)
 					EntityAddChild(inventory_full, spell)
-					GamePrint(GameTextGetTranslatedOrNot(spellData[id].name), "已添加到物品栏中")
+					GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),GameTextGetTranslatedOrNot("$wand_editor_added_spell"))
 				end
 			elseif left_click then --纯左键
 				hasMove = true
 				this.TickEventFn["MoveSpellFn"] = function() --分离出一个事件，用于表示法术点击后的效果
 					local click = InputIsMouseButtonDown(Mouse_right)
-					if click then                          --右键取消
+					if click or GameIsInventoryOpen() then                          --右键取消，或打开物品栏取消
 						this.OnMoveImage("MoveSpell", x, y, sprite, true)
 						this.TickEventFn["MoveSpellFn"] = nil
 						hasMove = false
 						return
 					end
-					--绘制悬浮图标
+                    --绘制悬浮图标
 					local status = this.OnMoveImage("MoveSpell", x, y, sprite, nil, nil, ZDeepest-1,
 						function(movex, movey)
 							GuiZSetForNextWidget(this.gui, ZDeepest)
@@ -220,7 +310,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 					if not status then
 						this.TickEventFn["MoveSpellFn"] = nil
 						local worldx, worldy = DEBUG_GetMouseWorld()
-						CreateItemActionEntity(id, worldx, worldy)
+						CreateItemActionEntity(id, worldx, worldy+5)
 						hasMove = false
 					end
 				end
@@ -228,7 +318,8 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		end
 
 		this.AddScrollImageItem(ContainerName, sprite, function()--添加图片项目的回调绘制
-			GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+			GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)--让法术摇摆
 			this.MoveImageButton("__SPELL_" .. id, 0, 2, sprite, nil, SpellHover, SpellCilck, nil, true)--最后两个参数是不始终调用点击回调和禁止移动
 			--绘制法术背景，深度要控制好
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
