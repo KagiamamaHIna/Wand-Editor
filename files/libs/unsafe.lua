@@ -18,9 +18,11 @@ SavePath = Cpp.GetAbsPath(SavePath)
 ---@return string
 function ReadFileAll(path)
     local resultCache = {}
+	local cacheCount = 1
     for v in io.lines(path) do
-        table.insert(resultCache, v)
-        table.insert(resultCache,'\n')
+        resultCache[cacheCount] = v
+        resultCache[cacheCount + 1] = '\n'
+        cacheCount = cacheCount + 2
     end
     return table.concat(resultCache)
 end

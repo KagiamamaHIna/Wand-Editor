@@ -144,17 +144,23 @@ end
 local player = GetPlayer()
 EntityRemoveTag(player, "player_unit")
 
+local TypeToSpellListCount = {}
+
 local TypeToSpellList = {}
 TypeToSpellList.AllSpells = {}
-for _, v in pairs(actions) do
+for k, v in pairs(actions) do
 	result[v.id] = {}
 	CurrentID = v.id
     result[v.id].type = v.type
     if TypeToSpellList[v.type] == nil then
         TypeToSpellList[v.type] = {}
     end
-    table.insert(TypeToSpellList[v.type], v.id)
-	table.insert(TypeToSpellList.AllSpells, v.id)
+    if TypeToSpellListCount[v.type] == nil then
+        TypeToSpellListCount[v.type] = 1
+    end--性能优化策略
+    TypeToSpellList[v.type][TypeToSpellListCount[v.type]] = v.id
+	TypeToSpellListCount[v.type] = TypeToSpellListCount[v.type] + 1
+	TypeToSpellList.AllSpells[k] = v.id
 	result[v.id].name = v.name
 	result[v.id].description = v.description
 	result[v.id].sprite = v.sprite
@@ -185,11 +191,11 @@ local file = io.open("mods/wand_editor/cache/ModEnable.lua", "w") --将模组启
 file:write("return {\n" .. SerializeTable(ModIdToEnable, "") .. "}")
 file:close()
 
-local file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓存写入文件
+file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓存写入文件
 file:write("return {\n" .. SerializeTable(result, "") .. "}")
 file:close()
 
-local file = io.open("mods/wand_editor/cache/TypeToSpellList.lua", "w") --法术缓存写入文件
+file = io.open("mods/wand_editor/cache/TypeToSpellList.lua", "w") --法术缓存写入文件
 file:write("return {\n" .. SerializeTable(TypeToSpellList, "") .. "}")
 file:close()
 

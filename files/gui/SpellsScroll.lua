@@ -8,12 +8,26 @@ local LastList--上一次的列表，缓存的数据
 local LastType        --上一次的类型，用于判断是否需要重新搜索
 local LastFn          --上一次调用的匹配函数，用于判断设置是否更改
 local LastRatioMinScore --上一次的匹配分数，用于判断设置是否更改
+local LastIDSearchMode  --上一次的是否启用id搜索模式，用于判断设置是否更改
+
+local IsFavorite = false
+local FavoriteTable
+local HasFavorite
+if ModSettingGet("wand_editor_FavoriteTable") == nil then
+    ModSettingSet("wand_editor_FavoriteTable", "return {}")
+end
+if ModSettingGet("wand_editor_HasFavorite") == nil then
+	ModSettingSet("wand_editor_HasFavorite","return {}")
+end
+FavoriteTable = loadstring(ModSettingGet("wand_editor_FavoriteTable"))()
+HasFavorite = loadstring(ModSettingGet("wand_editor_HasFavorite"))()
 
 local UesSearchRatio = Cpp.AbsPartialPinyinRatio
 if ModSettingGet("wand_editor_RatioMinScore") == nil then
 	ModSettingSet("wand_editor_RatioMinScore", 60)
 end
 local RatioMinScore = ModSettingGet("wand_editor_RatioMinScore")
+local IDSearchMode = false
 
 function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     local SearchSettingFn = function(_, _, posX, posY, SettingEnable)
@@ -24,24 +38,40 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
                     nil, function()
                     this.tooltips(function()
                         GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_fuzzy_setting_info"))
-                    end)
+                    end,this.GetZDeep()-114514)
                 end)
             end)
             this.AddAnywhereItem("SearchSettingSrcoll", function()
-                ModSettingSet("wand_editor_RatioMinScore",
+                this.checkbox("IdMode", 85, 2, GameTextGetTranslatedOrNot("$wand_editor_search_id_setting"), nil,--一个checkbox，用于设置方面的选项
+                    nil, function()
+                    this.tooltips(function()
+                        GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_id_setting_info"))
+                    end,this.GetZDeep()-114514)
+                end)
+            end)
+            this.AddAnywhereItem("SearchSettingSrcoll", function()
+				GuiZSetForNextWidget(this.gui, this.GetZDeep()-3)--不要再覆盖啦！
+                ModSettingSet("wand_editor_RatioMinScore",--参数二即为要设置的值
                     GuiSlider(this.gui, this.NewID("FuzzySlider"), 0, 15,
                         GameTextGetTranslatedOrNot("$wand_editor_search_fuzzy_score_min_info"),
                         ModSettingGet("wand_editor_RatioMinScore"), 0, 99, 60, 1, "", 80))
+				GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
             end)
+
             this.DrawScrollContainer("SearchSettingSrcoll")
         end
     end
-	if this.GetCheckboxEnable("SearchMode") then--设置搜索函数
+    if this.GetCheckboxEnable("SearchMode") then --如果处于启用状态那么设置搜索函数
         UesSearchRatio = Cpp.PinyinRatio
-		RatioMinScore = ModSettingGet("wand_editor_RatioMinScore")
-    else
+        RatioMinScore = ModSettingGet("wand_editor_RatioMinScore")
+    else --因为另一种搜索规则如果大于0那么就是绝对相关的，因此就RatioMinScore设为0就行
         UesSearchRatio = Cpp.AbsPartialPinyinRatio
-		RatioMinScore = 0
+        RatioMinScore = 0
+    end
+	if this.GetCheckboxEnable("IdMode") then--如果处于启用状态那么设置ID搜索模式
+		IDSearchMode = true
+    else
+		IDSearchMode = false
 	end
 	this.MoveImagePicker("SearchSetting", 50, 245, 5, 0, GameTextGetTranslatedOrNot("$wand_editor_search_setting"), "mods/wand_editor/files/gui/images/button_fold_open.png", nil, SearchSettingFn, "mods/wand_editor/files/gui/images/button_fold_close.png", nil, true)
 
@@ -54,39 +84,66 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	this.tooltips(function ()
 		GuiText(this.gui,0,0,GameTextGetTranslatedOrNot("$wand_editor_search_info"))
     end, nil, 8, 16)
-    local DrawSpellList = TypeToSpellList[SpellDrawType]
-	--当搜索内容不为空且上一次搜索内容不等于现在的输入内容，或类型变化时搜索，或匹配分数变化时搜索，或搜索方式函数变化时搜索
-    if (Search ~= "" and LastSearch ~= Search) or LastType ~= SpellDrawType or LastFn ~= UesSearchRatio or LastRatioMinScore ~= RatioMinScore then
+	local DrawSpellList
+	if SpellDrawType ~= "favorite" then
+        DrawSpellList = TypeToSpellList[SpellDrawType]
+		IsFavorite = false
+    else--特判
+        DrawSpellList = FavoriteTable
+		IsFavorite = true
+	end
+	--当搜索内容不为空且上一次搜索内容不等于现在的输入内容，或类型变化时搜索，或匹配分数变化时搜索，或搜索方式函数变化时搜索，或id搜索模式变化时搜索
+    if (Search ~= "" and LastSearch ~= Search) or LastType ~= SpellDrawType or LastFn ~= UesSearchRatio or LastRatioMinScore ~= RatioMinScore or LastIDSearchMode ~= IDSearchMode then
         LastSearch = Search
 		LastType = SpellDrawType
         local ScoreToSpellID = {}
+		local ScoreToSpellIDCount = {}--带有Count的(计数器)的变量代码均为性能优化，用于取代table.insert
         local ScoreList = {}
+		local ScoreListCount = 1
         local HasScore = {}
-        for _, v in pairs(DrawSpellList) do
-            local score = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), string.lower(Search))--大小写不敏感
+        for _, v in pairs(DrawSpellList) do --循环计算匹配程度
+            if spellData[v] == nil then
+                goto continue
+            end
+            local searchText
+            if IDSearchMode then
+                searchText = v
+            else
+                searchText = GameTextGetTranslatedOrNot(spellData[v].name)
+            end
+
+            local score = UesSearchRatio(string.lower(searchText), string.lower(Search)) --大小写不敏感
             if ScoreToSpellID[score] == nil then
                 ScoreToSpellID[score] = {}
+                ScoreToSpellIDCount[score] = 1
             end
-            table.insert(ScoreToSpellID[score], v)
+            ScoreToSpellID[score][ScoreToSpellIDCount[score]] = v
+            ScoreToSpellIDCount[score] = ScoreToSpellIDCount[score] + 1
             if HasScore[score] == nil then
-                table.insert(ScoreList, score)
+                ScoreList[ScoreListCount] = score
+                ScoreListCount = ScoreListCount + 1
                 HasScore[score] = true
             end
+            ::continue::
         end
+		--接下来进行排序
         table.sort(ScoreList)
         DrawSpellList = {}
+		local DrawSpellListCount = 1
         for i = #ScoreList, 1, -1 do
-            if ScoreList[i] > RatioMinScore then --匹配度超过60就进入结果中
+            if ScoreList[i] > RatioMinScore then
                 for _, v in pairs(ScoreToSpellID[ScoreList[i]]) do
-                    table.insert(DrawSpellList, v)
+					DrawSpellList[DrawSpellListCount] = v
+					DrawSpellListCount = DrawSpellListCount + 1
                 end
-            else
+            else--如果有不符合条件的，这意味着之后的也都不符合，所以直接退出循环
                 break
             end
         end
         LastList = DrawSpellList
         LastFn = UesSearchRatio
-		LastRatioMinScore = RatioMinScore
+        LastRatioMinScore = RatioMinScore
+		LastIDSearchMode = IDSearchMode
     elseif LastSearch == Search and LastType == SpellDrawType and Search ~= "" then
         DrawSpellList = LastList
     end
@@ -268,7 +325,10 @@ function DrawSpellContainer(this, spellData, spellTable, type)
     local ZDeepest = this.GetZDeep()
 	local ContainerName = "SpellsScroll"..tostring(type)
 	this.ScrollContainer(ContainerName, 30, 60, 178, 180, nil, 0, 1.3)
-	for _, id in pairs(spellTable) do
+    for pos, id in pairs(spellTable) do
+		if spellData[id] == nil then
+			goto continue
+		end
 		this.SetZDeep(this.GetZDeep() + 3)--设置深度，确保行为正确
 		local sprite = spellData[id].sprite
 
@@ -276,20 +336,43 @@ function DrawSpellContainer(this, spellData, spellTable, type)
             if not hasMove then --法术悬浮窗绘制
                 this.tooltips(function()
                     DarwSpellText(this, id, spellData[id])
-                end, this.GetZDeep() - 12, 7)
+                end, this.GetZDeep() - 114514, 7)
             end
         end
 		
 		local SpellCilck = function(left_click, right_click, x, y) --法术点击效果
-			local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
+            local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
+			local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
 			if left_click and shift then --shift+左键
 				local inventory_full = EntityGetChildWithName(GetPlayer(), "inventory_full")
-				if inventory_full then
-					local px, py = GetPlayerXY()
-					local spell = CreateItemActionEntity(id, px, py)
-					EntitySetComponentsWithTagEnabled(spell, "enabled_in_world", false)
-					EntityAddChild(inventory_full, spell)
-					GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),GameTextGetTranslatedOrNot("$wand_editor_added_spell"))
+                if inventory_full then
+                    local px, py = GetPlayerXY()
+                    local spell = CreateItemActionEntity(id, px, py)
+                    EntitySetComponentsWithTagEnabled(spell, "enabled_in_world", false)
+                    EntityAddChild(inventory_full, spell)
+                    GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
+                        GameTextGetTranslatedOrNot("$wand_editor_added_spell"))
+                end
+            elseif left_click and CTRL then--ctrl+左键收藏/删除法术
+				if IsFavorite then
+                    HasFavorite[id] = nil
+                    table.remove(FavoriteTable, pos)
+					GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
+						GameTextGetTranslatedOrNot("$wand_editor_remove_favorite"))
+					ModSettingSet("wand_editor_FavoriteTable", "return {" .. SerializeTable(FavoriteTable) .. "}")
+					ModSettingSet("wand_editor_HasFavorite", "return {" .. SerializeTable(HasFavorite) .. "}")
+                else
+					if HasFavorite[id] == nil then
+                        table.insert(FavoriteTable, 1, id)
+						HasFavorite[id] = true
+						GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
+							GameTextGetTranslatedOrNot("$wand_editor_added_favorite_spell"))
+                        ModSettingSet("wand_editor_FavoriteTable", "return {" .. SerializeTable(FavoriteTable) .. "}")
+						ModSettingSet("wand_editor_HasFavorite", "return {" .. SerializeTable(HasFavorite) .. "}")
+                    else
+						GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
+							GameTextGetTranslatedOrNot("$wand_editor_added_favorite_Already"))
+					end
 				end
 			elseif left_click then --纯左键
 				hasMove = true
@@ -327,7 +410,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
 			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_SPELLBG"), -22, 0, TypeBG[spellData[id].type], 1, 1)
         end)
-		
+		::continue::
 	end
 	GuiZSetForNextWidget(this.gui, this.GetZDeep()+ 1)--设置深度，确保行为正确
 	this.DrawScrollContainer(ContainerName)

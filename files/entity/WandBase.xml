@@ -2,7 +2,8 @@
 
     <Base file="data/entities/base_item.xml">
         <SpriteComponent 
-            next_rect_animation="JobAbilityMachinegun" >
+            next_rect_animation=""
+			rect_animation="default" >
         </SpriteComponent>
 
         <ItemComponent
@@ -55,5 +56,5 @@
     <ManaReloaderComponent
         _tags="enabled_in_world,enabled_in_hand,enabled_in_inventory" >
     </ManaReloaderComponent>
-    
+
 </Entity>

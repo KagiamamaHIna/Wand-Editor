@@ -6,9 +6,11 @@ local noita_print = print
 ---重新实现来模拟正确的print行为
 ---@param ... any
 print = function(...)
-	local cache = {}
-	for _, v in pairs({ ... }) do
-		table.insert(cache, tostring(v))
+    local cache = {}
+	local cacheCount = 1
+    for _, v in pairs({ ... }) do
+        cache[cacheCount] = v
+		cacheCount = cacheCount + 1
 	end
 	noita_print(table.concat(cache))
 end
@@ -18,9 +20,11 @@ local noita_game_print = GamePrint
 --重新实现一个
 ---@param ... any
 GamePrint = function(...)
-	local cache = {}
-	for _, v in pairs({ ... }) do
-		table.insert(cache, tostring(v))
+    local cache = {}
+	local cacheCount = 1
+    for _, v in pairs({ ... }) do
+        cache[cacheCount] = v
+		cacheCount = cacheCount + 1
 	end
 	noita_game_print(table.concat(cache))
 end
@@ -206,10 +210,12 @@ function EntityGetChildWithTag(entity, tag)
 	local result
 	local child = EntityGetAllChildren(entity)
 	if child ~= nil then
-		result = {}
+        result = {}
+		local resultCount = 1
 		for _, v in pairs(child) do
-			if EntityHasTag(v, tag) then
-				table.insert(result, v)
+            if EntityHasTag(v, tag) then
+                result[resultCount] = v
+				resultCount = resultCount + 1
 			end
 		end
 	end
@@ -261,7 +267,7 @@ end
 function GetWandSpellIDs(entity)
 	local result = { always = {}, spells = {}}
 	local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
-	local capacity = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity")
+	local capacity = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity")--容量
 	local spellList = {}
     local spellEntitys = EntityGetChildWithTag(entity, "card_action")
     local AlwaysCount = 0--统计正确的容量用
@@ -280,7 +286,7 @@ function GetWandSpellIDs(entity)
 				end
 				IndexZeroCount = IndexZeroCount + 1--自增
 			end
-            table.insert(spellList, { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen })
+            spellList[index+1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen }
             if isAlways then
                 AlwaysCount = AlwaysCount + 1
             end
@@ -290,11 +296,11 @@ function GetWandSpellIDs(entity)
 		result.spells[i] = "nil"
 	end
 	--设置数据
-	for _, v in pairs(spellList) do
+	for k, v in pairs(spellList) do
 		if v.isAlways then
 			table.insert(result.always, v)
 		else
-            table.insert(result.spells, v)
+            result.spells[k] = v
 		end
 	end
 	return result
@@ -316,19 +322,23 @@ function GetWandData(entity)
 			deck_capacity = nil,     --容量
 			spread_degrees = nil,    --散射
 			shuffle_deck_when_empty = nil, --是否乱序
-			sprite_file = nil,       --贴图
 			speed_multiplier = nil,  --初速度加成
             mana = nil,              --蓝
 			actions_per_round = nil, --施放数
-			shoot_pos = { x = 0, y = 0 } --发射位置
+            shoot_pos = { x = 0, y = 0 }, --发射位置
+            sprite_file = nil,            --贴图
+			sprite_pos = {x = 0, y = 0 }--精灵图偏移
 		}
 		local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
 		local CompGetValue = Curry(ComponentGetValue2, 2)(Ability)
 		local GunConfigGetValue = Curry(ComponentObjectGetValue2, 3)(Ability, "gun_config")
 		local GunActionGetValue = Curry(ComponentObjectGetValue2, 3)(Ability, "gunaction_config")
 		local item = EntityGetFirstComponentIncludingDisabled(entity, "ItemComponent")
-		local hotspot = EntityGetFirstComponentIncludingDisabled(entity, "HotspotComponent", "shoot_pos")
-		wand.shoot_pos.x, wand.shoot_pos.y = ComponentGetValueVector2(hotspot, "offset") --发射偏移量
+        local hotspot = EntityGetFirstComponentIncludingDisabled(entity, "HotspotComponent", "shoot_pos")
+        local sprite = EntityGetFirstComponent(entity, "SpriteComponent", "item")
+        wand.sprite_pos.x = ComponentGetValue2(sprite, "offset_x")
+		wand.sprite_pos.y = ComponentGetValue2(sprite, "offset_y")
+		wand.shoot_pos.x, wand.shoot_pos.y = ComponentGetValue2(hotspot, "offset") --发射偏移量
 		wand.item_name = ComponentGetValue2(item, "item_name")
 
 		wand.mana_max = CompGetValue("mana_max")
@@ -347,33 +357,90 @@ function GetWandData(entity)
 	--print_error("GetWandData param1 not a wand")
 end
 
----comment
----@param input table GetWandSpellIDs函数的返回值
----@param Spells table<integer, string, boolean> 数字索引和id，第三个参数为是否是始终施放
-function SetTableSpells(input, Spells)
-	
-end
-
----comment
----@param input table GetWandSpellIDs函数的返回值
-function RemoveTableSpells(input, TableIndex, AlwaysIndex)
-    local NewIndex = {}
-	local NewAlwaysIndex = {}
-    for i = 1, #TableIndex do --初始化数据
-        NewIndex[i] = TableIndex[i] - 1
-    end
-	for i = 1, #AlwaysIndex do --初始化数据
-        NewAlwaysIndex[i] = AlwaysIndex[i] - 1
-    end
-    for _, v in pairs(AlwaysIndex) do
-        input.always[v] = nil
-    end
-	for _,v in pairs(NewIndex)do
-		
+---设置表中的一个法术，越界了就增加大小
+---@param input table GetWandData函数的返回值
+---@param id string
+---@param index integer
+---@param isAlways boolean?
+function SetTableSpells(input, id, index, isAlways)
+	if isAlways then--判断是不是始终释放
+        --是
+        table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = index-1 })
+    else                                           --不是
+        if index > #input.spells.spells then
+            for i = 1, index - #input.spells.spells do --如果索引超过的情况下，加额外数据
+                input.deck_capacity = input.deck_capacity + 1
+				input.spells.spells[#input.spells.spells + 1] = "nil"
+            end
+        end
+        if input.spells.spells[index] == nil or input.spells.spells[index] == "nil" then
+            input.spells.spells[index] = { id = id, index = index - 1, is_frozen = false, isAlways = false }
+        else
+            input.spells.spells[index].id = id
+        end
 	end
 end
 
-function UpDateWand(wandData,wand)
+---交互两个法术的位置, 如果索引越界则什么都不做
+---@param input table GetWandData函数的返回值
+---@param pos1 integer
+---@param pos2 integer
+function SwapSpellPos(input, pos1, pos2)
+	if input.spells.spells[pos1] == nil or input.spells.spells[pos2] == nil then
+		return
+	end
+	if input.spells.spells[pos1] ~= "nil" and input.spells.spells[pos2] ~= "nil" then--两个都不为空
+        --交互索引
+		local oldIndex = input.spells.spells[pos1].index
+        input.spells.spells[pos1].index = input.spells.spells[pos2].index
+        input.spells.spells[pos2].index = oldIndex
+		--交互表
+        local oldTable = input.spells.spells[pos1]
+        input.spells.spells[pos1] = input.spells.spells[pos2]
+        input.spells.spells[pos2] = oldTable
+    elseif input.spells.spells[pos1] == "nil" and input.spells.spells[pos2] ~= "nil" then
+        input.spells.spells[pos2].index = pos1-1
+        input.spells.spells[pos1] = input.spells.spells[pos2]
+		input.spells.spells[pos2] = "nil"
+	elseif input.spells.spells[pos2] == "nil" and input.spells.spells[pos1] ~= "nil" then
+		input.spells.spells[pos1].index = pos2-1
+        input.spells.spells[pos2] = input.spells.spells[pos1]
+		input.spells.spells[pos1] = "nil"
+	end
+end
+
+---重新设置一个容量大小，可增可减
+---@param input table GetWandData函数的返回值
+---@param size integer
+function ResetDeckCapacity(input, size)
+	if input.deck_capacity < size then --如果要设置成更大大小的
+        for i=1,size-input.deck_capacity do
+			input.spells.spells[#input.spells.spells + 1] = "nil"
+		end
+        input.deck_capacity = size
+    elseif input.deck_capacity > size then--如果要设置成更小大小的
+		for i=1,input.deck_capacity-size do
+			input.spells.spells[#input.spells.spells] = "nil"
+		end
+        input.deck_capacity = size
+	end--等于时啥也不干
+end
+
+---删除一个指定索引的法术，如果有的话
+---@param input table GetWandData函数的返回值
+function RemoveTableSpells(input, TableIndex)
+	if input[TableIndex] then
+		input.spells.spells[TableIndex] = "nil"
+	end
+end
+
+---WIP
+---@param input table GetWandData函数的返回值
+function RemoveTableAlwaysSpells(input, TableIndex)
+	
+end
+
+function UpdateWand(wandData,wand)
     local SWandData = GetWandData(wand)
 	if SWandData then
 		for k, v in pairs(wandData) do
@@ -416,9 +483,11 @@ function InitWand(wandData, wand, x, y)
 	GunActionSetValue("spread_degrees", wandData.spread_degrees)
 	GunActionSetValue("fire_rate_wait", wandData.fire_rate_wait)
 	GunActionSetValue("speed_multiplier", wandData.speed_multiplier)
-	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item");
+	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item")
     if sprite ~= nil then --刷新贴图
         ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
+        ComponentSetValue2(sprite, "offset_x", wandData.sprite_pos.x)
+        ComponentSetValue2(sprite, "offset_y", wandData.sprite_pos.y)
         EntityRefreshSprite(wand, sprite)
     end
 	--TablePrint(wandData)

@@ -551,14 +551,16 @@ function UI.checkbox(id, x, y, text, RightOrLeft, HoverUseCallBack, TextHoverUse
         TextX = x - w - 2
     end
     local checkboxImage
-	if ModSettingGet(CheckboxEnableKey) then
+    if ModSettingGet(CheckboxEnableKey) then
         checkboxImage = "mods/wand_editor/files/gui/images/checkbox_fill.png"
-    elseif ModSettingGet(CheckboxEnableKey) == nil then--初始化
-		ModSettingSet(CheckboxEnableKey,false)
+    elseif ModSettingGet(CheckboxEnableKey) == nil then --初始化
+        ModSettingSet(CheckboxEnableKey, false)
         checkboxImage = "mods/wand_editor/files/gui/images/checkbox.png"
     else
-		checkboxImage = "mods/wand_editor/files/gui/images/checkbox.png"
-	end
+        checkboxImage = "mods/wand_editor/files/gui/images/checkbox.png"
+    end
+    GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+	this.private.ZDeep = this.private.ZDeep + 1
     local left_click = GuiImageButton(this.public.gui, UI.NewID(id), x, y, "", checkboxImage)
 	if HoverUseCallBack ~= nil then
 		HoverUseCallBack(x, y)
@@ -568,13 +570,20 @@ function UI.checkbox(id, x, y, text, RightOrLeft, HoverUseCallBack, TextHoverUse
         ModSettingSet(CheckboxEnableKey, not ModSettingGet(CheckboxEnableKey))
     end
     local status = ModSettingGet(CheckboxEnableKey)
-	GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.NoSound)
-	GuiButton(this.public.gui,UI.NewID(id.."TEXT"), TextX, y - 1, text) --绘制文本
+    GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.NoSound)
+	
+	GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+	this.private.ZDeep = this.private.ZDeep + 1
+    GuiButton(this.public.gui, UI.NewID(id .. "TEXT"), TextX, y - 1, text) --绘制文本
 
 	if TextHoverUse ~= nil then
+		GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+		this.private.ZDeep = this.private.ZDeep + 1
 		TextHoverUse(TextX, y)
 	end
-	if StatusCallBack ~= nil then
+    if StatusCallBack ~= nil then
+		GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+		this.private.ZDeep = this.private.ZDeep + 1
 		StatusCallBack(status)
 	end
 end

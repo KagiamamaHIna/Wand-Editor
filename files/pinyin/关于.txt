@@ -1,2 +1,2 @@
 by: https://github.com/mozillazg/pinyin-data
-这里是拼音数据存储的地方
+这里是拼音数据来源

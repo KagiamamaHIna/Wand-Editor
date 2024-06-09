@@ -12,7 +12,6 @@ if not Cpp.PathExists(cachePath) then
 	Cpp.CreateDir(cachePath)
 end
 
-local gui = GuiCreate()
 function OnPlayerSpawned(player)
     if not GameHasFlagRun("world_editor_init") then
 		GameAddFlagRun("world_editor_init")
