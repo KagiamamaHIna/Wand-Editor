@@ -1,6 +1,6 @@
 dofile_once("mods/wand_editor/files/libs/fp.lua")
 dofile_once("mods/wand_editor/files/libs/define.lua")
-
+local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 local noita_print = print
 
 ---重新实现来模拟正确的print行为
@@ -9,7 +9,7 @@ print = function(...)
     local cache = {}
 	local cacheCount = 1
     for _, v in pairs({ ... }) do
-        cache[cacheCount] = v
+        cache[cacheCount] = tostring(v)
 		cacheCount = cacheCount + 1
 	end
 	noita_print(table.concat(cache))
@@ -23,7 +23,7 @@ GamePrint = function(...)
     local cache = {}
 	local cacheCount = 1
     for _, v in pairs({ ... }) do
-        cache[cacheCount] = v
+        cache[cacheCount] = tostring(v)
 		cacheCount = cacheCount + 1
 	end
 	noita_game_print(table.concat(cache))
@@ -119,8 +119,59 @@ end
 ---@param num number
 ---@return string
 function FrToSecondStr(num)
-	local temp = num / 60
-	local result = string.format("%.2f", temp)
+    local temp = num / 60
+    local result = string.format("%.2f", temp)
+    return result
+end
+
+---解析一个xml和Base的数据
+---@param file string
+---@return table
+function ParseXmlAndBase(file)
+    local result = Nxml.parse(ModTextFileGetContent(file))
+
+	local function recursionBase(xmlData)--递归解析器
+        local function recursion(this)    --处理所有子元素的
+            for _, v in pairs(this.children) do
+                if v.children ~= nil then --如果存在子元素
+                    recursionBase(v.children)
+                end
+            end
+        end
+        if xmlData.children ~= nil then--如果不为空
+			local BaseList = {}
+            local HasComp = {}
+			local NameToCompTable = {}
+			local BaseCompChildList = {}--记录子元素
+            for _, v in pairs(xmlData.children) do
+                if v.name == "Base" then
+                    BaseList[#BaseList + 1] = Nxml.parse(ModTextFileGetContent(v.attr.file)).children
+                    for _, bv in pairs(v.children) do
+                        HasComp[bv.name] = true
+						NameToCompTable[bv.name] = bv
+                        BaseCompChildList[#BaseCompChildList + 1] = bv
+                    end
+                end
+            end
+            for _, v in pairs(BaseCompChildList) do--最优先添加
+                xmlData.children[#xmlData.children + 1] = v
+            end
+            for _, v in pairs(BaseList) do
+				for _,ChildV in pairs(v)do
+					if HasComp[ChildV.name] == nil then--判断是否被覆盖
+                        xmlData.children[#xmlData.children + 1] = ChildV
+                    else--如果是被覆盖的
+						for key,attr in pairs(ChildV.attr)do
+							NameToCompTable[ChildV.name].attr[key] = attr
+						end
+					end 					
+				end
+			end
+			recursion(xmlData)
+		end
+	end
+	recursionBase(result)
+	
 	return result
 end
 
@@ -131,7 +182,7 @@ function ColorToDecimal(num)
     return num / 255
 end
 
----不数小数，输入整数
+---不输小数，输入整数
 ---@param gui userdata
 ---@param red integer
 ---@param green integer

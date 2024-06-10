@@ -1,7 +1,6 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("mods/wand_editor/files/libs/unsafe.lua")
 dofile_once("data/scripts/gun/gun.lua")
-local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 
 ---输入类型枚举量获得其对应的字符串
 ---@param type integer
@@ -93,7 +92,7 @@ Reflection_RegisterProjectile = function(filepath)
 		hasProj[filepath] = {}
 		local projComp = EntityGetFirstComponent(proj, "ProjectileComponent")
         if projComp then
-            local projXML = Nxml.parse(ModTextFileGetContent(filepath))
+            local projXML = ParseXmlAndBase(filepath)
 			for _,v in pairs(projXML.children)do
 				if v.name == "ProjectileComponent" then
                     result[CurrentID].lifetime = v.attr.lifetime
@@ -165,7 +164,9 @@ for k, v in pairs(actions) do
 	result[v.id].description = v.description
 	result[v.id].sprite = v.sprite
 	result[v.id].mana = v.mana
-	result[v.id].max_uses = v.max_uses
+    result[v.id].max_uses = v.max_uses
+    result[v.id].spawn_probability = v.spawn_probability
+	result[v.id].spawn_level = v.spawn_level
 	v.action() --执行
 	result[v.id].reload_time = current_reload_time
 	if result[v.id].c == nil then
@@ -195,7 +196,7 @@ file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓存写�
 file:write("return {\n" .. SerializeTable(result, "") .. "}")
 file:close()
 
-file = io.open("mods/wand_editor/cache/TypeToSpellList.lua", "w") --法术缓存写入文件
+file = io.open("mods/wand_editor/cache/TypeToSpellList.lua", "w") --法术列表缓存写入文件
 file:write("return {\n" .. SerializeTable(TypeToSpellList, "") .. "}")
 file:close()
 

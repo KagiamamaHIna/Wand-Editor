@@ -79,8 +79,8 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     local Search = this.TextInput("input", 63, 245, 123, 26)
 	local _,_, hover = GuiGetPreviousWidgetInfo(this.gui)
     if hover and InputIsMouseButtonDown(Mouse_right) then
-		this.TextInputRestore("input")
-	end
+        this.TextInputRestore("input")
+    end
 	this.tooltips(function ()
 		GuiText(this.gui,0,0,GameTextGetTranslatedOrNot("$wand_editor_search_info"))
     end, nil, 8, 16)
@@ -150,7 +150,7 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	return DrawSpellList
 end
 
----用于绘制法杖文本
+---用于绘制法术文本
 ---@param this table
 ---@param id string
 ---@param idata table
@@ -246,6 +246,10 @@ local function DarwSpellText(this, id, idata)
 		NewLine("$inventory_rechargetime", SecondWithSign(idata.reload_time) .. "s("..idata.reload_time.."f)" )
 	end
 	
+	if idata.c.lifetime_add ~= 0 then	--存在时间
+		NewLine("$wand_editor_lifetime", NumToWithSignStr(idata.c.lifetime_add) .. "f" )
+	end
+
 	if idata.c.damage_critical_chance ~= 0 then --暴击几率
 		NewLine("$inventory_mod_critchance", NumToWithSignStr(idata.c.damage_critical_chance) .. "%" )
 	end
@@ -412,6 +416,6 @@ function DrawSpellContainer(this, spellData, spellTable, type)
         end)
 		::continue::
 	end
-	GuiZSetForNextWidget(this.gui, this.GetZDeep()+ 1)--设置深度，确保行为正确
+    GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1) --设置深度，确保行为正确
 	this.DrawScrollContainer(ContainerName)
 end

@@ -1,6 +1,7 @@
 dofile_once("mods/wand_editor/files/libs/unsafe.lua")
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/debug/keycodes.lua")
+dofile_once("data/scripts/lib/utilities.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 
 local this = {
@@ -188,6 +189,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
     local function Hover()
         UI.tooltips(function()
             GuiText(this.public.gui, 0, 0, Content)
+			GuiZSet(this.public.gui, TheZ)
             if not noMove then
                 local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
                 if CTRL then
@@ -418,7 +420,7 @@ function UI.DrawScrollContainer(id)
 	local newid = ConcatModID(id)
 	if this.private.ScrollData[newid] then--如果有数据
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
-		GuiOptionsAddForNextWidget( this.gui, GUI_OPTION.ScrollContainer_Smooth )
+		GuiOptionsAddForNextWidget( this.public.gui,  GUI_OPTION.Disabled)
         GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
 			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
