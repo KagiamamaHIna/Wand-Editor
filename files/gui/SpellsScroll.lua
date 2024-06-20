@@ -1,7 +1,6 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/gun/gun_enums.lua")
 local GetPlayerXY = Compose(EntityGetTransform, GetPlayer)
-local hasMove = false --控制法术的Hover是否启用
 
 local LastSearch = ""--上一次的搜索记录，用于确认是否改变了搜索内容
 local LastList--上一次的列表，缓存的数据
@@ -75,7 +74,7 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	end
 	this.MoveImagePicker("SearchSetting", 50, 245, 5, 0, GameTextGetTranslatedOrNot("$wand_editor_search_setting"), "mods/wand_editor/files/gui/images/button_fold_open.png", nil, SearchSettingFn, "mods/wand_editor/files/gui/images/button_fold_close.png", nil, true)
 
-	GuiZSetForNextWidget(this.gui, this.GetZDeep()+114514)--不要再覆盖啦！
+	GuiZSetForNextWidget(this.gui, this.GetZDeep()+1000)--不要再覆盖啦！
     local Search = this.TextInput("input", 63, 245, 123, 26)
 	local _,_, hover = GuiGetPreviousWidgetInfo(this.gui)
     if hover and InputIsMouseButtonDown(Mouse_right) then
@@ -94,8 +93,9 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	end
 	--当搜索内容不为空且上一次搜索内容不等于现在的输入内容，或类型变化时搜索，或匹配分数变化时搜索，或搜索方式函数变化时搜索，或id搜索模式变化时搜索
     if (Search ~= "" and LastSearch ~= Search) or LastType ~= SpellDrawType or LastFn ~= UesSearchRatio or LastRatioMinScore ~= RatioMinScore or LastIDSearchMode ~= IDSearchMode then
-        LastSearch = Search
-		LastType = SpellDrawType
+		LastSearch = Search
+        LastType = SpellDrawType
+		SpellDrawType = "HasSearch"
         local ScoreToSpellID = {}
 		local ScoreToSpellIDCount = {}--带有Count的(计数器)的变量代码均为性能优化，用于取代table.insert
         local ScoreList = {}
@@ -147,8 +147,17 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     elseif LastSearch == Search and LastType == SpellDrawType and Search ~= "" then
         DrawSpellList = LastList
     end
-	return DrawSpellList
+	return DrawSpellList,SpellDrawType
 end
+
+local SkipDrawMoreText = {
+    ["RANDOM_SPELL"] = true,
+    ["RANDOM_PROJECTILE"] = true,
+    ["RANDOM_STATIC_PROJECTILE"] = true,
+    ["RANDOM_MODIFIER"] = true,
+    ["RANDOM_EXPLOSION"] = true,
+	["DAMAGE_RANDOM"] = true,
+}
 
 ---用于绘制法术文本
 ---@param this table
@@ -165,16 +174,6 @@ local function DarwSpellText(this, id, idata)
 		GuiText(this.gui, rightMargin - w, 0, str2)
 		GuiLayoutEnd(this.gui)
 	end
-	
-	local function NumToWithSignStr(num)
-		local result
-		if num >= 0 then
-			result = "+" .. tostring(num)
-		else
-			result = tostring(num)
-		end
-		return result
-	end
 
 	GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot(idata.name))
 	GuiColorSetForNextWidget(this.gui, 0.5, 0.5, 0.5, 1.0)
@@ -190,6 +189,11 @@ local function DarwSpellText(this, id, idata)
 	
 	NewLine("$inventory_manadrain", tostring(idata.mana))--耗蓝
 
+    if SkipDrawMoreText[id] then
+        GuiLayoutEnd(this.gui)
+		return
+    end
+	
 	if idata.draw_actions and idata.draw_actions ~= 0 then
 		NewLine("$wand_editor_draw_many", tostring(idata.draw_actions))
 	end
@@ -205,39 +209,53 @@ local function DarwSpellText(this, id, idata)
         NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
     end
 	
-	if idata.shot.recoil_knockback ~= 0 then
-		NewLine("$wand_editor_recoil_knockback", tostring(idata.shot.recoil_knockback))
+	if idata.true_recoil then --如果有后坐力
+		NewLine("$wand_editor_recoil_knockback", idata.true_recoil)
 	end
 
-	if idata.projComp then
-		for k, v in pairs(idata.projDmg) do --伤害参数
-			if v ~= 0 then
-				if k == "electricity" then
-					NewLine("$inventory_mod_damage_electric", tostring(v * 25))
-				else
-					NewLine("$inventory_dmg_" .. k, tostring(v * 25))
-				end
-			end
-		end
-		--散射(实在是看不出来哪里来的，先放着)
+    if idata.projComp then
+        for k, v in pairs(idata.projDmg) do --伤害参数
+            if v ~= 0 then
+                if k == "electricity" then
+                    NewLine("$inventory_mod_damage_electric", tostring(v * 25))
+                else
+                    NewLine("$inventory_dmg_" .. k, tostring(v * 25))
+                end
+            end
+        end
+        --散射(实在是看不出来哪里来的，先放着)
 
-		--速度
-		local speed_min = tonumber(idata.projComp.speed_min)
-		local speed_max = tonumber(idata.projComp.speed_max)
-		if (speed_min == speed_max) and speed_min ~= 0 and speed_max ~= 0 then
-			NewLine("$inventory_speed", tostring(speed_max))
-		elseif speed_min ~= 0 and speed_max ~= 0 then
-			NewLine("$inventory_speed", tostring(speed_min) .. GameTextGetTranslatedOrNot("$wand_editor_to") .. tostring(speed_max))
-		end
-		if idata.lifetime then
-			local randomness = tonumber(idata.projComp.lifetime_randomness)
-			if randomness ~= 0 then
-				NewLine("$wand_editor_lifetime", tostring(idata.lifetime - randomness) .. "f".. GameTextGetTranslatedOrNot("$wand_editor_to") .. tostring(idata.lifetime + randomness).."f")
-			else
-				NewLine("$wand_editor_lifetime", idata.lifetime.."f")
-			end
+        --速度
+        local speed_min = tonumber(idata.projComp.speed_min)
+        local speed_max = tonumber(idata.projComp.speed_max)
+        if (speed_min == speed_max) and speed_min ~= 0 and speed_max ~= 0 then
+            NewLine("$inventory_speed", tostring(speed_max))
+        elseif speed_min ~= 0 and speed_max ~= 0 then
+            NewLine("$inventory_speed",
+                tostring(speed_min) .. GameTextGetTranslatedOrNot("$wand_editor_to") .. tostring(speed_max))
+        end
+        if idata.lifetime then
+            local randomness = tonumber(idata.projComp.lifetime_randomness)
+            if randomness ~= 0 then
+                NewLine("$wand_editor_lifetime",
+                    tostring(idata.lifetime - randomness) ..
+                    "f" .. GameTextGetTranslatedOrNot("$wand_editor_to") .. tostring(idata.lifetime + randomness) .. "f")
+            else
+                NewLine("$wand_editor_lifetime", idata.lifetime .. "f")
+            end
+        end
+    end
+	
+	if idata.lifetimeLimit then
+		if idata.lifetimeLimitMin and idata.lifetimeLimitMax then
+			NewLine("$wand_editor_lifetime_limit",
+				tostring(idata.lifetimeLimit + idata.lifetimeLimitMin) ..
+				"f" .. GameTextGetTranslatedOrNot("$wand_editor_to") .. tostring(idata.lifetimeLimit + idata.lifetimeLimitMax) .. "f")
+		else
+			NewLine("$wand_editor_lifetime_limit", tostring(idata.lifetimeLimit) .. "f")
 		end
 	end
+	
 	local SecondWithSign = Compose(NumToWithSignStr, tonumber, FrToSecondStr)
 	if idata.c.fire_rate_wait ~= 0 then--施放延迟
 		NewLine("$inventory_castdelay", SecondWithSign(idata.c.fire_rate_wait)  .. "s("..idata.c.fire_rate_wait.."f)" )
@@ -246,7 +264,7 @@ local function DarwSpellText(this, id, idata)
 		NewLine("$inventory_rechargetime", SecondWithSign(idata.reload_time) .. "s("..idata.reload_time.."f)" )
 	end
 	
-	if idata.c.lifetime_add ~= 0 then	--存在时间
+	if idata.c.lifetime_add ~= 0 then	--存在时间修正
 		NewLine("$wand_editor_lifetime", NumToWithSignStr(idata.c.lifetime_add) .. "f" )
 	end
 
@@ -309,17 +327,6 @@ local function DarwSpellText(this, id, idata)
 	GuiLayoutEnd(this.gui)
 end
 
-local TypeBG = {
-	[ACTION_TYPE_PROJECTILE] = "data/ui_gfx/inventory/item_bg_projectile.png",
-	[ACTION_TYPE_STATIC_PROJECTILE] = "data/ui_gfx/inventory/item_bg_static_projectile.png",
-	[ACTION_TYPE_MODIFIER] = "data/ui_gfx/inventory/item_bg_modifier.png",
-	[ACTION_TYPE_DRAW_MANY] = "data/ui_gfx/inventory/item_bg_draw_many.png",
-	[ACTION_TYPE_MATERIAL] = "data/ui_gfx/inventory/item_bg_material.png",
-	[ACTION_TYPE_OTHER] = "data/ui_gfx/inventory/item_bg_other.png",
-	[ACTION_TYPE_UTILITY] = "data/ui_gfx/inventory/item_bg_utility.png",
-	[ACTION_TYPE_PASSIVE] = "data/ui_gfx/inventory/item_bg_passive.png"
-}
-
 ---用于绘制法术容器
 ---@param this table
 ---@param spellData table 法术数据
@@ -337,10 +344,10 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		local sprite = spellData[id].sprite
 
         local SpellHover = function() --绘制法术悬浮窗用函数
-            if not hasMove then --法术悬浮窗绘制
+            if not this.UserData["HasSpellMove"] then --法术悬浮窗绘制
                 this.tooltips(function()
                     DarwSpellText(this, id, spellData[id])
-                end, this.GetZDeep() - 114514, 7)
+                end, this.GetZDeep() - 114514, 9, -10)
             end
         end
 		
@@ -378,29 +385,9 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 							GameTextGetTranslatedOrNot("$wand_editor_added_favorite_Already"))
 					end
 				end
-			elseif left_click then --纯左键
-				hasMove = true
-				this.TickEventFn["MoveSpellFn"] = function() --分离出一个事件，用于表示法术点击后的效果
-					local click = InputIsMouseButtonDown(Mouse_right)
-					if click or GameIsInventoryOpen() then                          --右键取消，或打开物品栏取消
-						this.OnMoveImage("MoveSpell", x, y, sprite, true)
-						this.TickEventFn["MoveSpellFn"] = nil
-						hasMove = false
-						return
-					end
-                    --绘制悬浮图标
-					local status = this.OnMoveImage("MoveSpell", x, y, sprite, nil, nil, ZDeepest-1,
-						function(movex, movey)
-							GuiZSetForNextWidget(this.gui, ZDeepest)
-							GuiImage(this.gui, this.NewID("MoveSpell_BG"), movex - 2, movey - 2, TypeBG[spellData[id].type], 1, 1) --绘制背景
-						end)
-					if not status then
-						this.TickEventFn["MoveSpellFn"] = nil
-						local worldx, worldy = DEBUG_GetMouseWorld()
-						CreateItemActionEntity(id, worldx, worldy+5)
-						hasMove = false
-					end
-				end
+            elseif left_click and not this.GetNoMoveBool() then --纯左键
+				this.UserData["SpellHoverEnable"] = false
+				DrawFloatSpell(x,y,sprite,id)
 			end
 		end
 
@@ -412,7 +399,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
 			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_BG"), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_SPELLBG"), -22, 0, TypeBG[spellData[id].type], 1, 1)
+			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_SPELLBG"), -22, 0, SpellTypeBG[spellData[id].type], 1, 1)
         end)
 		::continue::
 	end

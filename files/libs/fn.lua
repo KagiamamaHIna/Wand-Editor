@@ -6,10 +6,10 @@ local noita_print = print
 ---重新实现来模拟正确的print行为
 ---@param ... any
 print = function(...)
-    local cache = {}
+	local cache = {}
 	local cacheCount = 1
-    for _, v in pairs({ ... }) do
-        cache[cacheCount] = tostring(v)
+	for _, v in pairs({ ... }) do
+		cache[cacheCount] = tostring(v)
 		cacheCount = cacheCount + 1
 	end
 	noita_print(table.concat(cache))
@@ -20,10 +20,10 @@ local noita_game_print = GamePrint
 --重新实现一个
 ---@param ... any
 GamePrint = function(...)
-    local cache = {}
+	local cache = {}
 	local cacheCount = 1
-    for _, v in pairs({ ... }) do
-        cache[cacheCount] = tostring(v)
+	for _, v in pairs({ ... }) do
+		cache[cacheCount] = tostring(v)
 		cacheCount = cacheCount + 1
 	end
 	noita_game_print(table.concat(cache))
@@ -65,6 +65,58 @@ function TablePrint(t)
 	print()
 end
 
+---监听器，提供一个函数，监听表的变化
+---@param t table
+---@param callback function
+function TableListener(t, callback)
+	local function NewListener()
+		local __data = {}
+		local deleteList = {}
+		for k, v in pairs(t) do
+			__data[k] = v
+			deleteList[#deleteList + 1] = k
+		end
+		for _, v in pairs(deleteList) do
+			t[v] = nil
+		end
+		local result = {
+			__newindex = function(table, key, value)
+				local temp = callback(key, value)
+				value = temp or value
+				rawset(__data, key, value)
+				rawset(table, key, nil)
+			end,
+			__index = function(table, key)
+				return rawget(__data, key)
+			end,
+			__call = function()
+				return __data
+			end
+		}
+		return result
+	end
+	setmetatable(t, NewListener())
+end
+
+---判断一个数是否为NaN
+---@param num number
+---@return boolean|nil
+function IsNaN(num)
+	if type(num) == "number" then
+		return num ~= num
+	end
+end
+
+---判断一个数是否为Inf
+---@param num number
+---@return boolean|nil
+function IsINF(num)
+	if IsNaN(num) then
+		return false
+	end
+    return IsNaN(num * 0)
+end
+
 ---如果为空则返回v（默认值），不为空返回本身的函数
 ---@param arg any
 ---@param v any
@@ -81,29 +133,42 @@ end
 ---@param indent any|nil indent = ""
 ---@return string
 function SerializeTable(tbl, indent)
-    indent = indent or ""
-    local result = ""
-    local is_array = #tbl > 0 or tbl[0] ~= nil
-    for k, v in pairs(tbl) do
-        local key
-        if is_array and type(k) == "number" then
-            -- 当键名是数字时，使用中括号但不使用引号
-            key = string.format("[%s] = ", k)
-        else -- 当键名是字符串时，使用方括号和双引号
-            key = string.format("[%q] = ", k)
-        end
+	indent = indent or ""
+	local result = ""
+	local is_array = #tbl > 0 or tbl[0] ~= nil
+	for k, v in pairs(tbl) do
+		local key
+		if is_array and type(k) == "number" then
+			-- 当键名是数字时，使用中括号但不使用引号
+			key = string.format("[%s] = ", k)
+		else -- 当键名是字符串时，使用方括号和双引号
+			key = string.format("[%q] = ", k)
+		end
 
-        if type(v) == "table" then
-            result = result .. string.format("%s%s{\n", indent, key)
-            result = result .. SerializeTable(v, indent .. "    ")
-            result = result .. string.format("%s},\n", indent)
-        elseif type(v) == "boolean" or type(v) == "number" then
-            result = result .. string.format("%s%s%s,\n", indent, key, tostring(v))
-        else
-            result = result .. string.format("%s%s%q,\n", indent, key, v)
-        end
-    end
-    return result
+		if type(v) == "table" then
+			result = result .. string.format("%s%s{\n", indent, key)
+			result = result .. SerializeTable(v, indent .. "    ")
+			result = result .. string.format("%s},\n", indent)
+		elseif type(v) == "boolean" or type(v) == "number" then
+			result = result .. string.format("%s%s%s,\n", indent, key, tostring(v))
+		else
+			result = result .. string.format("%s%s%q,\n", indent, key, v)
+		end
+	end
+	return result
+end
+
+---将一个number转换成字符串，并带有+/-符号
+---@param num number
+---@return string
+function NumToWithSignStr(num)
+	local result
+	if num >= 0 then
+		result = "+" .. tostring(num)
+	else
+		result = tostring(num)
+	end
+	return result
 end
 
 ---让指定小数位之后的归零
@@ -119,59 +184,90 @@ end
 ---@param num number
 ---@return string
 function FrToSecondStr(num)
-    local temp = num / 60
-    local result = string.format("%.2f", temp)
-    return result
+	local temp = num / 60
+	local result = string.format("%.2f", temp)
+	return result
 end
 
 ---解析一个xml和Base的数据
 ---@param file string
 ---@return table
 function ParseXmlAndBase(file)
-    local result = Nxml.parse(ModTextFileGetContent(file))
+	local result = Nxml.parse(ModTextFileGetContent(file))
 
-	local function recursionBase(xmlData)--递归解析器
-        local function recursion(this)    --处理所有子元素的
-            for _, v in pairs(this.children) do
-                if v.children ~= nil then --如果存在子元素
-                    recursionBase(v.children)
-                end
-            end
-        end
-        if xmlData.children ~= nil then--如果不为空
+	local function recursionBase(xmlData) --递归解析器
+		local function recursion(this)    --处理所有子元素的
+			for _, v in pairs(this.children) do
+				if v.children ~= nil then --如果存在子元素
+					recursionBase(v.children)
+				end
+			end
+		end
+		if xmlData.children ~= nil then --如果不为空
 			local BaseList = {}
-            local HasComp = {}
+			local HasComp = {}
 			local NameToCompTable = {}
-			local BaseCompChildList = {}--记录子元素
-            for _, v in pairs(xmlData.children) do
-                if v.name == "Base" then
-                    BaseList[#BaseList + 1] = Nxml.parse(ModTextFileGetContent(v.attr.file)).children
-                    for _, bv in pairs(v.children) do
-                        HasComp[bv.name] = true
+			local BaseCompChildList = {} --记录子元素
+			for _, v in pairs(xmlData.children) do
+				if v.name == "Base" then
+					BaseList[#BaseList + 1] = Nxml.parse(ModTextFileGetContent(v.attr.file)).children
+					for _, bv in pairs(v.children) do
+						HasComp[bv.name] = true
 						NameToCompTable[bv.name] = bv
-                        BaseCompChildList[#BaseCompChildList + 1] = bv
-                    end
-                end
-            end
-            for _, v in pairs(BaseCompChildList) do--最优先添加
-                xmlData.children[#xmlData.children + 1] = v
-            end
-            for _, v in pairs(BaseList) do
-				for _,ChildV in pairs(v)do
-					if HasComp[ChildV.name] == nil then--判断是否被覆盖
-                        xmlData.children[#xmlData.children + 1] = ChildV
-                    else--如果是被覆盖的
-						for key,attr in pairs(ChildV.attr)do
-							NameToCompTable[ChildV.name].attr[key] = attr
+						BaseCompChildList[#BaseCompChildList + 1] = bv
+					end
+				end
+			end
+			for _, v in pairs(BaseCompChildList) do --优先级最高
+				xmlData.children[#xmlData.children + 1] = v
+			end
+			for _, v in pairs(BaseList) do
+				for _, ChildV in pairs(v) do
+					if HasComp[ChildV.name] == nil then --判断是否被覆盖
+						xmlData.children[#xmlData.children + 1] = ChildV
+					else                                --如果是被覆盖的
+						for key, attr in pairs(ChildV.attr) do
+							if NameToCompTable[ChildV.name].attr[key] == nil then
+								NameToCompTable[ChildV.name].attr[key] = attr
+							end
 						end
-					end 					
+					end
 				end
 			end
 			recursion(xmlData)
 		end
 	end
 	recursionBase(result)
-	
+
+	return result
+end
+
+--- 移除前后空格，换行
+---@param s string
+---@return string
+function strip(s)
+	if s == nil then
+		return ''
+	end
+	local result = s:gsub("^%s+", ""):gsub("%s+$", ""):gsub("%c", "")
+	return result
+end
+
+---根据分隔符分割字符串
+---@param s string
+---@param delim string
+---@return table
+function split(s, delim)
+	if string.find(s, delim) == nil then
+		return {
+			strip(s)
+		}
+	end
+	local result = {}
+	for ct in string.gmatch(s, '([^' .. delim .. ']+)') do
+		ct = strip(ct)
+		result[#result + 1] = ct
+	end
 	return result
 end
 
@@ -179,7 +275,7 @@ end
 ---@param num number
 ---@return number
 function ColorToDecimal(num)
-    return num / 255
+	return num / 255
 end
 
 ---不输小数，输入整数
@@ -189,7 +285,7 @@ end
 ---@param blue integer
 ---@param alpha integer
 function GuiRGBAColorSetForNextWidget(gui, red, green, blue, alpha)
-    GuiColorSetForNextWidget(gui, ColorToDecimal(red), ColorToDecimal(green), ColorToDecimal(blue), ColorToDecimal(alpha))
+	GuiColorSetForNextWidget(gui, ColorToDecimal(red), ColorToDecimal(green), ColorToDecimal(blue), ColorToDecimal(alpha))
 end
 
 ---获得Storage组件和对应值
@@ -261,11 +357,11 @@ function EntityGetChildWithTag(entity, tag)
 	local result
 	local child = EntityGetAllChildren(entity)
 	if child ~= nil then
-        result = {}
+		result = {}
 		local resultCount = 1
 		for _, v in pairs(child) do
-            if EntityHasTag(v, tag) then
-                result[resultCount] = v
+			if EntityHasTag(v, tag) then
+				result[resultCount] = v
 				resultCount = resultCount + 1
 			end
 		end
@@ -312,38 +408,52 @@ function GetPlayer()
 	return __PlayerIDCache
 end
 
+---刷新玩家手持法杖以同步数据
+function RefreshHeldWands()
+	local player = GetPlayer()
+	local inventory2 = EntityGetFirstComponent(player, "Inventory2Component")
+	if inventory2 ~= nil then
+		ComponentSetValue2(inventory2, "mForceRefresh", true)
+		ComponentSetValue2(inventory2, "mActualActiveItem", 0)
+	end
+end
+
 ---获取法杖的法术id列表
 ---@param entity integer
 ---@return table
 function GetWandSpellIDs(entity)
-	local result = { always = {}, spells = {}}
+	local result = { always = {}, spells = {} }
 	local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
-	local capacity = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity")--容量
+	local capacity = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity") --容量
 	local spellList = {}
-    local spellEntitys = EntityGetChildWithTag(entity, "card_action")
-    local AlwaysCount = 0--统计正确的容量用
-	local IndexZeroCount = 0--有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
-    if spellEntitys ~= nil then
-        for _, v in pairs(spellEntitys) do
-            local ItemActionComp = EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
-            local ItemComp = EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
-            local isAlways = ComponentGetValue2(ItemComp, "permanently_attached")
-            local index = ComponentGetValue2(ItemComp, "inventory_slot")
-            local spellid = ComponentGetValue2(ItemActionComp, "action_id")
+	local spellEntitys = EntityGetChildWithTag(entity, "card_action")
+	local AlwaysCount = 0 --统计正确的容量用
+	local IndexZeroCount = 0 --有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
+	if spellEntitys ~= nil then
+		for _, v in pairs(spellEntitys) do
+			local ItemActionComp = EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
+			local ItemComp = EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
+			local isAlways = ComponentGetValue2(ItemComp, "permanently_attached")
+			local index = ComponentGetValue2(ItemComp, "inventory_slot")
+			local spellid = ComponentGetValue2(ItemActionComp, "action_id")
             local is_frozen = ComponentGetValue2(ItemComp, "is_frozen")
-            if index == 0 then--当索引为0的时候
-				if IndexZeroCount > 0 then--判断数量
+            local uses_remaining = ComponentGetValue2(ItemComp, "uses_remaining")
+			if uses_remaining == -1 then
+				uses_remaining = nil
+			end
+			if index == 0 then --当索引为0的时候
+				if IndexZeroCount > 0 then --判断数量
 					index = IndexZeroCount
 				end
-				IndexZeroCount = IndexZeroCount + 1--自增
+				IndexZeroCount = IndexZeroCount + 1 --自增
 			end
-            spellList[index+1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen }
-            if isAlways then
-                AlwaysCount = AlwaysCount + 1
-            end
-        end
-    end
-	for i=1,capacity - AlwaysCount do
+			spellList[index + 1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
+			if isAlways then
+				AlwaysCount = AlwaysCount + 1
+			end
+		end
+	end
+	for i = 1, capacity - AlwaysCount do
 		result.spells[i] = "nil"
 	end
 	--设置数据
@@ -351,7 +461,7 @@ function GetWandSpellIDs(entity)
 		if v.isAlways then
 			table.insert(result.always, v)
 		else
-            result.spells[k] = v
+			result.spells[k] = v
 		end
 	end
 	return result
@@ -366,28 +476,28 @@ function GetWandData(entity)
 			wandEntity = entity,
 			item_name = nil,
 			spells = GetWandSpellIDs(entity), --法术表
-			mana_charge_speed = nil, --回蓝速度
-			mana_max = nil,          --蓝上限
-			fire_rate_wait = nil,    --施放延迟
-			reload_time = nil,       --充能延迟
-			deck_capacity = nil,     --容量
-			spread_degrees = nil,    --散射
+			mana_charge_speed = nil,      --回蓝速度
+			mana_max = nil,               --蓝上限
+			fire_rate_wait = nil,         --施放延迟
+			reload_time = nil,            --充能延迟
+			deck_capacity = nil,          --容量
+			spread_degrees = nil,         --散射
 			shuffle_deck_when_empty = nil, --是否乱序
-			speed_multiplier = nil,  --初速度加成
-            mana = nil,              --蓝
-			actions_per_round = nil, --施放数
-            shoot_pos = { x = 0, y = 0 }, --发射位置
-            sprite_file = nil,            --贴图
-			sprite_pos = {x = 0, y = 0 }--精灵图偏移
+			speed_multiplier = nil,       --初速度加成
+			mana = nil,                   --蓝
+			actions_per_round = nil,      --施放数
+			shoot_pos = { x = 0, y = 0 }, --发射位置
+			sprite_file = nil,            --贴图
+			sprite_pos = { x = 0, y = 0 } --精灵图偏移
 		}
 		local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
 		local CompGetValue = Curry(ComponentGetValue2, 2)(Ability)
 		local GunConfigGetValue = Curry(ComponentObjectGetValue2, 3)(Ability, "gun_config")
 		local GunActionGetValue = Curry(ComponentObjectGetValue2, 3)(Ability, "gunaction_config")
 		local item = EntityGetFirstComponentIncludingDisabled(entity, "ItemComponent")
-        local hotspot = EntityGetFirstComponentIncludingDisabled(entity, "HotspotComponent", "shoot_pos")
-        local sprite = EntityGetFirstComponent(entity, "SpriteComponent", "item")
-        wand.sprite_pos.x = ComponentGetValue2(sprite, "offset_x")
+		local hotspot = EntityGetFirstComponentIncludingDisabled(entity, "HotspotComponent", "shoot_pos")
+		local sprite = EntityGetFirstComponent(entity, "SpriteComponent", "item")
+		wand.sprite_pos.x = ComponentGetValue2(sprite, "offset_x")
 		wand.sprite_pos.y = ComponentGetValue2(sprite, "offset_y")
 		wand.shoot_pos.x, wand.shoot_pos.y = ComponentGetValue2(hotspot, "offset") --发射偏移量
 		wand.item_name = ComponentGetValue2(item, "item_name")
@@ -395,7 +505,7 @@ function GetWandData(entity)
 		wand.mana_max = CompGetValue("mana_max")
 		wand.mana_charge_speed = CompGetValue("mana_charge_speed")
 		wand.mana = CompGetValue("mana")
-        wand.sprite_file = CompGetValue("sprite_file")
+		wand.sprite_file = CompGetValue("sprite_file")
 		wand.actions_per_round = GunConfigGetValue("actions_per_round")
 		wand.shuffle_deck_when_empty = GunConfigGetValue("shuffle_deck_when_empty")
 		wand.deck_capacity = GunConfigGetValue("deck_capacity")
@@ -412,23 +522,27 @@ end
 ---@param input table GetWandData函数的返回值
 ---@param id string
 ---@param index integer
+---@param uses_remaining integer|nil
 ---@param isAlways boolean?
-function SetTableSpells(input, id, index, isAlways)
-	if isAlways then--判断是不是始终释放
-        --是
-        table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = index-1 })
-    else                                           --不是
-        if index > #input.spells.spells then
-            for i = 1, index - #input.spells.spells do --如果索引超过的情况下，加额外数据
-                input.deck_capacity = input.deck_capacity + 1
+function SetTableSpells(input, id, index, uses_remaining, isAlways)
+	if isAlways then --判断是不是始终释放
+		--是
+		table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = index - 1 })
+	else                                               --不是
+		if index > #input.spells.spells then
+			for i = 1, index - #input.spells.spells do --如果索引超过的情况下，加额外数据
+				input.deck_capacity = input.deck_capacity + 1
 				input.spells.spells[#input.spells.spells + 1] = "nil"
-            end
-        end
-        if input.spells.spells[index] == nil or input.spells.spells[index] == "nil" then
-            input.spells.spells[index] = { id = id, index = index - 1, is_frozen = false, isAlways = false }
-        else
+			end
+		end
+		if id == "nil" then
+			input.spells.spells[index] = id
+		elseif input.spells.spells[index] == nil or input.spells.spells[index] == "nil" then
+			input.spells.spells[index] = { id = id, index = index - 1, is_frozen = false, isAlways = false, uses_remaining = uses_remaining }
+		else
             input.spells.spells[index].id = id
-        end
+            input.spells.spells[index].uses_remaining = uses_remaining
+		end
 	end
 end
 
@@ -440,22 +554,22 @@ function SwapSpellPos(input, pos1, pos2)
 	if input.spells.spells[pos1] == nil or input.spells.spells[pos2] == nil then
 		return
 	end
-	if input.spells.spells[pos1] ~= "nil" and input.spells.spells[pos2] ~= "nil" then--两个都不为空
-        --交互索引
+	if input.spells.spells[pos1] ~= "nil" and input.spells.spells[pos2] ~= "nil" then --两个都不为空
+		--交互索引
 		local oldIndex = input.spells.spells[pos1].index
-        input.spells.spells[pos1].index = input.spells.spells[pos2].index
-        input.spells.spells[pos2].index = oldIndex
+		input.spells.spells[pos1].index = input.spells.spells[pos2].index
+		input.spells.spells[pos2].index = oldIndex
 		--交互表
-        local oldTable = input.spells.spells[pos1]
-        input.spells.spells[pos1] = input.spells.spells[pos2]
-        input.spells.spells[pos2] = oldTable
-    elseif input.spells.spells[pos1] == "nil" and input.spells.spells[pos2] ~= "nil" then
-        input.spells.spells[pos2].index = pos1-1
-        input.spells.spells[pos1] = input.spells.spells[pos2]
+		local oldTable = input.spells.spells[pos1]
+		input.spells.spells[pos1] = input.spells.spells[pos2]
+		input.spells.spells[pos2] = oldTable
+	elseif input.spells.spells[pos1] == "nil" and input.spells.spells[pos2] ~= "nil" then
+		input.spells.spells[pos2].index = pos1 - 1
+		input.spells.spells[pos1] = input.spells.spells[pos2]
 		input.spells.spells[pos2] = "nil"
 	elseif input.spells.spells[pos2] == "nil" and input.spells.spells[pos1] ~= "nil" then
-		input.spells.spells[pos1].index = pos2-1
-        input.spells.spells[pos2] = input.spells.spells[pos1]
+		input.spells.spells[pos1].index = pos2 - 1
+		input.spells.spells[pos2] = input.spells.spells[pos1]
 		input.spells.spells[pos1] = "nil"
 	end
 end
@@ -465,22 +579,22 @@ end
 ---@param size integer
 function ResetDeckCapacity(input, size)
 	if input.deck_capacity < size then --如果要设置成更大大小的
-        for i=1,size-input.deck_capacity do
+		for i = 1, size - input.deck_capacity do
 			input.spells.spells[#input.spells.spells + 1] = "nil"
 		end
-        input.deck_capacity = size
-    elseif input.deck_capacity > size then--如果要设置成更小大小的
-		for i=1,input.deck_capacity-size do
+		input.deck_capacity = size
+	elseif input.deck_capacity > size then --如果要设置成更小大小的
+		for i = 1, input.deck_capacity - size do
 			input.spells.spells[#input.spells.spells] = "nil"
 		end
-        input.deck_capacity = size
-	end--等于时啥也不干
+		input.deck_capacity = size
+	end --等于时啥也不干
 end
 
 ---删除一个指定索引的法术，如果有的话
 ---@param input table GetWandData函数的返回值
 function RemoveTableSpells(input, TableIndex)
-	if input[TableIndex] then
+	if input.spells.spells[TableIndex] then
 		input.spells.spells[TableIndex] = "nil"
 	end
 end
@@ -488,16 +602,16 @@ end
 ---WIP
 ---@param input table GetWandData函数的返回值
 function RemoveTableAlwaysSpells(input, TableIndex)
-	
+
 end
 
-function UpdateWand(wandData,wand)
-    local SWandData = GetWandData(wand)
+function UpdateWand(wandData, wand)
+	local SWandData = GetWandData(wand)
 	if SWandData then
 		for k, v in pairs(wandData) do
 			SWandData[k] = v --设置新的参数
 		end
-		return InitWand(SWandData,wand)
+		return InitWand(SWandData, wand)
 	end
 end
 
@@ -510,6 +624,11 @@ end
 function InitWand(wandData, wand, x, y)
 	if wand == nil then
 		wand = EntityLoad("mods/wand_editor/files/entity/WandBase.xml", x, y)
+	else
+		local list = EntityGetChildWithTag(wand, "card_action")
+		for _, v in pairs(list or {}) do
+			EntityKill(v)
+		end
 	end
 	if not EntityGetIsAlive(wand) then
 		return 0
@@ -529,18 +648,11 @@ function InitWand(wandData, wand, x, y)
 	CompSetValue("sprite_file", wandData.sprite_file)
 	GunConfigSetValue("shuffle_deck_when_empty", wandData.shuffle_deck_when_empty)
 	GunConfigSetValue("deck_capacity", wandData.deck_capacity)
-    GunConfigSetValue("reload_time", wandData.reload_time)
+	GunConfigSetValue("reload_time", wandData.reload_time)
 	GunConfigSetValue("actions_per_round", wandData.actions_per_round)
 	GunActionSetValue("spread_degrees", wandData.spread_degrees)
 	GunActionSetValue("fire_rate_wait", wandData.fire_rate_wait)
 	GunActionSetValue("speed_multiplier", wandData.speed_multiplier)
-	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item")
-    if sprite ~= nil then --刷新贴图
-        ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
-        ComponentSetValue2(sprite, "offset_x", wandData.sprite_pos.x)
-        ComponentSetValue2(sprite, "offset_y", wandData.sprite_pos.y)
-        EntityRefreshSprite(wand, sprite)
-    end
 	--TablePrint(wandData)
 	--初始化法术
 	for _, v in pairs(wandData.spells) do
@@ -550,11 +662,21 @@ function InitWand(wandData, wand, x, y)
 				local item = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
 				ComponentSetValue2(item, "permanently_attached", spell.isAlways)
 				ComponentSetValue2(item, "is_frozen", spell.is_frozen)
-				ComponentSetValue2(item, "inventory_slot", spell.index, 0)
-				EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false);
+                ComponentSetValue2(item, "inventory_slot", spell.index, 0)
+				if spell.uses_remaining then
+					ComponentSetValue2(item, "uses_remaining", spell.uses_remaining)
+				end
+				EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
 				EntityAddChild(wand, action);
 			end
 		end
+	end
+	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item")
+	if sprite ~= nil then --刷新贴图
+		ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
+		ComponentSetValue2(sprite, "offset_x", wandData.sprite_pos.x)
+		ComponentSetValue2(sprite, "offset_y", wandData.sprite_pos.y)
+		EntityRefreshSprite(wand, sprite)
 	end
 	return wand
 end

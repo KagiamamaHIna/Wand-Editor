@@ -3,6 +3,7 @@ dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/debug/keycodes.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
+local DefaultZDeep = -2000
 
 local this = {
 	private = {
@@ -16,18 +17,28 @@ local this = {
 		NextFrNoClick = false,
 		NextFrClick = 0,
         Scale = nil,  --缩放参数
-		ZDeep = -10000,
+		ZDeep = DefaultZDeep,
 		IDMax = 0x7FFFFFFF, --下一个id分配的数字
-		ScrollData = {},
+        ScrollData = {},
+        HScrollData = {},
+        HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
+		HScrollItemData = {},--元素数据，用于判断位置是否上下溢出
 	},
 	public = {
 		ScreenWidth = -1, --当前屏宽
 		ScreenHeight = -1, --当前屏高
-		TickEventFn = {}, --刻事件
+        TickEventFn = {}, --刻事件
+		UserData = {},
 		gui = GuiCreate(), --gui userdata
 	}
 }
 
+---@class Gui
+---@field ScreenWidth integer
+---@field ScreenHeight integer
+---@field TickEventFn table
+---@field UserData table
+---@field gui userdata
 local UI = {}
 setmetatable(UI, this)
 this.__index = this.public
@@ -67,7 +78,7 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove)
 
 	if hover then
 		GuiZSet(gui, z)
-		GuiLayoutBeginLayer(gui)
+        GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
 		if callback ~= nil then callback() end
@@ -108,7 +119,7 @@ end
 ---@param AlwaysCallBack function|nil
 ---@param HoverUseCallBack function|nil
 ---@param ClickCallBack function|nil
----@param AlwaysCBClick boolean
+---@param AlwaysCBClick boolean?
 ---@param noMove boolean?
 ---@return boolean
 function UI.MoveImageButton(id, x, y, image, AlwaysCallBack, HoverUseCallBack, ClickCallBack, AlwaysCBClick, noMove)
@@ -122,20 +133,32 @@ end
 ---@param id string
 ---@param x number
 ---@param y number
----@param isClose boolean
 ---@param image string
+---@param isClose boolean?
 ---@param scale number?
 ---@param ZDeep number?
+---@param ClickAble boolean|nil
 ---@param AlwaysCallBack function?
 ---@return boolean|nil
 ---@return number|nil
 ---@return number|nil
-function UI.OnMoveImage(id, x, y, image, isClose, scale, ZDeep, AlwaysCallBack)
+function UI.OnMoveImage(id, x, y, image, isClose, scale, ZDeep, ClickAble, AlwaysCallBack)
 	isClose = Default(isClose, false)
 	scale = Default(scale, 1)
     local CanMoveStr = "on_move_" .. id
 	if isClose then--这个参数是代表要关闭这个悬浮窗的
         ModSettingSet(CanMoveStr, false) --提前设置
+		--暂停判断一段时间
+		this.private.NextFrNoClick = true
+		this.private.NextFrClick = 12
+		this.private.FirstEventFn["NextFrNoClick"] = function()
+			if this.private.NextFrClick == 0 then
+				this.private.NextFrNoClick = false
+                this.private.FirstEventFn["NextFrNoClick"] = nil
+				return
+			end
+			this.private.NextFrClick = this.private.NextFrClick - 1
+		end
 		return--所以退出
 	end
 	ModSettingSet(CanMoveStr, true) --提前设置
@@ -152,14 +175,23 @@ function UI.OnMoveImage(id, x, y, image, isClose, scale, ZDeep, AlwaysCallBack)
 	end
 	local ResultX = x
 	local ResultY = y
-	local function GetXY(InputResultX, InputResultY)
-		ResultX = InputResultX
+    local function GetXY(InputResultX, InputResultY)
+        ResultX = InputResultX
         ResultY = InputResultY
-		if AlwaysCallBack ~= nil then
-			AlwaysCallBack(ResultX, ResultY)
-		end
+        if AlwaysCallBack ~= nil then
+            AlwaysCallBack(ResultX, ResultY)
+        end
+    end
+	local inputClickAble
+	if type(ClickAble) == "boolean" then
+        inputClickAble = ClickAble
+		ClickAble = true
 	end
-	return UI.CanMove(id, x, y, imageButton, GetXY, nil, nil, image, true, nil, nil, scale), ResultX, ResultY
+	return UI.CanMove(id, x, y, imageButton, GetXY, nil, nil, image, true, true, nil, scale, ClickAble, inputClickAble), ResultX, ResultY
+end
+
+function UI.GetPickerStatus(id)
+	return this.private.CompToPickerBool[ConcatModID(id)]
 end
 
 ---自带开关显示的按钮
@@ -173,7 +205,7 @@ end
 ---@param AlwaysCallBack function?
 ---@param ClickCallBack function?
 ---@param OpenImage string?
----@param AlwaysCBClick boolean
+---@param AlwaysCBClick boolean?
 ---@return boolean
 function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, AlwaysCBClick, noMove)
 	local newid = ConcatModID(id)
@@ -218,6 +250,10 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
 	return  unpack(result)
 end
 
+function UI.GetNoMoveBool()
+	return this.private.NextFrNoClick
+end
+
 ---一个较为通用的让控件可以移动并设置的函数
 ---@param id string
 ---@param s_x number
@@ -233,7 +269,7 @@ end
 ---@param scale number? scale = 1
 ---@return boolean 返回是否移动的状态
 function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBack, ClickCallBack, image, AlwaysCBClick,
-					noSetting, noMove, scale)
+					noSetting, noMove, scale, IsNoListenerClick, ClickAble)
 	local true_s_x = s_x
 	local true_s_y = s_y
 	local newid = ConcatModID(id)
@@ -241,7 +277,8 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 	noSetting = Default(noSetting, false)
     AlwaysCBClick = Default(AlwaysCBClick, false)
 	noMove = Default(noMove, false)
-	scale = Default(scale, 1)
+    scale = Default(scale, 1)
+	IsNoListenerClick = Default(IsNoListenerClick, false)
 	local numID = UI.NewID(id)
 	local Xname = newid .. "x"
 	local Yname = newid .. "y"
@@ -296,7 +333,10 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 		my = my - h / 2
 	end
 
-	local click = InputIsMouseButtonDown(Mouse_left) --如果点击了
+	local click = ClickAble--如果点击了
+	if not IsNoListenerClick then
+		click = InputIsMouseButtonDown(Mouse_left)
+	end
 	if click then
 		ModSettingSet(CanMoveStr, false)          --设置移动状态
 		ModSettingSet(ModID .. "hasButtonMove", false)
@@ -343,6 +383,8 @@ end
 ---@param y number|nil?
 ---@param w number|nil?
 ---@param h number|nil?
+---@param margin_x number|nil?
+---@param margin_y number|nil?
 function UI.SetScrollContainer(id, x, y, w, h, margin_x, margin_y)
 	local newid = ConcatModID(id)
 	if this.private.ScrollData[newid] then--判断是否有数据
@@ -420,7 +462,6 @@ function UI.DrawScrollContainer(id)
 	local newid = ConcatModID(id)
 	if this.private.ScrollData[newid] then--如果有数据
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
-		GuiOptionsAddForNextWidget( this.public.gui,  GUI_OPTION.Disabled)
         GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
 			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
@@ -590,6 +631,176 @@ function UI.checkbox(id, x, y, text, RightOrLeft, HoverUseCallBack, TextHoverUse
 	end
 end
 
+---横向分布容器
+---@param id string
+---@param x number
+---@param y number
+---@param w number
+---@param h number
+---@param DarwContainer boolean?
+---@param margin_x number?
+---@param margin_y number?
+function UI.HorizontalScroll(id, x, y, w, h, DarwContainer, margin_x, margin_y)
+	DarwContainer = Default(DarwContainer, true)
+	margin_x = Default(margin_x, 2)
+    margin_y = Default(margin_y, 2)
+	local newid = ConcatModID(id)
+    if this.private.HScrollData[newid] == nil then                                                                         --判断是否有数据
+        this.private.HScrollData[newid] = { id = id, x = x, y = y, w = w, h = h, margin_x = margin_x, margin_y = margin_y, DarwContainer = DarwContainer } --初始化数据
+        this.private.HScrollData[newid].Item = {}
+    end
+	if this.private.HScrollSlider[newid] == nil then
+		this.private.HScrollSlider[newid] = {}
+	end
+end
+
+---为横向分布容器增加新元素
+---@param id string
+---@param callback function
+function UI.AddHScrollItem(id, callback)
+	local newid = ConcatModID(id)
+    if this.private.HScrollData[newid] then --判断是否有数据
+		table.insert(this.private.HScrollData[newid].Item, callback)
+	end
+end
+
+function UI.GetHScrollWidth(id)
+	local newid = ConcatModID(id)
+    if this.private.HScrollSlider[newid] then --判断是否有数据
+        return this.private.HScrollSlider[newid].width or 0
+    end
+end
+
+function UI.ResetHScrollSlider(id)
+	local newid = ConcatModID(id)
+    if this.private.HScrollSlider[newid] then --判断是否有数据
+        this.private.HScrollSlider[newid] = {}
+    end
+end
+
+---绘制横向分布容器
+---@param id string
+function UI.DarwHorizontalScroll(id)
+    local newid = ConcatModID(id)
+    local SliderValue = this.private.HScrollSlider[newid].value
+    local ScrollWidth = this.private.HScrollSlider[newid].width
+    local LastHover = this.private.HScrollSlider[newid].hover
+    SliderValue = Default(SliderValue, 0.00)
+    ScrollWidth = Default(ScrollWidth, 0)
+	LastHover = Default(LastHover, false)
+    if this.private.HScrollData[newid] then  --如果有数据
+		local x = this.private.HScrollData[newid].x
+        local y = this.private.HScrollData[newid].y
+		local w = this.private.HScrollData[newid].w
+        local h = this.private.HScrollData[newid].h
+		local DarwContainer = this.private.HScrollData[newid].DarwContainer
+
+        local function IsHover(posx, posy)
+            if posx > x and posx <= x + w and posy > y and posy <= y + h then
+                return true
+            end
+            return false
+        end
+		
+        GuiLayoutBeginLayer(this.public.gui) --先开启这个
+
+        GuiZSetForNextWidget(this.public.gui, this.private.ZDeep + 1)
+		if DarwContainer then
+			GuiBeginScrollContainer(this.public.gui, UI.NewID(id), x, y, w, h, true,
+				this.private.HScrollData[newid].margin_x, this.private.HScrollData[newid].margin_y
+        	)	
+		end
+
+        
+        local margin_x = (w - ScrollWidth) * SliderValue             --计算偏移
+		if DarwContainer then
+            GuiLayoutBeginHorizontal(this.public.gui, margin_x, 0, true)
+        else
+			GuiLayoutBeginHorizontal(this.public.gui, x + margin_x, y, true) --横向布局
+		end
+        for k, v in pairs(this.private.HScrollData[newid].Item) do
+			v(this.private.HScrollItemData[k])--传入一个参数，如果参数是真，那么就代表没有超出位置，如果是nil，那么代表超出位置
+            local _, _, _, ItemX, _, ItemW = GuiGetPreviousWidgetInfo(this.public.gui)
+			if DarwContainer then
+				if ItemX + ItemW/2 > x and ItemX + ItemW/2 <= x + w then--判断x轴有没有超出位置
+					this.private.HScrollItemData[k] = true
+				else
+					this.private.HScrollItemData[k] = nil --减少内存占用（，有可能
+				end
+			end
+
+            local ItemRightX = ItemX - margin_x - x + math.floor(ItemW / 2) + this.private.HScrollData[newid].margin_x --计算正确的位置
+			if ItemRightX > ScrollWidth then
+                ScrollWidth = ItemRightX + math.floor(ItemW / 2) + this.private.HScrollData[newid].margin_x
+			end
+		end
+		GuiLayoutEnd(this.public.gui)
+        if DarwContainer then
+			GuiEndScrollContainer(this.public.gui)
+		end
+        GuiLayoutEndLayer(this.public.gui)
+
+		local hover = false
+		--鼠标位置
+		local mx, my = InputGetMousePosOnScreen()
+		mx = mx / this.private.Scale
+        my = my / this.private.Scale
+		hover =  IsHover(mx, my)
+
+		this.private.HScrollSlider[newid].width = math.floor(ScrollWidth)--取整减小误差
+        if ScrollWidth > w then
+            GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+            if not LastHover then
+				GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.DrawSemiTransparent)
+			end
+            this.private.HScrollSlider[newid].value = GuiSlider(this.public.gui, UI.NewID("slider" .. id), x - 4, h + y +
+                1, "", SliderValue, 0, 1, 0.00, 0, " ", w + 3.5)
+            local _, _, SliderHover = GuiGetPreviousWidgetInfo(this.public.gui)
+			hover = hover or SliderHover
+            this.private.HScrollSlider[newid].hover = hover
+			local function MoveSlider()
+				local left = InputIsKeyDown(Key_KP_MINUS) or InputIsKeyDown(Key_LEFT) or InputIsKeyDown(Key_MINUS)
+                local right = InputIsKeyDown(Key_KP_PLUS) or InputIsKeyDown(Key_RIGHT) or InputIsKeyDown(Key_EQUALS)
+                local num = 0.01
+				if InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT) then--按下shift一次移动更多
+					num = num * 10
+				end
+				if left then
+					this.private.HScrollSlider[newid].value = math.max(this.private.HScrollSlider[newid].value - num, 0)
+				elseif right then
+					this.private.HScrollSlider[newid].value = math.min(this.private.HScrollSlider[newid].value + num, 1)
+				end
+			end
+			if hover then
+                local hasPush = InputIsKeyDown(Key_KP_PLUS) or InputIsKeyDown(Key_KP_MINUS) or InputIsKeyDown(Key_LEFT) or
+                	InputIsKeyDown(Key_RIGHT) or InputIsKeyDown(Key_MINUS) or InputIsKeyDown(Key_EQUALS)
+				
+				if this.private.HScrollSlider[newid].PushFr == nil then --如果在悬浮，就分配一个帧检测时间
+					this.private.HScrollSlider[newid].PushFr = 30
+				else
+                    if hasPush then --如果按了
+						if this.private.HScrollSlider[newid].PushFr == 30 then--按的第一下
+							MoveSlider()
+						end
+						if this.private.HScrollSlider[newid].PushFr ~= 0 then
+							this.private.HScrollSlider[newid].PushFr = this.private.HScrollSlider[newid].PushFr - 1
+						else --如果到了0
+							MoveSlider()
+						end
+					else
+						this.private.HScrollSlider[newid].PushFr = 30 --如果不按退格键就重置时间
+					end
+				end
+			elseif this.private.HScrollSlider[newid].PushFr then --如果未悬浮就设为空
+				this.private.HScrollSlider[newid].PushFr = nil
+			end
+        else
+			this.private.HScrollSlider[newid].value = 0
+		end
+		this.private.ZDeep = this.private.ZDeep + 1
+	end
+end
+
 ---添加计划刻事件
 ---@param fn function
 function UI.OnceCallOnExecute(fn)
@@ -615,27 +826,29 @@ function UI.DispatchMessage()
 		local configXml = Nxml.parse(ReadFileAll(SavePath .. "save_shared/config.xml"))
 		this.private.Scale = configXml.attr.internal_size_h / this.public.ScreenHeight
 	end
-	for _, fn in pairs(this.private.FirstEventFn) do
-		if type(fn) == "function" then
-			fn(UI)
-		end
-	end
+    for _, fn in pairs(this.private.FirstEventFn) do
+        if type(fn) == "function" then
+            fn(UI)
+        end
+    end
+	
+	local max = table.maxn(this.private.TileTick)
+    if max >= 0 then
+        for i = max, 1, -1 do
+            local fn = this.private.TileTick[i]
+            if type(fn) == "function" then
+                fn(UI)
+            end
+            this.private.TileTick[i] = nil
+        end
+    end
+	
 	for _, fn in pairs(this.public.TickEventFn) do
 		if type(fn) == "function" then
 			fn(UI)
 		end
 	end
 
-	local max = table.maxn(this.private.TileTick)
-	if max >= 0 then
-		for i = max, 1, -1 do
-			local fn = this.private.TileTick[i]
-			if type(fn) == "function" then
-				fn(UI)
-			end
-			this.private.TileTick[i] = nil
-		end
-	end
 
     if this.private.destroy then
         GuiDestroy(this.private.gui)
@@ -647,9 +860,12 @@ function UI.DispatchMessage()
         end
     end
     if next(this.private.ScrollData) then --如果表有数据
-        this.private.ScrollData = {}   --清空数据		
+        this.private.ScrollData = {}      --清空数据		
     end
-	this.private.ZDeep = -114514
+	if next(this.private.HScrollData) then --如果表有数据
+        this.private.HScrollData = {}   --清空数据		
+    end
+	this.private.ZDeep = DefaultZDeep
 end
 
 return UI

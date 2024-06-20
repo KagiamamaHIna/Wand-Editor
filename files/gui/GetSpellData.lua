@@ -69,6 +69,12 @@ end
 --需要重新加载
 local result = {}
 
+local CurrentID = nil
+local hasProj = {}
+draw_actions = function(draw)           --设置抽取数，当被调用时
+	result[CurrentID].draw_actions = draw
+end
+
 --监听的数据
 current_reload_time = 0 --充能时间
 
@@ -76,16 +82,31 @@ c = {}
 reset_modifiers(c)                      --初始化
 shot_effects = {}
 ConfigGunShotEffects_Init(shot_effects) --初始化
-
-local CurrentID = nil
-local hasProj = {}
-draw_actions = function(draw)           --设置抽取数，当被调用时
-	result[CurrentID].draw_actions = draw
+shot_effects.recoil_knockback = QuietNaN
+local isAssign = true
+local function ShotListener(key, value)
+	if key == "recoil_knockback" then
+		if IsNaN(value) then
+            isAssign = false
+			return 0
+		else
+			if isAssign then
+                result[CurrentID].true_recoil = "=" .. tostring(value)
+            else
+				result[CurrentID].true_recoil = NumToWithSignStr(value)
+			end
+		end
+	end
 end
+
+TableListener(shot_effects, ShotListener)
 
 
 reflecting = true
 Reflection_RegisterProjectile = function(filepath)
+	if not isAssign then
+		return
+	end
 	--获取投射物数据，判断是否有缓存
 	if hasProj[filepath] == nil then
 		local proj = EntityLoad(filepath, 14600, -45804)
@@ -97,7 +118,41 @@ Reflection_RegisterProjectile = function(filepath)
 				if v.name == "ProjectileComponent" then
                     result[CurrentID].lifetime = v.attr.lifetime
                     hasProj[filepath].lifetime = result[CurrentID].lifetime
-					break
+                elseif v.name == "LifetimeComponent" then --待完成
+                    local lifetimeLimit = tonumber(v.attr.lifetime)
+					if result[CurrentID].lifetimeLimit == nil or (result[CurrentID].lifetimeLimit ~= nil and lifetimeLimit <= result[CurrentID].lifetimeLimit) then
+						result[CurrentID].lifetimeLimit = tonumber(v.attr.lifetime)
+						hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
+						if v.attr["randomize_lifetime.min"] ~= nil then
+							result[CurrentID].lifetimeLimitMin = tonumber(v.attr["randomize_lifetime.min"])
+							hasProj[filepath].lifetimeLimitMin = result[CurrentID].lifetimeLimitMin
+						end
+						if v.attr["randomize_lifetime.max"] ~= nil then
+							result[CurrentID].lifetimeLimitMax = tonumber(v.attr["randomize_lifetime.max"])
+							hasProj[filepath].lifetimeLimitMax = result[CurrentID].lifetimeLimitMax
+						end
+					end
+
+                elseif v.name == "MagicXRayComponent" then--特殊情况
+                    local radius = tonumber(v.attr.radius)
+                    local steps_per_frame = tonumber(v.attr.steps_per_frame)
+                    local lifetimeLimit = math.ceil(radius / steps_per_frame)
+					if result[CurrentID].lifetimeLimit ~= nil then--判断是否有数据
+                        if lifetimeLimit <= result[CurrentID].lifetimeLimit then--如果有的话就要判断谁小
+                            result[CurrentID].lifetimeLimit = lifetimeLimit
+                            hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
+                            result[CurrentID].lifetimeLimitMin = nil
+                            hasProj[filepath].lifetimeLimitMin = nil
+                            result[CurrentID].lifetimeLimitMax = nil
+                            hasProj[filepath].lifetimeLimitMax = nil
+                        else
+                            result[CurrentID].lifetimeLimit = lifetimeLimit
+                            hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
+                        end
+                    else
+						result[CurrentID].lifetimeLimit = lifetimeLimit
+						hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
+					end
 				end
 			end
 
@@ -178,13 +233,37 @@ for k, v in pairs(actions) do
 	if result[v.id].shot == nil then
 		result[v.id].shot = {}
 	end
-	for shotkey, shotv in pairs(shot_effects) do
-		result[v.id].shot[shotkey] = shotv
+    if not isAssign then
+        v.action()
+    end
+    for shotkey, shotv in pairs(shot_effects()) do
+        result[v.id].shot[shotkey] = shotv
+    end
+    isAssign = true
+	if c.extra_entities ~= "" then
+        local extra_entities = split(c.extra_entities, ",")
+		for _,ExtraEntityPath in pairs(extra_entities) do
+            local ExtraEntity = ParseXmlAndBase(ExtraEntityPath)
+			for _,EEv in pairs(ExtraEntity.children)do
+                if EEv.name == "LifetimeComponent" then
+                    result[v.id].lifetimeLimit = tonumber(EEv.attr.lifetime)
+					if EEv.attr["randomize_lifetime.min"] ~= nil then
+                        result[v.id].lifetimeLimitMin = tonumber(EEv.attr["randomize_lifetime.min"])
+					end
+                    if EEv.attr["randomize_lifetime.max"] ~= nil then
+						result[v.id].lifetimeLimitMax = tonumber(EEv.attr["randomize_lifetime.max"])
+					end
+				end
+			end
+		end
 	end
 	c = {}
 	shot_effects = {}
 	reset_modifiers(c)
-	ConfigGunShotEffects_Init(shot_effects)
+    ConfigGunShotEffects_Init(shot_effects)
+    shot_effects.recoil_knockback = QuietNaN
+	TableListener(shot_effects, ShotListener)
+
 	current_reload_time = 0
 end
 

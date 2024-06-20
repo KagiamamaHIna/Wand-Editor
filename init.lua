@@ -14,10 +14,9 @@ end
 
 function OnPlayerSpawned(player)
     if not GameHasFlagRun("world_editor_init") then
-		GameAddFlagRun("world_editor_init")
-	end
+        GameAddFlagRun("world_editor_init")
+    end
 end
-
 --TestAMonitor = Cpp.OpenMonitorLoadLuaLib(0x85AF1E)--非dev版为0x7ECD84
 
 function OnWorldPostUpdate()
