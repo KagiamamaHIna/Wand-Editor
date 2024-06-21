@@ -155,17 +155,16 @@ Reflection_RegisterProjectile = function(filepath)
 					end
 				end
 			end
-
-			ComponentSetValue2(projComp, "on_death_explode", false)
-			ComponentSetValue2(projComp, "on_lifetime_out_explode", false)
-			ComponentSetValue2(projComp, "collide_with_entities", false)
-			ComponentSetValue2(projComp, "collide_with_world", false)
-
 			result[CurrentID].projComp = {}
 			for k, v in pairs(ComponentGetMembers(projComp)) do --批量加载数据
 				result[CurrentID].projComp[k] = v
 			end
-			hasProj[filepath].projComp = result[CurrentID].projComp
+            hasProj[filepath].projComp = result[CurrentID].projComp
+			
+			ComponentSetValue2(projComp, "on_death_explode", false)
+			ComponentSetValue2(projComp, "on_lifetime_out_explode", false)
+			ComponentSetValue2(projComp, "collide_with_entities", false)
+			ComponentSetValue2(projComp, "collide_with_world", false)
 
 			--接下来要从object中手动获得值
 			local damage_by_type = ComponentObjectGetMembers(projComp, "damage_by_type")

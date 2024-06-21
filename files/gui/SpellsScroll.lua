@@ -31,7 +31,7 @@ local IDSearchMode = false
 function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     local SearchSettingFn = function(_, _, posX, posY, SettingEnable)
         if SettingEnable then
-            this.ScrollContainer("SearchSettingSrcoll", posX - 20, posY + 16, 180, 30, nil, 0)--绘制一个框
+            this.ScrollContainer("SearchSettingSrcoll", posX - 20, posY + 20, 180, 30, nil, 0)--绘制一个框
             this.AddAnywhereItem("SearchSettingSrcoll", function()
                 this.checkbox("SearchMode", 0, 2, GameTextGetTranslatedOrNot("$wand_editor_search_fuzzy_setting"), nil,--一个checkbox，用于设置方面的选项
                     nil, function()
@@ -72,10 +72,10 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     else
 		IDSearchMode = false
 	end
-	this.MoveImagePicker("SearchSetting", 50, 245, 5, 0, GameTextGetTranslatedOrNot("$wand_editor_search_setting"), "mods/wand_editor/files/gui/images/button_fold_open.png", nil, SearchSettingFn, "mods/wand_editor/files/gui/images/button_fold_close.png", nil, true)
+	this.MoveImagePicker("SearchSetting", 50, 249, 5, 0, GameTextGetTranslatedOrNot("$wand_editor_search_setting"), "mods/wand_editor/files/gui/images/button_fold_open.png", nil, SearchSettingFn, "mods/wand_editor/files/gui/images/button_fold_close.png", nil, nil, true)
 
 	GuiZSetForNextWidget(this.gui, this.GetZDeep()+1000)--不要再覆盖啦！
-    local Search = this.TextInput("input", 63, 245, 123, 26)
+    local Search = this.TextInput("input", 63, 249, 123, 26)
 	local _,_, hover = GuiGetPreviousWidgetInfo(this.gui)
     if hover and InputIsMouseButtonDown(Mouse_right) then
         this.TextInputRestore("input")
@@ -202,12 +202,14 @@ local function DarwSpellText(this, id, idata)
 		NewLine("$inventory_damage", tostring(tonumber(idata.projComp.damage) * 25))
 	end
 	
-	if idata.projExplosion and idata.projExplosion ~= 0 then --如果有爆炸伤害
-		NewLine("$inventory_dmg_explosion", tostring(math.floor(idata.projExplosion * 25)))
+	if idata.projComp and idata.projComp.on_death_explode ~= "0" then
+		if idata.projExplosion and idata.projExplosion ~= 0 then --如果有爆炸伤害
+			NewLine("$inventory_dmg_explosion", tostring(math.floor(idata.projExplosion * 25)))
+		end
+		if idata.projExplosionRadius and idata.projExplosionRadius ~= 0 then --如果有爆炸半径
+			NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
+		end
 	end
-    if idata.projExplosionRadius and idata.projExplosionRadius ~= 0 then --如果有爆炸半径
-        NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
-    end
 	
 	if idata.true_recoil then --如果有后坐力
 		NewLine("$wand_editor_recoil_knockback", idata.true_recoil)
@@ -335,7 +337,7 @@ end
 function DrawSpellContainer(this, spellData, spellTable, type)
     local ZDeepest = this.GetZDeep()
 	local ContainerName = "SpellsScroll"..tostring(type)
-	this.ScrollContainer(ContainerName, 30, 60, 178, 180, nil, 0, 1.3)
+	this.ScrollContainer(ContainerName, 30, 64, 178, 180, nil, 0, 1.3)
     for pos, id in pairs(spellTable) do
 		if spellData[id] == nil then
 			goto continue

@@ -180,6 +180,15 @@ function TruncateFloat(num, decimalPlaces)
 	return math.floor(num * mult) / mult
 end
 
+---让指定数字位数之后的数字归零
+---@param number number
+---@param position integer
+---@return number
+function TruncateNumber(number, position)
+    local factor = 10 ^ position
+    return math.floor(number / factor) * factor
+end
+
 ---帧转秒
 ---@param num number
 ---@return string
@@ -467,9 +476,27 @@ function GetWandSpellIDs(entity)
 	return result
 end
 
+---@class Wand
+---@field wandEntity integer
+---@field item_name string
+---@field spells table
+---@field mana_charge_speed number
+---@field mana_max number
+---@field fire_rate_wait number
+---@field reload_time number
+---@field deck_capacity integer
+---@field spread_degrees number
+---@field shuffle_deck_when_empty boolean
+---@field speed_multiplier number
+---@field mana integer
+---@field actions_per_round integer
+---@field shoot_pos table<integer,integer>
+---@field sprite_file string
+---@field sprite_pos table<integer,integer>
+
 ---获得法杖数据
 ---@param entity integer EntityID
----@return table|nil
+---@return Wand|nil
 function GetWandData(entity)
 	if EntityHasTag(entity, "wand") then
 		local wand = {
@@ -496,7 +523,7 @@ function GetWandData(entity)
 		local GunActionGetValue = Curry(ComponentObjectGetValue2, 3)(Ability, "gunaction_config")
 		local item = EntityGetFirstComponentIncludingDisabled(entity, "ItemComponent")
 		local hotspot = EntityGetFirstComponentIncludingDisabled(entity, "HotspotComponent", "shoot_pos")
-		local sprite = EntityGetFirstComponent(entity, "SpriteComponent", "item")
+		local sprite = EntityGetFirstComponentIncludingDisabled(entity, "SpriteComponent", "item")
 		wand.sprite_pos.x = ComponentGetValue2(sprite, "offset_x")
 		wand.sprite_pos.y = ComponentGetValue2(sprite, "offset_y")
 		wand.shoot_pos.x, wand.shoot_pos.y = ComponentGetValue2(hotspot, "offset") --发射偏移量
@@ -519,7 +546,7 @@ function GetWandData(entity)
 end
 
 ---设置表中的一个法术，越界了就增加大小
----@param input table GetWandData函数的返回值
+---@param input Wand GetWandData函数的返回值
 ---@param id string
 ---@param index integer
 ---@param uses_remaining integer|nil
@@ -547,7 +574,7 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
 end
 
 ---交互两个法术的位置, 如果索引越界则什么都不做
----@param input table GetWandData函数的返回值
+---@param input Wand GetWandData函数的返回值
 ---@param pos1 integer
 ---@param pos2 integer
 function SwapSpellPos(input, pos1, pos2)
@@ -575,7 +602,7 @@ function SwapSpellPos(input, pos1, pos2)
 end
 
 ---重新设置一个容量大小，可增可减
----@param input table GetWandData函数的返回值
+---@param input Wand GetWandData函数的返回值
 ---@param size integer
 function ResetDeckCapacity(input, size)
 	if input.deck_capacity < size then --如果要设置成更大大小的
@@ -592,7 +619,7 @@ function ResetDeckCapacity(input, size)
 end
 
 ---删除一个指定索引的法术，如果有的话
----@param input table GetWandData函数的返回值
+---@param input Wand GetWandData函数的返回值
 function RemoveTableSpells(input, TableIndex)
 	if input.spells.spells[TableIndex] then
 		input.spells.spells[TableIndex] = "nil"
@@ -600,7 +627,7 @@ function RemoveTableSpells(input, TableIndex)
 end
 
 ---WIP
----@param input table GetWandData函数的返回值
+---@param input Wand GetWandData函数的返回值
 function RemoveTableAlwaysSpells(input, TableIndex)
 
 end
@@ -616,7 +643,7 @@ function UpdateWand(wandData, wand)
 end
 
 ---通过法杖数据初始化一根法杖并返回其实体id
----@param wandData table 由GetWandData函数自动生成
+---@param wandData Wand 由GetWandData函数自动生成
 ---@param wand integer|nil? EntityID，当wand为nil的时候将自动生成一个实体用于加载魔杖
 ---@param x number? x = 0
 ---@param y number? y = 0

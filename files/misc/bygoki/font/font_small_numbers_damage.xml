@@ -16,4 +16,6 @@
     <Char id = "46" rect_h = "10" rect_w = "3" rect_x = "61" rect_y = "1" ></Char>
     <Char id = "36" rect_h = "10" rect_w = "5" rect_x = "65" rect_y = "1" ></Char>
     <Char id = "44" rect_h = "10" rect_w = "3" rect_x = "71" rect_y = "1" ></Char>
+	<Char id = "101" rect_h = "10" rect_w = "6" rect_x = "75" rect_y = "1" ></Char>
+    <Char id = "43" rect_h = "10" rect_w = "5" rect_x = "82" rect_y = "1" ></Char>
 </FontData>

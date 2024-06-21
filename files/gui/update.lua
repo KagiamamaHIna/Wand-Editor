@@ -12,8 +12,13 @@ function GUIUpdata()
 		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua")--读取法术数据
 		local spellData = data[1]
         local TypeToSpellList = data[2]
-		local ZDeepest = UI.GetZDeep()
-        function DrawFloatSpell(x, y, sprite, id)--绘制一个悬浮法术
+        local ZDeepest = UI.GetZDeep()
+		---绘制一个悬浮法术
+		---@param x number
+		---@param y number
+		---@param sprite string
+		---@param id string
+        function DrawFloatSpell(x, y, sprite, id)
             local hasMove = UI.UserData["HasSpellMove"]
             if not hasMove and not UI.GetNoMoveBool() then
                 UI.UserData["FloatSpellID"] = id
@@ -45,7 +50,12 @@ function GUIUpdata()
                         UI.TickEventFn["MoveSpellFn"] = nil
                         if not UI.UserData["WandContainerHasHover"] then
                             local worldx, worldy = DEBUG_GetMouseWorld()
-                            CreateItemActionEntity(id, worldx, worldy + 5)
+                            local spell = CreateItemActionEntity(id, worldx, worldy + 5)
+							if UI.UserData["UpSpellIndex"] and UI.UserData["UpSpellIndex"][4] ~= nil then
+                                local uses_remaining = UI.UserData["UpSpellIndex"][4]
+                                local item = EntityGetFirstComponentIncludingDisabled(spell, "ItemComponent")
+								ComponentSetValue2(item, "uses_remaining", uses_remaining)
+							end
                             UI.UserData["FloatSpellID"] = nil
 							UI.UserData["UpSpellIndex"] = nil
                         end
@@ -89,7 +99,7 @@ function GUIUpdata()
 			if not GameIsInventoryOpen() then
                 GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 				GuiZSetForNextWidget(this.gui, UI.GetZDeep())--设置深度，确保行为正确
-				UI.MoveImagePicker("MainButton", 40, 50, 8, 0, GameTextGetTranslatedOrNot("$wand_editor_main_button"), "mods/wand_editor/files/gui/images/menu.png",
+				UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGetTranslatedOrNot("$wand_editor_main_button"), "mods/wand_editor/files/gui/images/menu.png",
 					function(x, y)
 						if MainButtonEnable then
 
@@ -98,7 +108,6 @@ function GUIUpdata()
 					function(left_click, right_click, x, y, enable)
 						MainButtonEnable = enable
                         if left_click then
-							OnMoveImage = not OnMoveImage
                             --local wandData = GetPlayerHeldWandData()
 							--InitWand(wandData, nil, GetPlayerXY())
 							--[[
@@ -106,58 +115,67 @@ function GUIUpdata()
                             local e = InitWand(GetWandData(GetEntityHeldWand(GetPlayer())), nil, x, y)]]
 						end
                         if enable then --开启状态
-							local function HelpHover()
-								UI.tooltips(function ()
-									GuiText(this.gui,0,0,GameTextGetTranslatedOrNot("$wand_editor_search_help"))
-								end,nil,5)
-							end
-							this.MoveImageButton("SpellBagHelp", 200, 245, "mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
-                            local DrawSpellList,InputType = SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
-							--绘制容器
-                            DrawSpellContainer(this, spellData, DrawSpellList, InputType)
-							DrawWandContainer(this, GetPlayerWandID(), spellData)
-                            for i, v in pairs(TypeList) do --绘制左边选择类型按钮
-                                local sprite
-                                if v == "AllSpells" then
-                                    sprite = ModDir .. "files/gui/images/all_spells.png"
-                                elseif v == "favorite" then
-                                    sprite = ModDir .. "files/gui/images/favorite_icon.png"
-                                else
-                                    sprite = ModDir .. "files/gui/images/" .. SpellList[v] .. "_icon.png"
+                            local function SpellDepotClickCB(_, _, _, _, depot_enable)
+								if not depot_enable then
+									return
+								end
+                                local function HelpHover()
+                                    UI.tooltips(function()
+                                        GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_help"))
+                                    end, nil, 5)
                                 end
+								this.MoveImageButton("SpellDepotHelp", 200, 249, "mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
 
-                                local Hover = function()
-                                    local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
-                                    if hover then
-                                        SpellDrawType = v
-                                        local HoverText
-                                        if v == "AllSpells" then
-                                            HoverText = GameTextGetTranslatedOrNot("$wand_editor_All_spells")
-                                        elseif v == "favorite" then
-                                            HoverText = GameTextGetTranslatedOrNot("$wand_editor_favorite")
-                                        else
-                                            HoverText = SpellTypeEnumToStr(v)
-                                        end
-                                        this.tooltips(function()
-                                            GuiText(this.gui, 0, 0, HoverText)
-                                        end, ZDeepest - 2, nil, nil, true)
-                                    end
-                                end
-                                if SpellDrawType ~= v then
-                                    GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawSemiTransparent)
-                                end
-                                this.MoveImageButton("Switch" .. v, 7, 40 + i * 20, sprite, nil, Hover, nil, nil, true)
-                            end
+								local function WandContainerClickCB(_, _, _, _, WandContainer_enable)
+									if not WandContainer_enable then
+										return
+									end
+									if WandContainer_enable then
+										DrawWandContainer(this, GetPlayerWandID(), spellData)
+									end
+								end
+								UI.MoveImagePicker("WandContainerBTN",28,247,8,20,GameTextGet("$wand_editor_wand_edit_box"),"mods/wand_editor/files/gui/images/wand_container.png",nil,WandContainerClickCB,nil,true,nil,true)
+								
+								local DrawSpellList,InputType = SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
+								--绘制容器
+                                DrawSpellContainer(this, spellData, DrawSpellList, InputType)
+								for i, v in pairs(TypeList) do --绘制左边选择类型按钮
+									local sprite
+									if v == "AllSpells" then
+										sprite = ModDir .. "files/gui/images/all_spells.png"
+									elseif v == "favorite" then
+										sprite = ModDir .. "files/gui/images/favorite_icon.png"
+									else
+										sprite = ModDir .. "files/gui/images/" .. SpellList[v] .. "_icon.png"
+									end
+	
+									local Hover = function()
+										local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
+										if hover then
+											SpellDrawType = v
+											local HoverText
+											if v == "AllSpells" then
+												HoverText = GameTextGetTranslatedOrNot("$wand_editor_All_spells")
+											elseif v == "favorite" then
+												HoverText = GameTextGetTranslatedOrNot("$wand_editor_favorite")
+											else
+												HoverText = SpellTypeEnumToStr(v)
+											end
+											this.tooltips(function()
+												GuiText(this.gui, 0, 0, HoverText)
+											end, ZDeepest - 1145, nil, nil, true)
+										end
+									end
+									if SpellDrawType ~= v then
+										GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawSemiTransparent)
+									end
+									this.MoveImageButton("Switch" .. v, 7, 44 + i * 20, sprite, nil, Hover, nil, nil, true)
+								end
+							end
+							UI.MoveImagePicker("SpellDepotBTN",19,y+30,8,0,GameTextGet("$wand_editor_spell_depot"),"mods/wand_editor/files/gui/images/spell_depot.png",nil,SpellDepotClickCB,nil,true,nil,true)
 						end
-                        if OnMoveImage then
-                            --[[
-						local status,x,y = UI.OnMoveImage("Test",0,0,"mods/wand_editor/files/gui/images/menu.png")
-						if not status then
-							OnMoveImage = false
-							print(x,y)
-						end]]
-                        end
-                    end)
+
+                    end,nil,false,nil,true)
 			end
 		end
 	end

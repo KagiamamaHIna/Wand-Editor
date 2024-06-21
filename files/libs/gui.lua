@@ -205,9 +205,10 @@ end
 ---@param AlwaysCallBack function?
 ---@param ClickCallBack function?
 ---@param OpenImage string?
+---@param SemiTransparent boolean?
 ---@param AlwaysCBClick boolean?
 ---@return boolean
-function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, AlwaysCBClick, noMove)
+function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, SemiTransparent, AlwaysCBClick, noMove)
 	local newid = ConcatModID(id)
 	if this.private.CompToPickerBool[newid] == nil then
 		this.private.CompToPickerBool[newid] = false
@@ -217,7 +218,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
 	else
 		Content = GameTextGetTranslatedOrNot("$wand_editor_picker_open") .. Content
 	end
-	local TheZ = this.private.ZDeep
+
     local function Hover()
         UI.tooltips(function()
             GuiText(this.public.gui, 0, 0, Content)
@@ -232,7 +233,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
                     GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
                 end
             end
-        end, TheZ, mx, my)
+        end, DefaultZDeep-100, mx, my)
     end
     local function Click(left_click, right_click, ix, iy)
         if ClickCallBack ~= nil then
@@ -243,8 +244,11 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
 			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
         end
     end
-	if OpenImage and this.private.CompToPickerBool[newid] then
-		image = OpenImage
+    if OpenImage and this.private.CompToPickerBool[newid] then
+        image = OpenImage
+    end
+	if SemiTransparent and (not this.private.CompToPickerBool[newid]) then
+		GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.DrawSemiTransparent)
 	end
     local result = { UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, AlwaysCBClick, noMove) }
 	return  unpack(result)
