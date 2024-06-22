@@ -411,10 +411,7 @@ end
 ---获得玩家id
 ---@return integer
 function GetPlayer()
-	if __PlayerIDCache == nil then
-		__PlayerIDCache = EntityGetWithTag("player_unit")[1]
-	end
-	return __PlayerIDCache
+	return EntityGetWithTag("player_unit")[1]
 end
 
 ---刷新玩家手持法杖以同步数据
@@ -425,6 +422,59 @@ function RefreshHeldWands()
 		ComponentSetValue2(inventory2, "mForceRefresh", true)
 		ComponentSetValue2(inventory2, "mActualActiveItem", 0)
 	end
+end
+
+---返回玩家当前手持物品
+---@return integer|nil
+function GetActiveItem()
+	local player = GetPlayer()
+    local inventory2 = EntityGetFirstComponent(player, "Inventory2Component")
+    if inventory2 ~= nil then
+		return ComponentGetValue2(inventory2, "mActiveItem")
+	end
+end
+
+---设置玩家手持物品
+---@param id integer
+function SetActiveItem(id)
+	if id == nil then
+		return
+	end
+    local player = GetPlayer()
+    local inventory2 = EntityGetFirstComponent(player, "Inventory2Component")
+    if inventory2 ~= nil then
+		ComponentSetValue2(inventory2, "mForceRefresh", true)
+		ComponentSetValue2(inventory2, "mActiveItem", id)
+	end
+end
+
+---屏蔽掉按键操作
+function BlockAllInput()
+	if __IsBlock then
+        return
+    end
+    if __IsBlock == nil then
+        __IsBlock = true
+    end
+	
+    local player = GetPlayer()
+    local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
+	for k,v in pairs(ComponentGetMembers(Controls) or {})do
+        local HasMBtnDown = string.find(k, "mButtonDown")
+        local HasMBtnDownDelay = string.find(k, "mButtonDownDelay")
+		if HasMBtnDown and (not HasMBtnDownDelay) then
+			ComponentSetValue2(Controls, k, false)
+		end
+	end
+	ComponentSetValue2(Controls,"enabled", false)
+end
+
+---恢复按键操作
+function RestoreInput()
+	__IsBlock = nil
+	local player = GetPlayer()
+    local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
+    ComponentSetValue2(Controls, "enabled", true)
 end
 
 ---获取法杖的法术id列表

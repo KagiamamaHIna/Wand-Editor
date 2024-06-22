@@ -94,9 +94,12 @@ function GUIUpdata()
             [ACTION_TYPE_UTILITY] = "utility",
             [ACTION_TYPE_PASSIVE] = "passive",
         }
+		local CurrentBtn = nil
+        UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN")
+		UI.SetCheckboxEnable("shuffle_builder", false)
 		---@param this Gui
         UI.TickEventFn["main"] = function(this)
-			if not GameIsInventoryOpen() then
+			if not GameIsInventoryOpen() and GetPlayer() then
                 GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 				GuiZSetForNextWidget(this.gui, UI.GetZDeep())--设置深度，确保行为正确
 				UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGetTranslatedOrNot("$wand_editor_main_button"), "mods/wand_editor/files/gui/images/menu.png",
@@ -116,63 +119,104 @@ function GUIUpdata()
 						end
                         if enable then --开启状态
                             local function SpellDepotClickCB(_, _, _, _, depot_enable)
-								if not depot_enable then
-									return
-								end
+                                if not depot_enable then
+                                    return
+                                end
+                                CurrentBtn = Default(CurrentBtn, "SpellDepotBTN")
                                 local function HelpHover()
                                     UI.tooltips(function()
                                         GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_help"))
                                     end, nil, 5)
                                 end
-								this.MoveImageButton("SpellDepotHelp", 200, 249, "mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
+                                this.MoveImageButton("SpellDepotHelp", 200, 249,
+                                    "mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
 
-								local function WandContainerClickCB(_, _, _, _, WandContainer_enable)
-									if not WandContainer_enable then
-										return
-									end
-									if WandContainer_enable then
-										DrawWandContainer(this, GetPlayerWandID(), spellData)
-									end
-								end
-								UI.MoveImagePicker("WandContainerBTN",28,247,8,20,GameTextGet("$wand_editor_wand_edit_box"),"mods/wand_editor/files/gui/images/wand_container.png",nil,WandContainerClickCB,nil,true,nil,true)
-								
-								local DrawSpellList,InputType = SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
-								--绘制容器
+                                local function WandContainerClickCB(_, _, _, _, WandContainer_enable)
+                                    if WandContainer_enable then
+                                        DrawWandContainer(this, GetPlayerWandID(), spellData)
+                                    end
+                                end
+                                UI.MoveImagePicker("WandContainerBTN", 28, 247, 8, 20,
+                                    GameTextGet("$wand_editor_wand_edit_box"),
+                                    "mods/wand_editor/files/gui/images/wand_container.png", nil, WandContainerClickCB,
+                                    nil, true, nil, true)
+
+                                local DrawSpellList, InputType = SearchSpell(this, spellData, TypeToSpellList,
+                                    SpellDrawType)
+                                --绘制容器
                                 DrawSpellContainer(this, spellData, DrawSpellList, InputType)
-								for i, v in pairs(TypeList) do --绘制左边选择类型按钮
-									local sprite
-									if v == "AllSpells" then
-										sprite = ModDir .. "files/gui/images/all_spells.png"
-									elseif v == "favorite" then
-										sprite = ModDir .. "files/gui/images/favorite_icon.png"
-									else
-										sprite = ModDir .. "files/gui/images/" .. SpellList[v] .. "_icon.png"
-									end
-	
-									local Hover = function()
-										local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
-										if hover then
-											SpellDrawType = v
-											local HoverText
-											if v == "AllSpells" then
-												HoverText = GameTextGetTranslatedOrNot("$wand_editor_All_spells")
-											elseif v == "favorite" then
-												HoverText = GameTextGetTranslatedOrNot("$wand_editor_favorite")
-											else
-												HoverText = SpellTypeEnumToStr(v)
-											end
-											this.tooltips(function()
-												GuiText(this.gui, 0, 0, HoverText)
-											end, ZDeepest - 1145, nil, nil, true)
-										end
-									end
-									if SpellDrawType ~= v then
-										GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawSemiTransparent)
-									end
-									this.MoveImageButton("Switch" .. v, 7, 44 + i * 20, sprite, nil, Hover, nil, nil, true)
-								end
-							end
+                                for i, v in pairs(TypeList) do --绘制左边选择类型按钮
+                                    local sprite
+                                    if v == "AllSpells" then
+                                        sprite = ModDir .. "files/gui/images/all_spells.png"
+                                    elseif v == "favorite" then
+                                        sprite = ModDir .. "files/gui/images/favorite_icon.png"
+                                    else
+                                        sprite = ModDir .. "files/gui/images/" .. SpellList[v] .. "_icon.png"
+                                    end
+
+                                    local Hover = function()
+                                        local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
+                                        if hover then
+                                            SpellDrawType = v
+                                            local HoverText
+                                            if v == "AllSpells" then
+                                                HoverText = GameTextGetTranslatedOrNot("$wand_editor_All_spells")
+                                            elseif v == "favorite" then
+                                                HoverText = GameTextGetTranslatedOrNot("$wand_editor_favorite")
+                                            else
+                                                HoverText = SpellTypeEnumToStr(v)
+                                            end
+                                            this.tooltips(function()
+                                                GuiText(this.gui, 0, 0, HoverText)
+                                            end, ZDeepest - 1145, nil, nil, true)
+                                        end
+                                    end
+                                    if SpellDrawType ~= v then
+                                        GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawSemiTransparent)
+                                    end
+                                    this.MoveImageButton("Switch" .. v, 7, 44 + i * 20, sprite, nil, Hover, nil, nil,
+                                        true)
+                                end
+                            end
+
 							UI.MoveImagePicker("SpellDepotBTN",19,y+30,8,0,GameTextGet("$wand_editor_spell_depot"),"mods/wand_editor/files/gui/images/spell_depot.png",nil,SpellDepotClickCB,nil,true,nil,true)
+                            local function WandBuilderCB(_, _, _, _, this_enable)
+                                if not this_enable then
+                                    return
+                                end
+								local BuilderH = 140
+                                UI.ScrollContainer("WandBuilder", 20, 64, 180, BuilderH, 2, 2)
+								UI.AddAnywhereItem("WandBuilder", function ()
+                                    local leftMargin = 60
+                                    local function NewLine(str, ShowText, fn)
+										str = GameTextGetTranslatedOrNot(str)
+                                        GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
+                                        local w = GuiGetTextDimensions(this.gui, str)
+                                        GuiText(this.gui, leftMargin - w, 0, str)
+                                        local ShowW = GuiGetTextDimensions(this.gui, ShowText)
+										GuiRGBAColorSetForNextWidget(this.gui, 210, 180, 140, 255)
+										GuiText(this.gui, 5, 0, ShowText)
+										fn()
+                                        GuiLayoutEnd(this.gui)
+                                    end
+                                    GuiLayoutBeginVertical(this.gui, 0, 0, true)
+									local shuffle
+									if UI.GetCheckboxEnable("shuffle_builder") then
+										shuffle = GameTextGet("$menu_yes")
+									else
+										shuffle = GameTextGet("$menu_no")
+									end
+									NewLine("$inventory_shuffle",shuffle,function ()
+										UI.checkbox("shuffle_builder", 2, 1, "", nil, nil, nil, nil)
+                                    end)
+									
+									GuiLayoutEnd(this.gui)
+								end)
+								UI.DrawScrollContainer("WandBuilder")
+                            end
+
+                            UI.MoveImagePicker("WandBuilderBTN", 39, y + 30, 8, 0, "法杖生成器","mods/wand_editor/files/gui/images/wand_builder.png", nil, WandBuilderCB, nil, true, nil, true)
 						end
 
                     end,nil,false,nil,true)

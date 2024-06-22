@@ -3,11 +3,13 @@ dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/debug/keycodes.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
-local DefaultZDeep = -2000
+local DefaultZDeep = -1500
 
 local this = {
 	private = {
-		CompToPickerBool = {}, --用于存储按钮点击状态
+        CompToPickerBool = {}, --用于存储按钮点击状态
+        PickerList = {},--用于存储谁和谁是同一组的
+		PickersCurrent = {},--用于存储谁是当前开启的
 		TileTick = {},   --计划刻
 		DestroyCallBack = {}, --销毁时的回调函数
 		destroy = false, --销毁状态
@@ -20,6 +22,7 @@ local this = {
 		ZDeep = DefaultZDeep,
 		IDMax = 0x7FFFFFFF, --下一个id分配的数字
         ScrollData = {},
+		ScrollHover = {},
         HScrollData = {},
         HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
 		HScrollItemData = {},--元素数据，用于判断位置是否上下溢出
@@ -69,7 +72,7 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove)
 	xOffset = Default(xOffset, 0)
     yOffset = Default(yOffset, 0)
 	NoYAutoMove = Default(NoYAutoMove, false)
-	z = Default(z, this.private.ZDeep)
+	z = Default(z, DefaultZDeep)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
 		GuiGetPreviousWidgetInfo(gui)
 	if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
@@ -194,6 +197,12 @@ function UI.GetPickerStatus(id)
 	return this.private.CompToPickerBool[ConcatModID(id)]
 end
 
+function UI.SetPickerEnable(id, enable)
+    local newid = ConcatModID(id)
+	this.private.CompToPickerBool[newid] = enable
+end
+
+
 ---自带开关显示的按钮
 ---@param id string
 ---@param x number
@@ -209,7 +218,15 @@ end
 ---@param AlwaysCBClick boolean?
 ---@return boolean
 function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, SemiTransparent, AlwaysCBClick, noMove)
-	local newid = ConcatModID(id)
+    local newid = ConcatModID(id)
+    if this.private.PickerList[newid] then
+		local key = this.private.PickerList[newid]
+		if this.private.PickersCurrent[key] == newid then
+            this.private.CompToPickerBool[newid] = true
+        else
+			this.private.CompToPickerBool[newid] = false
+		end
+	end
 	if this.private.CompToPickerBool[newid] == nil then
 		this.private.CompToPickerBool[newid] = false
 	end
@@ -222,7 +239,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
     local function Hover()
         UI.tooltips(function()
             GuiText(this.public.gui, 0, 0, Content)
-			GuiZSet(this.public.gui, TheZ)
+			GuiZSet(this.public.gui, this.private.ZDeep)
             if not noMove then
                 local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
                 if CTRL then
@@ -239,7 +256,15 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
         if ClickCallBack ~= nil then
             ClickCallBack(left_click, right_click, ix, iy, this.private.CompToPickerBool[newid]) --额外输入一个参数5，代表当前按钮启用状态
         end
-        if left_click then
+        if left_click and this.private.PickerList[newid] then
+			local key = this.private.PickerList[newid]
+            if this.private.PickersCurrent[key] == newid then
+                this.private.PickersCurrent[key] = nil
+            else
+                this.private.PickersCurrent[key] = newid
+            end
+			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+		elseif left_click then
             this.private.CompToPickerBool[newid] = not this.private.CompToPickerBool[newid]
 			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
         end
@@ -247,11 +272,25 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
     if OpenImage and this.private.CompToPickerBool[newid] then
         image = OpenImage
     end
-	if SemiTransparent and (not this.private.CompToPickerBool[newid]) then
-		GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.DrawSemiTransparent)
-	end
+    if SemiTransparent and (not this.private.CompToPickerBool[newid]) then
+        GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.DrawSemiTransparent)
+    end
+    GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+	this.private.ZDeep = this.private.ZDeep + 1
     local result = { UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, AlwaysCBClick, noMove) }
 	return  unpack(result)
+end
+
+---输入一堆Picker id，代表他们启动状态是同一组的
+---@param ... string
+function UI.PickerEnableList(...)
+    local t = { ... }
+	for i=1,#t do--初始化处理
+		t[i] = ConcatModID(t[i])
+	end
+	for _,v in pairs(t)do
+        this.private.PickerList[v] = t
+	end
 end
 
 function UI.GetNoMoveBool()
@@ -464,8 +503,33 @@ end
 ---@param id string
 function UI.DrawScrollContainer(id)
 	local newid = ConcatModID(id)
-	if this.private.ScrollData[newid] then--如果有数据
+    if this.private.ScrollData[newid] then --如果有数据
+        local x = this.private.ScrollData[newid].x
+		local y = this.private.ScrollData[newid].y
+        local w = this.private.ScrollData[newid].w
+		local h = this.private.ScrollData[newid].h
+        local function IsHover(posx, posy)
+            if posx > x and posx <= x + w + 5 and posy > y and posy <= y + h then
+                return true
+            end
+            return false
+        end
+
+		local mx, my = InputGetMousePosOnScreen()
+		mx = mx / this.private.Scale
+        my = my / this.private.Scale
+		local hover = IsHover(mx, my)
+        if hover then
+			this.private.ScrollHover[newid] = hover
+            BlockAllInput()
+        elseif this.private.ScrollHover[newid] and (not hover) then
+			this.private.ScrollHover[newid] = nil
+            RestoreInput()
+        end
+		
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
+		GuiZSetForNextWidget(this.public.gui,this.private.ZDeep)
+		this.private.ZDeep = this.private.ZDeep - 1
         GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
 			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
@@ -527,11 +591,21 @@ function UI.TextInput(id, x, y, w, l, str)
         this.private.TextInputIDtoStr[newid] = {s_str = str,str = str}
     end
     local newStr = GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l)
-	if this.private.TextInputIDtoStr[newid] ~= newStr and this.private.TextInputIDtoStr[newid].DelFr ~= 0 then--如果新文本和旧文本不匹配，那么就重新设置
+    if this.private.TextInputIDtoStr[newid].str ~= newStr and this.private.TextInputIDtoStr[newid].DelFr ~= 0 then --如果新文本和旧文本不匹配，那么就重新设置
         this.private.TextInputIDtoStr[newid].str = newStr
     end
     local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)--获得当前控件是否悬浮
     if hover then
+        if this.private.TextInputIDtoStr[newid].ActiveItem == nil then
+            this.private.TextInputIDtoStr[newid].ActiveItem = GetActiveItem()
+        end
+		--屏蔽按键输入
+		BlockAllInput()
+        if this.private.TextInputIDtoStr[newid].ActiveItem then--屏蔽切换物品
+            UI.OnceCallOnExecute(function()
+				SetActiveItem(this.private.TextInputIDtoStr[newid].ActiveItem)
+			end)
+		end
         if this.private.TextInputIDtoStr[newid].DelFr == nil then --如果在悬浮，就分配一个帧检测时间
             this.private.TextInputIDtoStr[newid].DelFr = 30
         else
@@ -547,6 +621,8 @@ function UI.TextInput(id, x, y, w, l, str)
             end
         end
     elseif this.private.TextInputIDtoStr[newid].DelFr then --如果未悬浮就设为空
+		RestoreInput()
+		this.private.TextInputIDtoStr[newid].ActiveItem = nil
         this.private.TextInputIDtoStr[newid].DelFr = nil
     end
 	
@@ -572,10 +648,22 @@ function UI.TextInputRestore(id)
     end
 end
 
+---获得checkbox状态
+---@param id string
+---@return boolean
 function UI.GetCheckboxEnable(id)
     local newid = ConcatModID(id)
     local CheckboxEnableKey = newid .. "_enabled"
 	return ModSettingGet(CheckboxEnableKey)
+end
+
+---设置checkbox状态
+---@param id string
+---@param enable boolean
+function UI.SetCheckboxEnable(id, enable)
+	local newid = ConcatModID(id)
+    local CheckboxEnableKey = newid .. "_enabled"
+	ModSettingSet(CheckboxEnableKey, enable)
 end
 
 ---checkbox

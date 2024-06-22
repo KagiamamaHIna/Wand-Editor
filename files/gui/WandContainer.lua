@@ -1,6 +1,7 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/gun/gun_enums.lua")
 local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, highlight)
+	local srcDeep = this.GetZDeep()
 	local BGAlpha = 1
 	local BGAlphaKey = id.."LastWandContHoverAlpha" .. tostring(k)
 	local BGAlphaMaxKey = id.."LastWandContHoverMax" .. tostring(k)
@@ -83,18 +84,20 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, high
 			RefreshHeldWands()
 		end)
 	end
-	if v ~= "nil" then --绘制法术与背景
-		GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
-		this.SetZDeep(this.GetZDeep() - 1)
-		GuiImage(this.gui, this.NewID(id.."SpellBG" .. v.id), -22, 0, SpellTypeBG[spellData[v.id].type],
-			1, 1)
-		GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
-		GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
-		this.SetZDeep(this.GetZDeep() - 1)
-		GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
-		GuiImageButton(this.gui, this.NewID(id.."Spell" .. v.id), 0, 2, "", spellData[v.id].sprite)
-		GuiLayoutEnd(this.gui)
-	end
+    if v ~= "nil" then --绘制法术与背景
+        GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
+        this.SetZDeep(this.GetZDeep() - 1)
+        GuiImage(this.gui, this.NewID(id .. "SpellBG" .. v.id .. tostring(k)), -22, 0, SpellTypeBG[spellData[v.id].type],
+            1, 1)
+        GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
+        GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
+        this.SetZDeep(this.GetZDeep() - 1)
+        GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
+        GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
+        GuiImageButton(this.gui, this.NewID(id .. "Spell" .. v.id .. tostring(k)), 0, 2, "", spellData[v.id].sprite)
+        GuiLayoutEnd(this.gui)
+    end
+	this.SetZDeep(srcDeep)--用一种奇怪的方法解决深度问题
 end
 
 local LastCapacity = 0
@@ -142,6 +145,9 @@ function DrawWandContainer(this, wandEntity, spellData)
                 ViewerWandData = this.UserData["FixedWand"][1]
                 ViewerWandEntity = this.UserData["FixedWand"][2]
             end
+			if ViewerWandData == nil then --使用遁入虚空会导致法杖id刷新，所以此时无法获得法杖最新数据，因此需要判空
+				return
+			end
             this.ScrollContainer("WandSpellViewerContainer", 250, 64, this.ScreenWidth - 250 - 40,
                 this.ScreenHeight - 60 - 70, nil, 0, 1.14)
 			if this.UserData["WandContainerHasHover"] == nil or this.UserData["WandContainerHasHover"] then
@@ -167,6 +173,7 @@ function DrawWandContainer(this, wandEntity, spellData)
             else
                 this.UserData["FixedWand"] = nil
             end
+			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
         end
     end
     if not Skip then
