@@ -3,7 +3,7 @@ dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/debug/keycodes.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
-local DefaultZDeep = -1500
+local DefaultZDeep = -1250
 
 local this = {
 	private = {
@@ -529,7 +529,7 @@ function UI.DrawScrollContainer(id)
 		
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
 		GuiZSetForNextWidget(this.public.gui,this.private.ZDeep)
-		this.private.ZDeep = this.private.ZDeep - 1
+		this.private.ZDeep = this.private.ZDeep + 1
         GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
 			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
@@ -707,7 +707,7 @@ function UI.checkbox(id, x, y, text, RightOrLeft, HoverUseCallBack, TextHoverUse
     local status = ModSettingGet(CheckboxEnableKey)
     GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.NoSound)
 	
-	GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+	GuiZSetForNextWidget(this.public.gui, this.private.ZDeep - 1)
 	this.private.ZDeep = this.private.ZDeep + 1
     GuiButton(this.public.gui, UI.NewID(id .. "TEXT"), TextX, y - 1, text) --绘制文本
 

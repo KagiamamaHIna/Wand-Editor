@@ -21,12 +21,12 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, high
         this.UserData[BGAlphaKey] = nil
         this.UserData[BGAlphaMaxKey] = nil
     end
-	GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
+	GuiZSetForNextWidget(this.gui, this.GetZDeep())
 	this.SetZDeep(this.GetZDeep() - 1)
 	GuiImage(this.gui, this.NewID(id.."BG" .. tostring(k)), 0, 0,
         "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
     if highlight then
-		GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
+		GuiZSetForNextWidget(this.gui, this.GetZDeep())
 		this.SetZDeep(this.GetZDeep() - 1)
 		GuiImage(this.gui, this.NewID(id.."hgBG" .. tostring(k)), -22, 0,
 			"mods/wand_editor/files/gui/images/highlight.png", BGAlpha, 1)
@@ -85,12 +85,12 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, high
 		end)
 	end
     if v ~= "nil" then --绘制法术与背景
-        GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
+        GuiZSetForNextWidget(this.gui, this.GetZDeep())
         this.SetZDeep(this.GetZDeep() - 1)
         GuiImage(this.gui, this.NewID(id .. "SpellBG" .. v.id .. tostring(k)), -22, 0, SpellTypeBG[spellData[v.id].type],
             1, 1)
         GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
-        GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
+        GuiZSetForNextWidget(this.gui, this.GetZDeep())
         this.SetZDeep(this.GetZDeep() - 1)
         GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
         GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
