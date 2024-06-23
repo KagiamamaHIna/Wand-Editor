@@ -19,8 +19,9 @@ local this = {
 		NextFrNoClick = false,
 		NextFrClick = 0,
         Scale = nil,  --缩放参数
-		ZDeep = DefaultZDeep,
-		IDMax = 0x7FFFFFFF, --下一个id分配的数字
+		ZDeep = DefaultZDeep,--深度
+        IDMax = 0x7FFFFFFF, --下一个id分配的数字
+		SliderData = {},
         ScrollData = {},
 		ScrollHover = {},
         HScrollData = {},
@@ -501,8 +502,9 @@ end
 
 ---根据指定id开始绘制Scroll控件
 ---@param id string
-function UI.DrawScrollContainer(id)
-	local newid = ConcatModID(id)
+function UI.DrawScrollContainer(id, IsBlock)
+    local newid = ConcatModID(id)
+	IsBlock = Default(IsBlock, true)
     if this.private.ScrollData[newid] then --如果有数据
         local x = this.private.ScrollData[newid].x
 		local y = this.private.ScrollData[newid].y
@@ -520,11 +522,15 @@ function UI.DrawScrollContainer(id)
         my = my / this.private.Scale
 		local hover = IsHover(mx, my)
         if hover then
-			this.private.ScrollHover[newid] = hover
-            BlockAllInput()
+            this.private.ScrollHover[newid] = hover
+			if IsBlock then
+				BlockAllInput()
+			end
         elseif this.private.ScrollHover[newid] and (not hover) then
-			this.private.ScrollHover[newid] = nil
-            RestoreInput()
+            this.private.ScrollHover[newid] = nil
+			if IsBlock then
+            	RestoreInput()
+			end
         end
 		
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
@@ -583,14 +589,16 @@ end
 ---@param w number
 ---@param l number
 ---@param str string? str=""
+---@param allowed_characters string?
 ---@return string
-function UI.TextInput(id, x, y, w, l, str)
-	str = Default(str, "")
+function UI.TextInput(id, x, y, w, l, str, allowed_characters)
+    str = Default(str, "")
+	allowed_characters = Default(allowed_characters, "")
     local newid = ConcatModID(id)
     if this.private.TextInputIDtoStr[newid] == nil then
         this.private.TextInputIDtoStr[newid] = {s_str = str,str = str}
     end
-    local newStr = GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l)
+    local newStr = GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l, allowed_characters)
     if this.private.TextInputIDtoStr[newid].str ~= newStr and this.private.TextInputIDtoStr[newid].DelFr ~= 0 then --如果新文本和旧文本不匹配，那么就重新设置
         this.private.TextInputIDtoStr[newid].str = newStr
     end
@@ -636,6 +644,16 @@ function UI.GetInputText(id)
     local newid = ConcatModID(id)
 	if this.private.TextInputIDtoStr[newid] ~= nil then
         return this.private.TextInputIDtoStr[newid].str
+    end
+end
+
+---设置文本
+---@param id string
+---@param str string
+function UI.SetInputText(id, str)
+    local newid = ConcatModID(id)
+	if this.private.TextInputIDtoStr[newid] ~= nil then
+        this.private.TextInputIDtoStr[newid].str = str
     end
 end
 
@@ -723,6 +741,48 @@ function UI.checkbox(id, x, y, text, RightOrLeft, HoverUseCallBack, TextHoverUse
 	end
 end
 
+---滑条
+---@param id string
+---@param x number
+---@param y number
+---@param text string
+---@param value_min number
+---@param value_max number
+---@param value_default number
+---@param value_display_multiplier number
+---@param value_formatting string
+---@param width number
+---@return number
+function UI.Slider(id,x,y,text,value_min, value_max, value_default, value_display_multiplier, value_formatting, width)
+    local newid = ConcatModID(id)
+    if this.private.SliderData[newid] == nil or value_min > this.private.SliderData[newid] or this.private.SliderData[newid] > value_max then
+        this.private.SliderData[newid] = value_default
+    end
+
+    this.private.SliderData[newid] = GuiSlider(this.public.gui, UI.NewID(id), x, y, text, this.private.SliderData[newid],
+        value_min, value_max, value_default, value_display_multiplier, value_formatting, width)
+
+	return this.private.SliderData[newid]
+end
+
+---获取滑条的值
+---@param id string
+---@return number
+function UI.GetSliderValue(id)
+    local newid = ConcatModID(id)
+	return this.private.SliderData[newid]
+end
+
+---设置滑条的值
+---@param id string
+---@param value number
+function UI.SetSliderValue(id, value)
+    local newid = ConcatModID(id)
+	if this.private.SliderData[newid] then
+		this.private.SliderData[newid] = value
+	end
+end
+
 ---横向分布容器
 ---@param id string
 ---@param x number
@@ -803,7 +863,6 @@ function UI.DarwHorizontalScroll(id)
         	)	
 		end
 
-        
         local margin_x = (w - ScrollWidth) * SliderValue             --计算偏移
 		if DarwContainer then
             GuiLayoutBeginHorizontal(this.public.gui, margin_x, 0, true)

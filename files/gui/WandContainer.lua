@@ -97,7 +97,7 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, high
         GuiImageButton(this.gui, this.NewID(id .. "Spell" .. v.id .. tostring(k)), 0, 2, "", spellData[v.id].sprite)
         GuiLayoutEnd(this.gui)
     end
-	this.SetZDeep(srcDeep)--用一种奇怪的方法解决深度问题
+	this.SetZDeep(srcDeep)--恢复深度以解决奇怪深度问题
 end
 
 local LastCapacity = 0
@@ -167,15 +167,16 @@ function DrawWandContainer(this, wandEntity, spellData)
         end
     end
     local ViewerClick = function(left_click)
-        if left_click then--点击左键就存储数据
+        if left_click then --点击左键就存储数据
             if this.UserData["FixedWand"] == nil then
                 this.UserData["FixedWand"] = { wandData, wandEntity }
             else
                 this.UserData["FixedWand"] = nil
             end
-			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+            GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
         end
     end
+	--为了实现，满足条件下即使玩家也不拿着法杖，也会绘制这些控件
     if not Skip then
 		GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
 		this.MoveImageButton("WandSpellViewer", HScrollX+3, this.ScreenHeight - 53.5, "mods/wand_editor/files/gui/images/wand_spell_viewer.png", nil, ViewerHover, ViewerClick, nil, true)
@@ -183,7 +184,7 @@ function DrawWandContainer(this, wandEntity, spellData)
 		GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
 		this.MoveImageButton("WandSpellViewer", 235, 64, "mods/wand_editor/files/gui/images/wand_spell_viewer.png", nil, ViewerHover, ViewerClick, nil, true)
 	end
-	if not Skip then
+	if not Skip then--绘制法术编辑栏
 		if this.UserData["WandContainerHasHover"] == nil or (not HasViewerHover) then
 			this.UserData["WandContainerHasHover"] = false
 		end

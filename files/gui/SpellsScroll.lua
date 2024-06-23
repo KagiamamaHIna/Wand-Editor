@@ -57,7 +57,7 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 				GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
             end)
 
-            this.DrawScrollContainer("SearchSettingSrcoll")
+            this.DrawScrollContainer("SearchSettingSrcoll", false)
         end
     end
     if this.GetCheckboxEnable("SearchMode") then --如果处于启用状态那么设置搜索函数
@@ -170,7 +170,7 @@ local function DarwSpellText(this, id, idata)
 		local w = GuiGetTextDimensions(this.gui,text)
 		GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
         GuiText(this.gui, 0, 0, text)
-		GuiRGBAColorSetForNextWidget(this.gui, 210, 180, 140, 255)
+		GuiRGBAColorSetForNextWidget(this.gui, 255,222,173, 255)
 		GuiText(this.gui, rightMargin - w, 0, str2)
 		GuiLayoutEnd(this.gui)
 	end
@@ -202,13 +202,11 @@ local function DarwSpellText(this, id, idata)
 		NewLine("$inventory_damage", tostring(tonumber(idata.projComp.damage) * 25))
 	end
 	
-	if idata.projComp and idata.projComp.on_death_explode ~= "0" then
-		if idata.projExplosion and idata.projExplosion ~= 0 then --如果有爆炸伤害
-			NewLine("$inventory_dmg_explosion", tostring(math.floor(idata.projExplosion * 25)))
-		end
-		if idata.projExplosionRadius and idata.projExplosionRadius ~= 0 then --如果有爆炸半径
-			NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
-		end
+	if idata.projExplosion and idata.projExplosion ~= 0 then --如果有爆炸伤害
+		NewLine("$inventory_dmg_explosion", tostring(math.floor(idata.projExplosion * 25)))
+	end
+	if idata.projExplosionRadius and idata.projExplosionRadius ~= 0 then --如果有爆炸半径
+		NewLine("$inventory_explosion_radius", tostring(idata.projExplosionRadius))
 	end
 	
 	if idata.true_recoil then --如果有后坐力
@@ -403,9 +401,9 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
 			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_SPELLBG"), -22, 0, SpellTypeBG[spellData[id].type], 1, 1)
         end)
+		this.SetZDeep(ZDeepest)
 		::continue::
 	end
     GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1) --设置深度，确保行为正确
     this.DrawScrollContainer(ContainerName)
-	this.SetZDeep(ZDeepest)
 end

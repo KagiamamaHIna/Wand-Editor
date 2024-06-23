@@ -526,6 +526,10 @@ function GetWandSpellIDs(entity)
 	return result
 end
 
+---@class Vec2
+---@field x number
+---@field y number
+
 ---@class Wand
 ---@field wandEntity integer
 ---@field item_name string
@@ -540,9 +544,9 @@ end
 ---@field speed_multiplier number
 ---@field mana integer
 ---@field actions_per_round integer
----@field shoot_pos table<integer,integer>
+---@field shoot_pos Vec2
 ---@field sprite_file string
----@field sprite_pos table<integer,integer>
+---@field sprite_pos Vec2
 
 ---获得法杖数据
 ---@param entity integer EntityID
@@ -699,6 +703,7 @@ end
 ---@param y number? y = 0
 ---@return integer
 function InitWand(wandData, wand, x, y)
+	local srcWand = wand
 	if wand == nil then
 		wand = EntityLoad("mods/wand_editor/files/entity/WandBase.xml", x, y)
 	else
@@ -717,8 +722,10 @@ function InitWand(wandData, wand, x, y)
 	local GunActionSetValue = Curry(ComponentObjectSetValue2, 4)(ability, "gunaction_config")
 	local hotspot = EntityGetFirstComponentIncludingDisabled(wand, "HotspotComponent", "shoot_pos")
 	--初始化数据
-	ComponentSetValueVector2(hotspot, "offset", wandData.shoot_pos.x, wandData.shoot_pos.y)
-	ComponentSetValue2(item, "item_name", wandData.item_name)
+    ComponentSetValueVector2(hotspot, "offset", wandData.shoot_pos.x, wandData.shoot_pos.y)
+	if wandData.item_name then
+		ComponentSetValue2(item, "item_name", wandData.item_name)
+	end
 	CompSetValue("mana_max", wandData.mana_max)
 	CompSetValue("mana_charge_speed", wandData.mana_charge_speed)
 	CompSetValue("mana", wandData.mana)
@@ -729,10 +736,20 @@ function InitWand(wandData, wand, x, y)
 	GunConfigSetValue("actions_per_round", wandData.actions_per_round)
 	GunActionSetValue("spread_degrees", wandData.spread_degrees)
 	GunActionSetValue("fire_rate_wait", wandData.fire_rate_wait)
-	GunActionSetValue("speed_multiplier", wandData.speed_multiplier)
+    GunActionSetValue("speed_multiplier", wandData.speed_multiplier)
+	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item")
+    if sprite ~= nil then --刷新贴图
+        ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
+        ComponentSetValue2(sprite, "offset_x", wandData.sprite_pos.x)
+        ComponentSetValue2(sprite, "offset_y", wandData.sprite_pos.y)
+        EntityRefreshSprite(wand, sprite)
+    end
+	if srcWand == nil then
+		return wand
+	end
 	--TablePrint(wandData)
 	--初始化法术
-	for _, v in pairs(wandData.spells) do
+	for _, v in pairs(wandData.spells or {}) do
 		for _, spell in pairs(v) do
 			if spell.id and spell.id ~= "nil" then
 				local action = CreateItemActionEntity(spell.id)
@@ -744,16 +761,9 @@ function InitWand(wandData, wand, x, y)
 					ComponentSetValue2(item, "uses_remaining", spell.uses_remaining)
 				end
 				EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
-				EntityAddChild(wand, action);
+				EntityAddChild(wand, action)
 			end
 		end
-	end
-	local sprite = EntityGetFirstComponent(wand, "SpriteComponent", "item")
-	if sprite ~= nil then --刷新贴图
-		ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
-		ComponentSetValue2(sprite, "offset_x", wandData.sprite_pos.x)
-		ComponentSetValue2(sprite, "offset_y", wandData.sprite_pos.y)
-		EntityRefreshSprite(wand, sprite)
 	end
 	return wand
 end
