@@ -27,10 +27,9 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
         "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
 
     local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
-	
+	local highlight = false
 	if this.UserData["HasShiftClick"][wandEntity] and this.UserData["HasShiftClick"][wandEntity][1] == id then--判断是否要高亮
         local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
-		local highlight = false
         local min = HasShiftClick[2]
         local max = HasShiftClick[3] or min
 		if max < min then--计算是否要高亮
@@ -62,7 +61,7 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 				end
             elseif FixedWand == wandEntity then--固定的法杖，等于传入的法杖实体的时候
                 local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()--获取手持法杖
-				if HeldWand ~= wandEntity then
+				if HeldWand and HeldWand ~= wandEntity then
 					this.UserData["HasShiftClick"][HeldWand] = nil
 				end
 			end
@@ -81,18 +80,58 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
             this.UserData["HasShiftClick"][wandEntity][3] = k
         end
     elseif click and this.UserData["FloatSpellID"] == nil and (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and next(this.UserData["HasShiftClick"]) then
-        local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
-		local min = HasShiftClick[2]
-        local max = HasShiftClick[3] or min
-        min = math.min(min, max)
-        max = math.max(HasShiftClick[2], max)
-        local ThisK = k
-        for i = min, max do
-            SwapSpellPos(wandData, i, ThisK)
-            ThisK = ThisK + 1
-        end
-        InitWand(wandData, wandEntity)
-		this.UserData["HasShiftClick"][wandEntity] = nil
+
+		if this.UserData["HasShiftClick"][wandEntity] then--如果你手持的和点击的法杖实体是同一个
+			local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
+			local min = HasShiftClick[2]
+			local max = HasShiftClick[3] or min
+			min = math.min(min, max)
+			max = math.max(HasShiftClick[2], max)
+            local ThisK = k
+            for i = min, max do
+				if ThisK > wandData.deck_capacity then
+					break
+				end
+                SwapSpellPos(wandData, i, ThisK)
+				ThisK = ThisK + 1
+			end
+			InitWand(wandData, wandEntity)
+            this.UserData["HasShiftClick"][wandEntity] = nil
+        else                                                --反之不同
+			local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
+            local FixedWand = this.UserData["FixedWand"][2] --如果是跨法杖编辑，那么代表这个是必然存在的
+			local IsFixed = false
+			local AntherWand
+            if FixedWand == wandEntity then                 --如果点击法杖等于固定法杖，那么其他数据就是手持法杖
+                AntherWand = GetWandData(HeldWand)
+				IsFixed = true
+            else                                            --否则是固定法杖
+                AntherWand = GetWandData(FixedWand)
+            end
+			--如果没有问题(Bug)，那么应该只有一个是真（即有数据
+            local HasShiftClick = this.UserData["HasShiftClick"][HeldWand] or this.UserData["HasShiftClick"][FixedWand]
+			local min = HasShiftClick[2]
+			local max = HasShiftClick[3] or min
+			min = math.min(min, max)
+			max = math.max(HasShiftClick[2], max)
+            local ThisK = k
+            for i = min, max do --i是原始位置，k是目标位置
+                if i > AntherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
+                    break
+                end
+                Swap2InputSpellPos(wandData, AntherWand, ThisK, i)
+                ThisK = ThisK + 1
+            end
+			if IsFixed then
+				InitWand(wandData, wandEntity)
+                InitWand(AntherWand, HeldWand)
+            else
+				InitWand(wandData, wandEntity)
+				InitWand(AntherWand, FixedWand)
+			end
+            this.UserData["HasShiftClick"][HeldWand] = nil
+			this.UserData["HasShiftClick"][FixedWand] = nil
+		end
 	elseif click and this.UserData["FloatSpellID"] ~= nil then
         if this.UserData["UpSpellIndex"] ~= nil and v ~= "nil" then --如果存在键，则代表这是一次交换操作
             local i = this.UserData["UpSpellIndex"][1]
@@ -142,7 +181,21 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 		InitWand(wandData, wandEntity)
 		this.OnceCallOnExecute(function()
 			RefreshHeldWands()
-		end)
+        end)
+    elseif hover and InputIsKeyDown(Key_BACKSPACE) and highlight and this.UserData["HasShiftClick"][wandEntity] then
+		local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
+		local min = HasShiftClick[2]
+		local max = HasShiftClick[3] or min
+		min = math.min(min, max)
+        max = math.max(HasShiftClick[2], max)
+        for i = min, max do
+            RemoveTableSpells(wandData, i)
+        end
+        InitWand(wandData, wandEntity)
+		this.UserData["HasShiftClick"][wandEntity] = nil
+		this.OnceCallOnExecute(function()
+			RefreshHeldWands()
+        end)
 	end
     if v ~= "nil" then --绘制法术与背景
         GuiZSetForNextWidget(this.gui, this.GetZDeep())

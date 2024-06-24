@@ -450,31 +450,32 @@ end
 
 ---屏蔽掉按键操作
 function BlockAllInput()
-	if __IsBlock then
+	local player = GetPlayer()
+    local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
+    if ModSettingGet(ModID .. "Blocked") or (not ComponentGetValue2(Controls, "enabled")) then --防止和其他模组冲突
         return
     end
-    if __IsBlock == nil then
-        __IsBlock = true
-    end
+	ModSettingSet(ModID.."Blocked", true)
 	
-    local player = GetPlayer()
-    local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
-	for k,v in pairs(ComponentGetMembers(Controls) or {})do
+    for k, v in pairs(ComponentGetMembers(Controls) or {}) do
         local HasMBtnDown = string.find(k, "mButtonDown")
         local HasMBtnDownDelay = string.find(k, "mButtonDownDelay")
-		if HasMBtnDown and (not HasMBtnDownDelay) then
-			ComponentSetValue2(Controls, k, false)
-		end
-	end
+        if HasMBtnDown and (not HasMBtnDownDelay) then
+            ComponentSetValue2(Controls, k, false)
+        end
+    end
+	
 	ComponentSetValue2(Controls,"enabled", false)
 end
 
 ---恢复按键操作
 function RestoreInput()
-	__IsBlock = nil
-	local player = GetPlayer()
-    local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
-    ComponentSetValue2(Controls, "enabled", true)
+	if ModSettingGet(ModID.."Blocked") then
+        ModSettingSet(ModID .. "Blocked", false)
+		local player = GetPlayer()
+		local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
+		ComponentSetValue2(Controls, "enabled", true)
+	end
 end
 
 ---获取法杖的法术id列表
@@ -625,14 +626,7 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
 	end
 end
 
----使用spells里面的表，来设置法术位置
----@param input Wand
----@param t table
-function SetSpellForTable(input, t)
-    SetTableSpells(input, t.id, t.index, t.uses_remaining, t.isAlways)
-end
-
----交互两个法术的位置, 如果索引越界则什么都不做
+---交换两个法术的位置, 如果索引越界则什么都不做
 ---@param input Wand GetWandData函数的返回值
 ---@param pos1 integer
 ---@param pos2 integer
@@ -641,11 +635,11 @@ function SwapSpellPos(input, pos1, pos2)
 		return
 	end
 	if input.spells.spells[pos1] ~= "nil" and input.spells.spells[pos2] ~= "nil" then --两个都不为空
-		--交互索引
+		--交换索引
 		local oldIndex = input.spells.spells[pos1].index
 		input.spells.spells[pos1].index = input.spells.spells[pos2].index
 		input.spells.spells[pos2].index = oldIndex
-		--交互表
+		--交换表
 		local oldTable = input.spells.spells[pos1]
 		input.spells.spells[pos1] = input.spells.spells[pos2]
 		input.spells.spells[pos2] = oldTable
@@ -660,20 +654,21 @@ function SwapSpellPos(input, pos1, pos2)
 	end
 end
 
----交互两个法术的位置, 如果索引越界则什么都不做
----@param input Wand GetWandData函数的返回值
+---交换两个法杖中的两个法术的位置, 如果索引越界则什么都不做
+---@param input1 Wand GetWandData函数的返回值
+---@param input2 Wand
 ---@param pos1 integer
 ---@param pos2 integer
-function SwapTwoTableSpellPos(input1, input2, pos1, pos2)
+function Swap2InputSpellPos(input1, input2, pos1, pos2)
 	if input1.spells.spells[pos1] == nil or input2.spells.spells[pos2] == nil then
 		return
 	end
 	if input1.spells.spells[pos1] ~= "nil" and input2.spells.spells[pos2] ~= "nil" then --两个都不为空
-		--交互索引
+		--交换索引
 		local oldIndex = input1.spells.spells[pos1].index
 		input1.spells.spells[pos1].index = input2.spells.spells[pos2].index
 		input2.spells.spells[pos2].index = oldIndex
-		--交互表
+		--交换表
 		local oldTable = input1.spells.spells[pos1]
 		input1.spells.spells[pos1] = input2.spells.spells[pos2]
 		input2.spells.spells[pos2] = oldTable
@@ -681,12 +676,13 @@ function SwapTwoTableSpellPos(input1, input2, pos1, pos2)
 		input2.spells.spells[pos2].index = pos1 - 1
 		input1.spells.spells[pos1] = input2.spells.spells[pos2]
 		input2.spells.spells[pos2] = "nil"
-	elseif input1.spells.spells[pos2] == "nil" and input2.spells.spells[pos1] ~= "nil" then
+	elseif input2.spells.spells[pos2] == "nil" and input1.spells.spells[pos1] ~= "nil" then
 		input1.spells.spells[pos1].index = pos2 - 1
 		input2.spells.spells[pos2] = input1.spells.spells[pos1]
 		input1.spells.spells[pos1] = "nil"
 	end
 end
+
 
 ---重新设置一个容量大小，可增可减
 ---@param input Wand GetWandData函数的返回值

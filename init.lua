@@ -13,7 +13,9 @@ if not Cpp.PathExists(cachePath) then
 end
 
 function OnPlayerSpawned(player)
+	RestoreInput()--防止笨蛋在一些情况下重启游戏
     if not GameHasFlagRun("world_editor_init") then
+		EntityLoadChild(player,"mods/wand_editor/files/entity/Restore.xml")
         GameAddFlagRun("world_editor_init")
     end
 end
