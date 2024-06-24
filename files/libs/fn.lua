@@ -660,6 +660,34 @@ function SwapSpellPos(input, pos1, pos2)
 	end
 end
 
+---交互两个法术的位置, 如果索引越界则什么都不做
+---@param input Wand GetWandData函数的返回值
+---@param pos1 integer
+---@param pos2 integer
+function SwapTwoTableSpellPos(input1, input2, pos1, pos2)
+	if input1.spells.spells[pos1] == nil or input2.spells.spells[pos2] == nil then
+		return
+	end
+	if input1.spells.spells[pos1] ~= "nil" and input2.spells.spells[pos2] ~= "nil" then --两个都不为空
+		--交互索引
+		local oldIndex = input1.spells.spells[pos1].index
+		input1.spells.spells[pos1].index = input2.spells.spells[pos2].index
+		input2.spells.spells[pos2].index = oldIndex
+		--交互表
+		local oldTable = input1.spells.spells[pos1]
+		input1.spells.spells[pos1] = input2.spells.spells[pos2]
+		input2.spells.spells[pos2] = oldTable
+	elseif input1.spells.spells[pos1] == "nil" and input2.spells.spells[pos2] ~= "nil" then
+		input2.spells.spells[pos2].index = pos1 - 1
+		input1.spells.spells[pos1] = input2.spells.spells[pos2]
+		input2.spells.spells[pos2] = "nil"
+	elseif input1.spells.spells[pos2] == "nil" and input2.spells.spells[pos1] ~= "nil" then
+		input1.spells.spells[pos1].index = pos2 - 1
+		input2.spells.spells[pos2] = input1.spells.spells[pos1]
+		input1.spells.spells[pos1] = "nil"
+	end
+end
+
 ---重新设置一个容量大小，可增可减
 ---@param input Wand GetWandData函数的返回值
 ---@param size integer

@@ -27,6 +27,15 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
         "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
 
     local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
+    if this.UserData["HasShiftClick"] == nil then
+        this.UserData["HasShiftClick"] = {}
+    else
+        for entity, _ in pairs(this.UserData["HasShiftClick"]) do
+            if not EntityGetIsAlive(entity) then --垃圾回收
+                this.UserData["HasShiftClick"][entity] = nil
+            end
+        end
+    end
 	
 	if this.UserData["HasShiftClick"][wandEntity] and this.UserData["HasShiftClick"][wandEntity][1] == id then--判断是否要高亮
         local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
@@ -50,30 +59,13 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 		end
 	end
     if (InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)) and click then
-		local FixedWand
-		if this.UserData["FixedWand"] then
-			FixedWand =  this.UserData["FixedWand"][2]
-		end
         if this.UserData["HasShiftClick"][wandEntity] == nil then
             this.UserData["HasShiftClick"][wandEntity] = { id, k, nil }
-            if FixedWand and this.UserData["HasShiftClick"][FixedWand] and FixedWand ~= wandEntity then
-				if this.UserData["HasShiftClick"][FixedWand][1] == "WandSpellViewer" then--判断id是为了看看需不需要设置
-					this.UserData["HasShiftClick"][FixedWand] = nil
-				end
-            elseif FixedWand == wandEntity then--固定的法杖，等于传入的法杖实体的时候
-                local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()--获取手持法杖
-				if HeldWand ~= wandEntity then
-					this.UserData["HasShiftClick"][HeldWand] = nil
-				end
-			end
         elseif this.UserData["HasShiftClick"][wandEntity][2] == k or this.UserData["HasShiftClick"][wandEntity][1] ~= id then
             if this.UserData["HasShiftClick"][wandEntity][1] ~= id then--如果是id不相同，那么就要重新设置
                 this.UserData["HasShiftClick"][wandEntity][1] = id
                 this.UserData["HasShiftClick"][wandEntity][2] = k
-                this.UserData["HasShiftClick"][wandEntity][3] = nil
-				if FixedWand ~= wandEntity then
-					this.UserData["HasShiftClick"][FixedWand] = nil
-				end
+				this.UserData["HasShiftClick"][wandEntity][3] = nil
             else--如果是id相同且索引一致，那么就清空数据，代表取消
                 this.UserData["HasShiftClick"][wandEntity] = nil
             end
@@ -162,30 +154,12 @@ end
 
 local LastCapacity = 0
 function DrawWandContainer(this, wandEntity, spellData)
-	if this.UserData["HasShiftClick"] == nil then
-        this.UserData["HasShiftClick"] = {}
-    else
-        for entity, _ in pairs(this.UserData["HasShiftClick"]) do
-            if not EntityGetIsAlive(entity) then --垃圾回收
-                this.UserData["HasShiftClick"][entity] = nil
-            end
-        end
-    end
 	local Skip = false--是否跳过
     if wandEntity == nil then
         Skip = true
     end
     local wandData = GetWandData(wandEntity)
-    local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
-	local FixedWand
-    if this.UserData["FixedWand"] then
-        FixedWand = this.UserData["FixedWand"][2]
-    end
-	if HeldWand and HeldWand ~= FixedWand then--阻止同时出现多个多选框
-		if this.UserData["HasShiftClick"][HeldWand] and this.UserData["HasShiftClick"][FixedWand] and this.UserData["HasShiftClick"][FixedWand][1] == "WandSpellViewer" then
-			this.UserData["HasShiftClick"][HeldWand] = nil
-		end
-	end
+	
     if wandData == nil then
         Skip = true
     end
