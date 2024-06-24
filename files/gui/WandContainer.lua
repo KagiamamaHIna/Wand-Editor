@@ -34,26 +34,26 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, high
 
     local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
 	if click and this.UserData["FloatSpellID"] ~= nil then
-		if this.UserData["UpSpellIndex"] ~= nil and v ~= "nil" then --如果存在键，则代表这是一次交换操作
-			local i = this.UserData["UpSpellIndex"][1]
-			local AntherWand = this.UserData["UpSpellIndex"][3]
-			if AntherWand == wandEntity then --如果是同一实体
-				SetTableSpells(wandData, v.id, i, v.uses_remaining, false)
-			else              --刷新另一根法杖
-				local AntherWandData = this.UserData["UpSpellIndex"][2]
-				SetTableSpells(AntherWandData, v.id, i, v.uses_remaining, false)
-				InitWand(AntherWandData, this.UserData["UpSpellIndex"][3])
-			end --刷新手持法杖 这一步相当于交换
-			SetTableSpells(wandData, this.UserData["FloatSpellID"], k, this.UserData["UpSpellIndex"][4], false)
-			InitWand(wandData, wandEntity)
-		else --当前法杖的
-			local uses_remaining
-			if this.UserData["UpSpellIndex"] then--如果有记录的话就赋值使用次数
-				uses_remaining = this.UserData["UpSpellIndex"][4]
-			end
-			SetTableSpells(wandData, this.UserData["FloatSpellID"], k, uses_remaining, false)
-			InitWand(wandData, wandEntity)
-		end
+        if this.UserData["UpSpellIndex"] ~= nil and v ~= "nil" then --如果存在键，则代表这是一次交换操作
+            local i = this.UserData["UpSpellIndex"][1]
+            local AntherWand = this.UserData["UpSpellIndex"][3]
+            if AntherWand == wandEntity then --如果是同一实体
+                SetTableSpells(wandData, v.id, i, v.uses_remaining, false)
+            else                    --刷新另一根法杖
+                local AntherWandData = this.UserData["UpSpellIndex"][2]
+                SetTableSpells(AntherWandData, v.id, i, v.uses_remaining, false)
+                InitWand(AntherWandData, this.UserData["UpSpellIndex"][3])
+            end --刷新手持法杖 这一步相当于交换
+            SetTableSpells(wandData, this.UserData["FloatSpellID"], k, this.UserData["UpSpellIndex"][4], false)
+            InitWand(wandData, wandEntity)
+        else                             --当前法杖的
+            local uses_remaining
+            if this.UserData["UpSpellIndex"] then --如果有记录的话就赋值使用次数
+                uses_remaining = this.UserData["UpSpellIndex"][4]
+            end
+            SetTableSpells(wandData, this.UserData["FloatSpellID"], k, uses_remaining, false)
+            InitWand(wandData, wandEntity)
+        end
 		this.UserData["UpSpellIndex"] = nil
 		this.UserData["FloatSpellID"] = nil
 		this.OnceCallOnExecute(function()
@@ -107,6 +107,7 @@ function DrawWandContainer(this, wandEntity, spellData)
         Skip = true
     end
     local wandData = GetWandData(wandEntity)
+	
     if wandData == nil then
         Skip = true
     end
@@ -185,11 +186,11 @@ function DrawWandContainer(this, wandEntity, spellData)
 		this.MoveImageButton("WandSpellViewer", 235, 64, "mods/wand_editor/files/gui/images/wand_spell_viewer.png", nil, ViewerHover, ViewerClick, nil, true)
 	end
 	if not Skip then--绘制法术编辑栏
-		if this.UserData["WandContainerHasHover"] == nil or (not HasViewerHover) then
-			this.UserData["WandContainerHasHover"] = false
-		end
+        if this.UserData["WandContainerHasHover"] == nil or (not HasViewerHover) then
+            this.UserData["WandContainerHasHover"] = false
+        end
 		for k, v in pairs(wandData.spells.spells) do
-			this.AddHScrollItem("WandContainer", function()
+            this.AddHScrollItem("WandContainer", function()
 				SpellPicker(this, "WandContainer", wandEntity, wandData, spellData, k, v)
 			end)
 		end

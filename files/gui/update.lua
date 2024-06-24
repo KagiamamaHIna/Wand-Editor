@@ -1,4 +1,4 @@
-function GUIUpdata()
+function GUIUpdate()
 	if UI == nil then
 		--初始化
 		---@class Gui
@@ -68,129 +68,39 @@ function GUIUpdata()
 				end
 			end
 		end
-
-		--获得玩家当前法杖数据
-		local GetPlayerWandID = Compose(GetEntityHeldWand, GetPlayer)
-		local GetPlayerXY = Compose(EntityGetTransform, GetPlayer)
-
-		local MainButtonEnable = nil
-		local SpellDrawType = "AllSpells"
-		local TypeList = {
-			"AllSpells",
-			ACTION_TYPE_PROJECTILE,
-			ACTION_TYPE_STATIC_PROJECTILE,
-			ACTION_TYPE_MODIFIER,
-			ACTION_TYPE_DRAW_MANY,
-			ACTION_TYPE_MATERIAL,
-			ACTION_TYPE_OTHER,
-			ACTION_TYPE_UTILITY,
-			ACTION_TYPE_PASSIVE,
-			"favorite"
-		}
-		local SpellList = {
-			AllSpells = "AllSpells",
-			[ACTION_TYPE_PROJECTILE] = "projectile",
-			[ACTION_TYPE_STATIC_PROJECTILE] = "static_projectile",
-			[ACTION_TYPE_MODIFIER] = "modifier",
-			[ACTION_TYPE_DRAW_MANY] = "draw_many",
-			[ACTION_TYPE_MATERIAL] = "material",
-			[ACTION_TYPE_OTHER] = "other",
-			[ACTION_TYPE_UTILITY] = "utility",
-			[ACTION_TYPE_PASSIVE] = "passive",
-        }
 		local function PickerGap(gap)
 			return 19 + gap * 22
 		end
 		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN")
         UI.SetCheckboxEnable("shuffle_builder", false)
 		UI.SetCheckboxEnable("update_image_builder", false)
-		---@param this Gui
-		UI.TickEventFn["main"] = function(this)
-			if not GameIsInventoryOpen() and GetPlayer() then
-				GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
-				GuiZSetForNextWidget(this.gui, UI.GetZDeep())       --设置深度，确保行为正确
-				UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGetTranslatedOrNot("$wand_editor_main_button"),
-					"mods/wand_editor/files/gui/images/menu.png",nil,
-					function(left_click, right_click, x, y, enable)
-						if not enable then --开启状态
-							return
-						end
-
-						local function SpellDepotClickCB(_, _, _, _, depot_enable)
-							if not depot_enable then
-								return
-							end
-							local function HelpHover()
-								UI.tooltips(function()
-									GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_help"))
-								end, nil, 5)
-							end
-							this.MoveImageButton("SpellDepotHelp", 200, 249,
-								"mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
-
-							local function WandContainerClickCB(_, _, _, _, WandContainer_enable)
-								if WandContainer_enable then
-									DrawWandContainer(this, GetPlayerWandID(), spellData)
-								end
-							end
-							UI.MoveImagePicker("WandContainerBTN", 28, 247, 8, 20,
-								GameTextGet("$wand_editor_wand_edit_box"),
-								"mods/wand_editor/files/gui/images/wand_container.png", nil, WandContainerClickCB,
-								nil, true, nil, true)
-
-							local DrawSpellList, InputType = SearchSpell(this, spellData, TypeToSpellList,
-								SpellDrawType)
-							--绘制容器
-							DrawSpellContainer(this, spellData, DrawSpellList, InputType)
-							for i, v in pairs(TypeList) do     --绘制左边选择类型按钮
-								local sprite
-								if v == "AllSpells" then
-									sprite = ModDir .. "files/gui/images/all_spells.png"
-								elseif v == "favorite" then
-									sprite = ModDir .. "files/gui/images/favorite_icon.png"
-								else
-									sprite = ModDir .. "files/gui/images/" .. SpellList[v] .. "_icon.png"
-								end
-
-								local Hover = function()
-									local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
-									if hover then
-										SpellDrawType = v
-										local HoverText
-										if v == "AllSpells" then
-											HoverText = GameTextGetTranslatedOrNot("$wand_editor_All_spells")
-										elseif v == "favorite" then
-											HoverText = GameTextGetTranslatedOrNot("$wand_editor_favorite")
-										else
-											HoverText = SpellTypeEnumToStr(v)
-										end
-										this.tooltips(function()
-											GuiText(this.gui, 0, 0, HoverText)
-										end, ZDeepest - 1145, nil, nil, true)
-									end
-								end
-								if SpellDrawType ~= v then
-									GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawSemiTransparent)
-								end
-								this.MoveImageButton("Switch" .. v, 7, 44 + i * 20, sprite, nil, Hover, nil, nil,
-									true)
-							end
-						end
-
-						UI.MoveImagePicker("SpellDepotBTN", PickerGap(0), y + 30, 8, 0, GameTextGet("$wand_editor_spell_depot"),
-							"mods/wand_editor/files/gui/images/spell_depot.png", nil, SpellDepotClickCB, nil, true, nil,
-                            true)
-							
-						UI.MoveImagePicker("WandBuilderBTN", PickerGap(1), y + 30, 8, 0, GameTextGet("$wand_editor_wand_spawner"),
-							"mods/wand_editor/files/gui/images/wand_builder.png", nil, WandBuilderCB, nil, true, nil,
-                            true)
-
-						UI.MoveImagePicker("WandDepotBTN", PickerGap(2), y + 30, 8, 0, GameTextGet("$wand_editor_wand_depot"),
-							"mods/wand_editor/files/gui/images/wand_depot.png", nil, nil, nil, true, nil,
-                            true)
-						
-					end, nil, false, nil, true)
+		local MainCB = function(left_click, right_click, x, y, enable)
+			if not enable then
+				return
 			end
+			--开启状态
+			UI.MoveImagePicker("SpellDepotBTN", PickerGap(0), y + 30, 8, 0, GameTextGet("$wand_editor_spell_depot"),
+				"mods/wand_editor/files/gui/images/spell_depot.png", nil, SpellDepotClickCB, nil, true, nil,
+				true)
+				
+			UI.MoveImagePicker("WandBuilderBTN", PickerGap(1), y + 30, 8, 0, GameTextGet("$wand_editor_wand_spawner"),
+				"mods/wand_editor/files/gui/images/wand_builder.png", nil, WandBuilderCB, nil, true, nil,
+				true)
+
+			UI.MoveImagePicker("WandDepotBTN", PickerGap(2), y + 30, 8, 0, GameTextGet("$wand_editor_wand_depot"),
+				"mods/wand_editor/files/gui/images/wand_depot.png", nil, nil, nil, true, nil,
+				true)
+			
+		end
+		---@param this Gui
+		UI.TickEventFn["main"] = function(this)--我认为的主事件循环）
+            if not GameIsInventoryOpen() and GetPlayer() then
+                GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
+                GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
+                UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGetTranslatedOrNot("$wand_editor_main_button"),
+                    "mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
+            end
+			
 		end
 	end
 

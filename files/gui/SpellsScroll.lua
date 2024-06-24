@@ -149,6 +149,96 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     end
 	return DrawSpellList,SpellDrawType
 end
+local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取法术数据
+local spellData = data[1]
+
+local TypeToSpellList = data[2]
+local SpellDrawType = "AllSpells"
+local TypeList = {
+	"AllSpells",
+	ACTION_TYPE_PROJECTILE,
+	ACTION_TYPE_STATIC_PROJECTILE,
+	ACTION_TYPE_MODIFIER,
+	ACTION_TYPE_DRAW_MANY,
+	ACTION_TYPE_MATERIAL,
+	ACTION_TYPE_OTHER,
+	ACTION_TYPE_UTILITY,
+	ACTION_TYPE_PASSIVE,
+	"favorite"
+}
+local SpellList = {
+	AllSpells = "AllSpells",
+	[ACTION_TYPE_PROJECTILE] = "projectile",
+	[ACTION_TYPE_STATIC_PROJECTILE] = "static_projectile",
+	[ACTION_TYPE_MODIFIER] = "modifier",
+	[ACTION_TYPE_DRAW_MANY] = "draw_many",
+	[ACTION_TYPE_MATERIAL] = "material",
+	[ACTION_TYPE_OTHER] = "other",
+	[ACTION_TYPE_UTILITY] = "utility",
+	[ACTION_TYPE_PASSIVE] = "passive",
+}
+
+local GetPlayerWandID = Compose(GetEntityHeldWand, GetPlayer)
+
+function SpellDepotClickCB(_, _, _, _, depot_enable)
+	if not depot_enable then
+		return
+	end
+	local function HelpHover()
+		UI.tooltips(function()
+			GuiText(UI.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_help"))
+		end, nil, 5)
+	end
+	UI.MoveImageButton("SpellDepotHelp", 200, 249,
+		"mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
+
+	local function WandContainerClickCB(_, _, _, _, WandContainer_enable)
+		if WandContainer_enable then
+			DrawWandContainer(UI, GetPlayerWandID(), spellData)
+		end
+	end
+	UI.MoveImagePicker("WandContainerBTN", 28, 247, 8, 20,
+		GameTextGet("$wand_editor_wand_edit_box"),
+		"mods/wand_editor/files/gui/images/wand_container.png", nil, WandContainerClickCB,
+		nil, true, nil, true)
+
+	local DrawSpellList, InputType = SearchSpell(UI, spellData, TypeToSpellList,
+		SpellDrawType)
+	--绘制容器
+	DrawSpellContainer(UI, spellData, DrawSpellList, InputType)
+	for i, v in pairs(TypeList) do     --绘制左边选择类型按钮
+		local sprite
+		if v == "AllSpells" then
+			sprite = ModDir .. "files/gui/images/all_spells.png"
+		elseif v == "favorite" then
+			sprite = ModDir .. "files/gui/images/favorite_icon.png"
+		else
+			sprite = ModDir .. "files/gui/images/" .. SpellList[v] .. "_icon.png"
+		end
+
+		local Hover = function()
+			local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
+			if hover then
+				SpellDrawType = v
+				local HoverText
+				if v == "AllSpells" then
+					HoverText = GameTextGetTranslatedOrNot("$wand_editor_All_spells")
+				elseif v == "favorite" then
+					HoverText = GameTextGetTranslatedOrNot("$wand_editor_favorite")
+				else
+					HoverText = SpellTypeEnumToStr(v)
+				end
+				UI.tooltips(function()
+					GuiText(UI.gui, 0, 0, HoverText)
+				end, nil, nil, nil, true)
+			end
+		end
+		if SpellDrawType ~= v then
+			GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.DrawSemiTransparent)
+		end
+		UI.MoveImageButton("Switch" .. v, 7, 44 + i * 20, sprite, nil, Hover, nil, nil, true)
+	end
+end
 
 local SkipDrawMoreText = {
     ["RANDOM_SPELL"] = true,
