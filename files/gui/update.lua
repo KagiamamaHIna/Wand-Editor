@@ -2,7 +2,8 @@ function GUIUpdate()
 	if UI == nil then
 		--初始化
 		---@class Gui
-		UI = dofile_once("mods/wand_editor/files/libs/gui.lua")
+        UI = dofile_once("mods/wand_editor/files/libs/gui.lua")
+		
 		dofile_once("mods/wand_editor/files/libs/fn.lua")
 		dofile_once("data/scripts/lib/utilities.lua")
 		dofile_once("mods/wand_editor/files/gui/SpellsScroll.lua")
@@ -87,6 +88,13 @@ function GUIUpdate()
 				"mods/wand_editor/files/gui/images/wand_builder.png", nil, WandBuilderCB, nil, true, nil,
 				true)
 
+			local function WandDepotCB(_, _, _, _, this_enable)
+                if not this_enable then
+                    return
+                end
+				
+			end
+
 			UI.MoveImagePicker("WandDepotBTN", PickerGap(2), y + 30, 8, 0, GameTextGet("$wand_editor_wand_depot"),
 				"mods/wand_editor/files/gui/images/wand_depot.png", nil, nil, nil, true, nil,
 				true)
@@ -95,9 +103,10 @@ function GUIUpdate()
 		---@param this Gui
 		UI.TickEventFn["main"] = function(this)--我认为的主事件循环）
             if not GameIsInventoryOpen() and GetPlayer() then
-                GuiOptionsAdd(this.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
+				GuiOptionsAdd(UI.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
+
                 GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
-                UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGetTranslatedOrNot("$wand_editor_main_button"),
+                UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
                     "mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
             end
 			

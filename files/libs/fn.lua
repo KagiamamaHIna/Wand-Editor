@@ -606,7 +606,7 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
 	uses_remaining = Default(uses_remaining, -1)
 	if isAlways then --判断是不是始终释放
 		--是
-		table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = index - 1 })
+		table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = 0 })
 	else                                               --不是
 		if index > #input.spells.spells then
 			for i = 1, index - #input.spells.spells do --如果索引超过的情况下，加额外数据
@@ -623,6 +623,13 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
             input.spells.spells[index].uses_remaining = uses_remaining
 		end
 	end
+end
+
+---使用spells里面的表，来设置法术位置
+---@param input Wand
+---@param t table
+function SetSpellForTable(input, t)
+    SetTableSpells(input, t.id, t.index, t.uses_remaining, t.isAlways)
 end
 
 ---交互两个法术的位置, 如果索引越界则什么都不做

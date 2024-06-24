@@ -1,6 +1,6 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/gun/gun_enums.lua")
-local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, highlight)
+local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 	local srcDeep = this.GetZDeep()
 	local BGAlpha = 1
 	local BGAlphaKey = id.."LastWandContHoverAlpha" .. tostring(k)
@@ -25,15 +25,67 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, high
 	this.SetZDeep(this.GetZDeep() - 1)
 	GuiImage(this.gui, this.NewID(id.."BG" .. tostring(k)), 0, 0,
         "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
-    if highlight then
-		GuiZSetForNextWidget(this.gui, this.GetZDeep())
-		this.SetZDeep(this.GetZDeep() - 1)
-		GuiImage(this.gui, this.NewID(id.."hgBG" .. tostring(k)), -22, 0,
-			"mods/wand_editor/files/gui/images/highlight.png", BGAlpha, 1)
-	end
 
     local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
-	if click and this.UserData["FloatSpellID"] ~= nil then
+    if this.UserData["HasShiftClick"] == nil then
+        this.UserData["HasShiftClick"] = {}
+    else
+        for entity, _ in pairs(this.UserData["HasShiftClick"]) do
+            if not EntityGetIsAlive(entity) then --垃圾回收
+                this.UserData["HasShiftClick"][entity] = nil
+            end
+        end
+    end
+	
+	if this.UserData["HasShiftClick"][wandEntity] and this.UserData["HasShiftClick"][wandEntity][1] == id then--判断是否要高亮
+        local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
+		local highlight = false
+        local min = HasShiftClick[2]
+        local max = HasShiftClick[3] or min
+		if max < min then--计算是否要高亮
+            if k >= max and k <= min then
+                highlight = true
+            end
+        else
+			if k >= min and k <= max then
+                highlight = true
+            end
+		end
+		if highlight then
+			GuiZSetForNextWidget(this.gui, this.GetZDeep())
+			this.SetZDeep(this.GetZDeep() - 1)
+			GuiImage(this.gui, this.NewID(id.."hgBG" .. tostring(k)), -22, 0,
+				"mods/wand_editor/files/gui/images/highlight.png", BGAlpha, 1)
+		end
+	end
+    if (InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)) and click then
+        if this.UserData["HasShiftClick"][wandEntity] == nil then
+            this.UserData["HasShiftClick"][wandEntity] = { id, k, nil }
+        elseif this.UserData["HasShiftClick"][wandEntity][2] == k or this.UserData["HasShiftClick"][wandEntity][1] ~= id then
+            if this.UserData["HasShiftClick"][wandEntity][1] ~= id then--如果是id不相同，那么就要重新设置
+                this.UserData["HasShiftClick"][wandEntity][1] = id
+                this.UserData["HasShiftClick"][wandEntity][2] = k
+				this.UserData["HasShiftClick"][wandEntity][3] = nil
+            else--如果是id相同且索引一致，那么就清空数据，代表取消
+                this.UserData["HasShiftClick"][wandEntity] = nil
+            end
+        else
+            this.UserData["HasShiftClick"][wandEntity][3] = k
+        end
+    elseif click and this.UserData["FloatSpellID"] == nil and (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and this.UserData["HasShiftClick"][wandEntity] then
+        local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
+		local min = HasShiftClick[2]
+        local max = HasShiftClick[3] or min
+        min = math.min(min, max)
+        max = math.max(HasShiftClick[2], max)
+        local ThisK = k
+        for i = min, max do
+            SwapSpellPos(wandData, i, ThisK)
+            ThisK = ThisK + 1
+        end
+        InitWand(wandData, wandEntity)
+		this.UserData["HasShiftClick"][wandEntity] = nil
+	elseif click and this.UserData["FloatSpellID"] ~= nil then
         if this.UserData["UpSpellIndex"] ~= nil and v ~= "nil" then --如果存在键，则代表这是一次交换操作
             local i = this.UserData["UpSpellIndex"][1]
             local AntherWand = this.UserData["UpSpellIndex"][3]
