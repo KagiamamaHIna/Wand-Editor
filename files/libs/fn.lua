@@ -486,7 +486,6 @@ function GetWandSpellIDs(entity)
 	local capacity = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity") --容量
 	local spellList = {}
     local spellEntitys = EntityGetChildWithTag(entity, "card_action")
-	local hasAlways = true
 	local AlwaysCount = 0 --统计正确的容量用
 	local IndexZeroCount = 0 --有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
 	if spellEntitys ~= nil then
@@ -498,9 +497,6 @@ function GetWandSpellIDs(entity)
 			local spellid = ComponentGetValue2(ItemActionComp, "action_id")
             local is_frozen = ComponentGetValue2(ItemComp, "is_frozen")
             local uses_remaining = ComponentGetValue2(ItemComp, "uses_remaining")
-			if uses_remaining == -1 then
-				uses_remaining = nil
-			end
             if index == 0 and (not isAlways) then --当索引为0的时候
                 if IndexZeroCount > 0 then --判断数量
                     index = IndexZeroCount
@@ -604,9 +600,10 @@ end
 ---@param input Wand GetWandData函数的返回值
 ---@param id string
 ---@param index integer
----@param uses_remaining integer|nil
+---@param uses_remaining integer|nil uses_remaining = -1
 ---@param isAlways boolean?
 function SetTableSpells(input, id, index, uses_remaining, isAlways)
+	uses_remaining = Default(uses_remaining, -1)
 	if isAlways then --判断是不是始终释放
 		--是
 		table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = index - 1 })
@@ -707,21 +704,69 @@ function InitWand(wandData, wand, x, y)
     local srcWand = wand
 	if wand == nil then
         wand = EntityLoad("mods/wand_editor/files/entity/WandBase.xml", x, y)
-    elseif wandData.spells and srcWand == nil then
+    elseif wandData.spells and srcWand ~= nil then--已有实体
         local list = EntityGetChildWithTag(wand, "card_action")
         local Always = {}
-		local spells = {}
+        local spells = {}
+		local IndexZeroCount = 0 --有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
         for _, v in pairs(list or {}) do
             local actionItem = EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
             local isAlways = ComponentGetValue2(actionItem, "permanently_attached")
             if isAlways then
-                Always[Always + 1] = v
+                Always[#Always + 1] = v
             else
                 local index = ComponentGetValue2(actionItem, "inventory_slot")
-                spells[index] = spells
+				if index == 0 then --当索引为0的时候
+					if IndexZeroCount > 0 then --判断数量
+						index = IndexZeroCount
+					end
+					IndexZeroCount = IndexZeroCount + 1 --自增
+				end
+                spells[index+1] = v
             end
         end
-		
+        for i = 1, #wandData.spells.always do
+            local spell = wandData.spells.always[i]
+            if Always[i] then
+                local ItemActionComp = EntityGetFirstComponentIncludingDisabled(Always[i], "ItemActionComponent")
+				local actionItem = EntityGetFirstComponentIncludingDisabled(Always[i], "ItemComponent")
+				ComponentSetValue2(actionItem, "inventory_slot", 0, i)
+                ComponentSetValue2(ItemActionComp, "action_id", spell.id)
+            else
+                local action = CreateItemActionEntity(spell.id)
+                local actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
+                ComponentSetValue2(actionItem, "permanently_attached", true)
+                ComponentSetValue2(actionItem, "is_frozen", spell.is_frozen)
+                ComponentSetValue2(actionItem, "inventory_slot", 0, i)
+                EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
+                EntityAddChild(wand, action)
+            end
+        end
+		for i,spell in pairs(wandData.spells.spells)do
+            if spell and spell ~= "nil" then
+                local action
+				if spells[i] then
+                    action = spells[i]
+                    local ItemActionComp = EntityGetFirstComponentIncludingDisabled(action, "ItemActionComponent")
+					ComponentSetValue2(ItemActionComp, "action_id", spell.id)--设置id
+                else
+                    action = CreateItemActionEntity(spell.id)
+				end
+				local actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
+				ComponentSetValue2(actionItem, "permanently_attached", spell.isAlways)
+				ComponentSetValue2(actionItem, "is_frozen", spell.is_frozen)
+                ComponentSetValue2(actionItem, "inventory_slot", spell.index, 0)
+                if spell.uses_remaining then
+                    ComponentSetValue2(actionItem, "uses_remaining", spell.uses_remaining)
+                end
+				EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
+				if spells[i] == nil then
+				EntityAddChild(wand, action)
+				end
+            elseif spell == "nil" and spells[i] then
+				EntityKill(spells[i])
+			end
+		end
 	end
 	if not EntityGetIsAlive(wand) then
 		return 0
