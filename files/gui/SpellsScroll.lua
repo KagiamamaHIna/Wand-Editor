@@ -442,9 +442,54 @@ function DrawSpellContainer(this, spellData, spellTable, type)
         end
 		
 		local SpellCilck = function(left_click, right_click, x, y) --法术点击效果
-            local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
-			local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
-			if left_click and shift then --shift+左键
+            local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+            local ALT = InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)
+            local SHIFT = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
+            if left_click and SHIFT then--快捷添加法术
+				local CurrentWand
+				if this.UserData["FixedWand"] and this.UserData["HasShiftClick"][this.UserData["FixedWand"][2]] then--固定的法杖必须是有选框才能判定
+                    CurrentWand = this.UserData["FixedWand"][2]
+                else--否则就判断手持
+					local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
+					if HeldWand then
+						CurrentWand = HeldWand
+					end
+				end
+                if CurrentWand and this.UserData["HasShiftClick"][CurrentWand] then --如果是有选框的
+					local wandData = GetWandData(CurrentWand)
+					local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
+					local min = HasShiftClick[2]
+					local max = HasShiftClick[3] or min
+					min = math.min(min, max)
+                    max = math.max(HasShiftClick[2], max)
+                    if min == max then--如果是单个选框的
+                        SetTableSpells(wandData, id, min)
+                        InitWand(wandData, CurrentWand)
+						HasShiftClick[2] = HasShiftClick[2] + 1
+                    else--反之就是多个
+                        for i = min, max do
+                            SetTableSpells(wandData, id, i)
+                            InitWand(wandData, CurrentWand)
+                        end
+						this.UserData["HasShiftClick"][CurrentWand] = nil
+                    end
+					this.OnceCallOnExecute(function()
+						RefreshHeldWands()
+					end)
+                elseif CurrentWand then--没有选框
+                    local wandData = GetWandData(CurrentWand)
+                    for k, v in pairs(wandData.spells.spells) do
+                        if v == "nil" then
+                            SetTableSpells(wandData, id, k)
+                            InitWand(wandData, CurrentWand)
+                            break
+                        end
+                    end
+					this.OnceCallOnExecute(function()
+						RefreshHeldWands()
+					end)
+				end
+			elseif left_click and CTRL then --CTRL+左键
 				local inventory_full = EntityGetChildWithName(GetPlayer(), "inventory_full")
                 if inventory_full then
                     local px, py = GetPlayerXY()
@@ -454,7 +499,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                     GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
                         GameTextGetTranslatedOrNot("$wand_editor_added_spell"))
                 end
-            elseif left_click and CTRL then--ctrl+左键收藏/删除法术
+            elseif left_click and ALT then--ALT+左键收藏/删除法术
 				if IsFavorite then
                     HasFavorite[id] = nil
                     table.remove(FavoriteTable, pos)
