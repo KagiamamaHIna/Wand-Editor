@@ -65,7 +65,7 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 					this.UserData["HasShiftClick"][HeldWand] = nil
 				end
 			end
-        elseif this.UserData["HasShiftClick"][wandEntity][2] == k or this.UserData["HasShiftClick"][wandEntity][1] ~= id then
+        elseif this.UserData["HasShiftClick"][wandEntity][2] == k or this.UserData["HasShiftClick"][wandEntity][1] ~= id or this.UserData["HasShiftClick"][wandEntity][3] == k then
             if this.UserData["HasShiftClick"][wandEntity][1] ~= id then--如果是id不相同，那么就要重新设置
                 this.UserData["HasShiftClick"][wandEntity][1] = id
                 this.UserData["HasShiftClick"][wandEntity][2] = k
