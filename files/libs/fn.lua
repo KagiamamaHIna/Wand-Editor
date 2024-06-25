@@ -15,6 +15,20 @@ print = function(...)
 	noita_print(table.concat(cache))
 end
 
+local noita_print_error = print_error
+
+---重新实现
+---@param ... string
+print_error = function (...)
+	local cache = {}
+	local cacheCount = 1
+	for _, v in pairs({ ... }) do
+		cache[cacheCount] = tostring(v)
+		cacheCount = cacheCount + 1
+	end
+	noita_print_error(table.concat(cache))
+end
+
 local noita_game_print = GamePrint
 
 --重新实现一个

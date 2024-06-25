@@ -219,6 +219,7 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 	this.SetZDeep(srcDeep)--恢复深度以解决奇怪深度问题
 end
 
+local LastWand
 local LastCapacity = 0
 function DrawWandContainer(this, wandEntity, spellData)
 	if this.UserData["HasShiftClick"] == nil then
@@ -250,11 +251,13 @@ function DrawWandContainer(this, wandEntity, spellData)
     end
 	local TrueWidth = this.ScreenWidth - 20
 	local HScrollX = 10
+	local HScrollY = this.ScreenHeight - 38.5
 	local HScrollWidth = this.GetHScrollWidth("WandContainer")
 	if not Skip then
-        if HScrollWidth == nil then --自动居中
+        if HScrollWidth == nil or LastWand ~= wandEntity then --自动居中
             TrueWidth = 0
             HScrollX = this.ScreenWidth * 2
+			HScrollY = this.ScreenHeight * 2
         elseif HScrollWidth < TrueWidth and HScrollWidth ~= 0 then
             TrueWidth = HScrollWidth
             HScrollX = this.ScreenWidth * 0.5 - HScrollWidth / 2
@@ -266,7 +269,7 @@ function DrawWandContainer(this, wandEntity, spellData)
 
 
 	local HasViewerHover = false
-    this.HorizontalScroll("WandContainer", HScrollX, this.ScreenHeight - 38.5, TrueWidth, 20, false, 0, 0)
+    this.HorizontalScroll("WandContainer", HScrollX, HScrollY, TrueWidth, 20, false, 0, 0)
 
     local ViewerHover = function()
         local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
@@ -333,6 +336,7 @@ function DrawWandContainer(this, wandEntity, spellData)
 		end
 		
 		this.DarwHorizontalScroll("WandContainer")
-		LastCapacity = wandData.deck_capacity
+        LastCapacity = wandData.deck_capacity
+		LastWand = wandEntity
 	end
 end
