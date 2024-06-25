@@ -70,7 +70,7 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
                 this.UserData["HasShiftClick"][wandEntity][1] = id
                 this.UserData["HasShiftClick"][wandEntity][2] = k
                 this.UserData["HasShiftClick"][wandEntity][3] = nil
-				if FixedWand ~= wandEntity then
+				if FixedWand ~= wandEntity then--如果你看不懂没关系，我你叫我来可能也要反应半天
 					this.UserData["HasShiftClick"][FixedWand] = nil
 				end
             else--如果是id相同且索引一致，那么就清空数据，代表取消
@@ -97,6 +97,9 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 			end
 			InitWand(wandData, wandEntity)
             this.UserData["HasShiftClick"][wandEntity] = nil
+			this.OnceCallOnExecute(function()
+				RefreshHeldWands()
+			end)
         else                                                --反之不同
 			local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
             local FixedWand = this.UserData["FixedWand"][2] --如果是跨法杖编辑，那么代表这个是必然存在的
@@ -130,7 +133,10 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 				InitWand(AntherWand, FixedWand)
 			end
             this.UserData["HasShiftClick"][HeldWand] = nil
-			this.UserData["HasShiftClick"][FixedWand] = nil
+            this.UserData["HasShiftClick"][FixedWand] = nil
+			this.OnceCallOnExecute(function()
+				RefreshHeldWands()
+			end)
 		end
 	elseif click and this.UserData["FloatSpellID"] ~= nil then
         if this.UserData["UpSpellIndex"] ~= nil and v ~= "nil" then --如果存在键，则代表这是一次交换操作
@@ -176,13 +182,13 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v)
 	GuiTooltip(this.gui, tostring(k), "")
 	this.UserData[id.."LastWandContHover" .. tostring(k)] = hover
 	this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
-	if hover and InputIsKeyDown(Key_BACKSPACE) and v ~= "nil" then
+	if hover and InputIsKeyDown(Key_BACKSPACE) and v ~= "nil" then--按下退格键删除法术
 		RemoveTableSpells(wandData, k)
 		InitWand(wandData, wandEntity)
 		this.OnceCallOnExecute(function()
 			RefreshHeldWands()
         end)
-    elseif hover and InputIsKeyDown(Key_BACKSPACE) and highlight and this.UserData["HasShiftClick"][wandEntity] then
+    elseif hover and InputIsKeyDown(Key_BACKSPACE) and highlight and this.UserData["HasShiftClick"][wandEntity] then--按下退格键多选删除法术
 		local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
 		local min = HasShiftClick[2]
 		local max = HasShiftClick[3] or min

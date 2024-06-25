@@ -21,7 +21,7 @@ local function GetWand()
 	else
 		IsShuffle = 0
 	end
-	local NewWand = {--WIP
+	local NewWand = {
 		item_name = nil,
 		mana_charge_speed = GetValue("manachargespeed_builder"),      --回蓝速度
 		mana_max = GetValue("manamax_builder"),               --蓝上限
@@ -37,6 +37,7 @@ local function GetWand()
 		sprite_file = nil,            --贴图
 		sprite_pos = { x = 0, y = 0 } --精灵图偏移
     }
+    SetRandomSeed(Compose(EntityGetTransform, GetPlayer)())
 	--这里是改的原版生成贴图的代码
 	local gun_in_wand_space = {}
 	gun_in_wand_space.fire_rate_wait = clamp(((NewWand["fire_rate_wait"] + 5) / 7)-1, 0, 4)

@@ -725,7 +725,7 @@ function UpdateWand(wandData, wand)
 	end
 end
 
----通过法杖数据初始化一根法杖并返回其实体id
+---通过法杖数据初始化一根法杖并返回其实体id...好大啊！
 ---@param wandData Wand 由GetWandData函数自动生成
 ---@param wand integer|nil? EntityID，当wand为nil的时候将自动生成一个实体用于加载魔杖
 ---@param x number? x = 0

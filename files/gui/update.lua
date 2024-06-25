@@ -8,7 +8,8 @@ function GUIUpdate()
 		dofile_once("data/scripts/lib/utilities.lua")
 		dofile_once("mods/wand_editor/files/gui/SpellsScroll.lua")
         dofile_once("mods/wand_editor/files/gui/WandContainer.lua")
-		dofile_once("mods/wand_editor/files/gui/WandBuilder.lua")
+        dofile_once("mods/wand_editor/files/gui/WandBuilder.lua")
+		dofile_once("mods/wand_editor/files/gui/WandDepot.lua")
 		UI.UserData["HasSpellMove"] = false
 		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取法术数据
 		local spellData = data[1]
@@ -88,15 +89,8 @@ function GUIUpdate()
 				"mods/wand_editor/files/gui/images/wand_builder.png", nil, WandBuilderCB, nil, true, nil,
 				true)
 
-			local function WandDepotCB(_, _, _, _, this_enable)
-                if not this_enable then
-                    return
-                end
-				
-			end
-
 			UI.MoveImagePicker("WandDepotBTN", PickerGap(2), y + 30, 8, 0, GameTextGet("$wand_editor_wand_depot"),
-				"mods/wand_editor/files/gui/images/wand_depot.png", nil, nil, nil, true, nil,
+				"mods/wand_editor/files/gui/images/wand_depot.png", nil, WandDepotCB, nil, true, nil,
 				true)
 			
 		end
