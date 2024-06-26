@@ -558,7 +558,9 @@ end
 ---@field actions_per_round integer
 ---@field shoot_pos Vec2
 ---@field sprite_file string
+---@field rect_animation string
 ---@field sprite_pos Vec2
+---@field src_deck_capacity integer
 
 ---获得法杖数据
 ---@param entity integer EntityID
@@ -573,7 +575,8 @@ function GetWandData(entity)
 			mana_max = nil,               --蓝上限
 			fire_rate_wait = nil,         --施放延迟
 			reload_time = nil,            --充能延迟
-			deck_capacity = nil,          --容量
+            deck_capacity = nil,          --容量
+			src_deck_capacity = nil,	  --原始数据的容量 
 			spread_degrees = nil,         --散射
 			shuffle_deck_when_empty = nil, --是否乱序
 			speed_multiplier = nil,       --初速度加成
@@ -581,7 +584,8 @@ function GetWandData(entity)
 			actions_per_round = nil,      --施放数
 			shoot_pos = { x = 0, y = 0 }, --发射位置
 			sprite_file = nil,            --贴图
-			sprite_pos = { x = 0, y = 0 } --精灵图偏移
+            sprite_pos = { x = 0, y = 0 }, --精灵图偏移
+			rect_animation = nil
 		}
 		local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
 		local CompGetValue = Curry(ComponentGetValue2, 2)(Ability)
@@ -591,7 +595,8 @@ function GetWandData(entity)
 		local hotspot = EntityGetFirstComponentIncludingDisabled(entity, "HotspotComponent", "shoot_pos")
 		local sprite = EntityGetFirstComponentIncludingDisabled(entity, "SpriteComponent", "item")
 		wand.sprite_pos.x = ComponentGetValue2(sprite, "offset_x")
-		wand.sprite_pos.y = ComponentGetValue2(sprite, "offset_y")
+        wand.sprite_pos.y = ComponentGetValue2(sprite, "offset_y")
+		wand.rect_animation = ComponentGetValue2(sprite, "rect_animation")
 		wand.shoot_pos.x, wand.shoot_pos.y = ComponentGetValue2(hotspot, "offset") --发射偏移量
 		wand.item_name = ComponentGetValue2(item, "item_name")
 
@@ -601,7 +606,7 @@ function GetWandData(entity)
 		wand.sprite_file = CompGetValue("sprite_file")
 		wand.actions_per_round = GunConfigGetValue("actions_per_round")
 		wand.shuffle_deck_when_empty = GunConfigGetValue("shuffle_deck_when_empty")
-		wand.deck_capacity = GunConfigGetValue("deck_capacity")
+		wand.deck_capacity = GunConfigGetValue("deck_capacity") - #wand.spells.always
 		wand.reload_time = GunConfigGetValue("reload_time")
 		wand.spread_degrees = GunActionGetValue("spread_degrees")
 		wand.fire_rate_wait = GunActionGetValue("fire_rate_wait")
@@ -620,8 +625,12 @@ end
 function SetTableSpells(input, id, index, uses_remaining, isAlways)
 	uses_remaining = Default(uses_remaining, -1)
 	if isAlways then --判断是不是始终释放
-		--是
-		table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = 0 })
+        --是
+		if index > #input.spells.always then
+            table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = 0 })
+        else
+			input.spells.always[index] = { id = id, isAlways = true, is_frozen = false, index = 0 }
+		end
 	else                                               --不是
 		if index > #input.spells.spells then
 			for i = 1, index - #input.spells.spells do --如果索引超过的情况下，加额外数据
@@ -638,6 +647,13 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
             input.spells.spells[index].uses_remaining = uses_remaining
 		end
 	end
+end
+
+---向最后一个始终添加法术
+---@param input Wand
+---@param id string
+function PushAlwaysSpell(input,id)
+	SetTableSpells(input, id, #input.spells.always+1, nil, true)
 end
 
 ---交换两个法术的位置, 如果索引越界则什么都不做
@@ -723,10 +739,9 @@ function RemoveTableSpells(input, TableIndex)
 	end
 end
 
----WIP
 ---@param input Wand GetWandData函数的返回值
 function RemoveTableAlwaysSpells(input, TableIndex)
-
+    table.remove(input.spells.always, TableIndex)
 end
 
 function UpdateWand(wandData, wand)
@@ -747,6 +762,10 @@ end
 ---@return integer
 function InitWand(wandData, wand, x, y)
     local srcWand = wand
+    local deck_capacity = wandData.deck_capacity
+	if wandData.spells then
+		deck_capacity = deck_capacity + #wandData.spells.always
+	end
 	if wand == nil then
         wand = EntityLoad("mods/wand_editor/files/entity/WandBase.xml", x, y)
     elseif wandData.spells and srcWand ~= nil then--已有实体
@@ -754,20 +773,20 @@ function InitWand(wandData, wand, x, y)
         local Always = {}
         local spells = {}
 		local IndexZeroCount = 0 --有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
-        for _, v in pairs(list or {}) do
+        for _, v in pairs(list or {}) do --初始化数据
             local actionItem = EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
             local isAlways = ComponentGetValue2(actionItem, "permanently_attached")
             if isAlways then
                 Always[#Always + 1] = v
             else
                 local index = ComponentGetValue2(actionItem, "inventory_slot")
-				if index == 0 then --当索引为0的时候
-					if IndexZeroCount > 0 then --判断数量
-						index = IndexZeroCount
-					end
-					IndexZeroCount = IndexZeroCount + 1 --自增
-				end
-                spells[index+1] = v
+                if index == 0 then --当索引为0的时候
+                    if IndexZeroCount > 0 then --判断数量
+                        index = IndexZeroCount
+                    end
+                    IndexZeroCount = IndexZeroCount + 1 --自增
+                end
+                spells[index + 1] = v
             end
         end
         for i = 1, #wandData.spells.always do
@@ -787,31 +806,37 @@ function InitWand(wandData, wand, x, y)
                 EntityAddChild(wand, action)
             end
         end
-		for i,spell in pairs(wandData.spells.spells)do
+        for i, spell in pairs(wandData.spells.spells) do
             if spell and spell ~= "nil" then
                 local action
-				if spells[i] then
+                if spells[i] then
                     action = spells[i]
                     local ItemActionComp = EntityGetFirstComponentIncludingDisabled(action, "ItemActionComponent")
-					ComponentSetValue2(ItemActionComp, "action_id", spell.id)--设置id
+                    ComponentSetValue2(ItemActionComp, "action_id", spell.id) --设置id
                 else
                     action = CreateItemActionEntity(spell.id)
-				end
-				local actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
-				ComponentSetValue2(actionItem, "permanently_attached", spell.isAlways)
-				ComponentSetValue2(actionItem, "is_frozen", spell.is_frozen)
+                end
+                local actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
+                ComponentSetValue2(actionItem, "permanently_attached", spell.isAlways)
+                ComponentSetValue2(actionItem, "is_frozen", spell.is_frozen)
                 ComponentSetValue2(actionItem, "inventory_slot", spell.index, 0)
                 if spell.uses_remaining then
                     ComponentSetValue2(actionItem, "uses_remaining", spell.uses_remaining)
                 end
-				EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
-				if spells[i] == nil then
-				EntityAddChild(wand, action)
-				end
+                EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
+                if spells[i] == nil then
+                    EntityAddChild(wand, action)
+                end
             elseif spell == "nil" and spells[i] then
-				EntityKill(spells[i])
-			end
-		end
+                EntityKill(spells[i])
+            end
+        end
+        for i = #wandData.spells.spells + 1, #spells do --超出的法术需要杀死
+            EntityKill(spells[i])
+        end
+        for i = #wandData.spells.always + 1, #Always do
+            EntityKill(Always[i])
+        end
 	end
 	if not EntityGetIsAlive(wand) then
 		return 0
@@ -832,7 +857,7 @@ function InitWand(wandData, wand, x, y)
 	CompSetValue("mana", wandData.mana)
 	CompSetValue("sprite_file", wandData.sprite_file)
 	GunConfigSetValue("shuffle_deck_when_empty", wandData.shuffle_deck_when_empty)
-	GunConfigSetValue("deck_capacity", wandData.deck_capacity)
+	GunConfigSetValue("deck_capacity", deck_capacity)
 	GunConfigSetValue("reload_time", wandData.reload_time)
 	GunConfigSetValue("actions_per_round", wandData.actions_per_round)
 	GunActionSetValue("spread_degrees", wandData.spread_degrees)
@@ -843,6 +868,9 @@ function InitWand(wandData, wand, x, y)
         ComponentSetValue2(sprite, "image_file", wandData.sprite_file)
         ComponentSetValue2(sprite, "offset_x", wandData.sprite_pos.x)
         ComponentSetValue2(sprite, "offset_y", wandData.sprite_pos.y)
+		if wandData.rect_animation then
+			ComponentSetValue2(sprite, "rect_animation", wandData.rect_animation)
+		end
         EntityRefreshSprite(wand, sprite)
     end
 	--TablePrint(wandData)
