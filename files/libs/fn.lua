@@ -649,6 +649,13 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
 	end
 end
 
+---获取一个法杖中法术指定位置索引的id
+---@param input Wand
+---@param index integer
+function GetSpellID(input, index)
+	return input.spells.spells[index]
+end
+
 ---向最后一个始终添加法术
 ---@param input Wand
 ---@param id string

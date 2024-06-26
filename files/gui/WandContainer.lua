@@ -54,14 +54,51 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 		end
 	end
     if not isAlways then
-        if (InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)) and click then
+		local CurrentWand
+		if this.UserData["FixedWand"] and this.UserData["HasShiftClick"][this.UserData["FixedWand"][2]] then--固定的法杖必须是有选框才能判定
+			CurrentWand = this.UserData["FixedWand"][2]
+		else--否则就判断手持
+			local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
+			if HeldWand then
+				CurrentWand = HeldWand
+			end
+		end
+		if (InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)) and click and this.UserData["HasShiftClick"][CurrentWand] then--批量添加始终
+			local CurrentData = GetWandData(CurrentWand)
+			local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
+			local min = HasShiftClick[2]
+			local max = HasShiftClick[3] or min
+			min = math.min(min, max)
+			max = math.max(HasShiftClick[2], max)
+            if min == max then --如果是单个选框的
+                local spell = GetSpellID(CurrentData, min)
+				if spell ~= "nil" then
+					PushAlwaysSpell(CurrentData, spell.id)
+					RemoveTableSpells(CurrentData, min)
+					InitWand(CurrentData, CurrentWand)
+				end
+			else--反之就是多个
+                for i = min, max do
+                    local spell = GetSpellID(CurrentData, i)
+                    if spell ~= "nil" then
+						PushAlwaysSpell(CurrentData, spell.id)
+						RemoveTableSpells(CurrentData, i)
+                    end
+                end
+				InitWand(CurrentData, CurrentWand)
+			end
+			this.UserData["HasShiftClick"][CurrentWand] = nil
+			this.OnceCallOnExecute(function()
+				RefreshHeldWands()
+			end)
+        elseif (InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)) and click then--添加始终
             PushAlwaysSpell(wandData, v.id)
             RemoveTableSpells(wandData, k)
             InitWand(wandData, wandEntity)
 			this.OnceCallOnExecute(function()
 				RefreshHeldWands()
 			end)
-		elseif (InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)) and click then
+		elseif (InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)) and click then--框选法术
 			local FixedWand
 			if this.UserData["FixedWand"] then
 				FixedWand = this.UserData["FixedWand"][2]
@@ -194,7 +231,20 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 			end
 		end
     else --是始终施放法术的操作
-		if click and this.UserData["FloatSpellID"] == nil then
+        if hover and InputIsKeyDown(Key_BACKSPACE) then
+			if this.UserData["AlwaysClickFr"] == nil then
+                this.UserData["AlwaysClickFr"] = 45
+            elseif this.UserData["AlwaysClickFr"] > 0 then
+                this.UserData["AlwaysClickFr"] = this.UserData["AlwaysClickFr"] - 1
+			end
+			if this.UserData["AlwaysClickFr"] == 45 or this.UserData["AlwaysClickFr"] == 0 then
+				RemoveTableAlwaysSpells(wandData, k)
+				InitWand(wandData, wandEntity)
+				this.OnceCallOnExecute(function()
+					RefreshHeldWands()
+				end)
+			end
+		elseif click and this.UserData["FloatSpellID"] == nil then
             if not this.GetNoMoveBool() then
                 this.UserData["SpellHoverEnable"] = false
                 DrawFloatSpell(x, y, spellData[v.id].sprite, v.id)
@@ -205,10 +255,15 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
                     RefreshHeldWands()
                 end)
             end
+        elseif not InputIsKeyDown(Key_BACKSPACE) then
+			this.UserData["AlwaysClickFr"] = nil
 		end
 	end
-
-    GuiTooltip(this.gui, tostring(k), "")
+	if isAlways then
+		GuiTooltip(this.gui, GameTextGet("$wand_editor_always")..tostring(k), "")		
+    else
+		GuiTooltip(this.gui, tostring(k), "")
+	end
 	if not isAlways then
 		this.UserData[id .. "LastWandContHover" .. tostring(k)] = hover
 		this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover

@@ -469,8 +469,8 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                     else--反之就是多个
                         for i = min, max do
                             SetTableSpells(wandData, id, i)
-                            InitWand(wandData, CurrentWand)
                         end
+						InitWand(wandData, CurrentWand)
 						this.UserData["HasShiftClick"][CurrentWand] = nil
                     end
 					this.OnceCallOnExecute(function()
