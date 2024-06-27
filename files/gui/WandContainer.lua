@@ -361,9 +361,9 @@ function DrawWandContainer(this, wandEntity, spellData)
 			this.ResetHScrollSlider("WandContainer")
 		end
 	end
-	if wandData.spells then--执行顺序问题，先放这里防止始终数量更改
+	if wandData and wandData.spells then--执行顺序问题，先放这里防止始终数量更改
 		LastCapacity = wandData.deck_capacity + #wandData.spells.always
-	else
+	elseif wandData then
 		LastCapacity = wandData.deck_capacity
 	end
 

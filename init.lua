@@ -6,11 +6,12 @@ dofile_once("data/scripts/lib/utilities.lua")
 local SrcCsv = ModTextFileGetContent("data/translations/common.csv")--设置新语言文件
 local AddCsv = ModTextFileGetContent("mods/wand_editor/files/lang/lang.csv")
 ModTextFileSetContent("data/translations/common.csv", SrcCsv .. AddCsv)
+--[[测试用，删去注释后每次启动游戏都将删除所有的法杖仓库
 ModSettingRemove(ModID.."WandDepotSize")
 if ModSettingGet(ModID.."WandDepotSize") == nil then
 	ModSettingSet(ModID.."WandDepotSize", 0)
 end
-
+]]
 local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache"
 if not Cpp.PathExists(cachePath) then
 	Cpp.CreateDir(cachePath)
