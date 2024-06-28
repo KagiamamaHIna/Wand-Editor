@@ -74,7 +74,7 @@ if HasCahce and (not mustReload) then
             break
         end
     end
-	if not Change then--可以直接读取缓存！
+	if true then--可以直接读取缓存！
 		--print("Cache Get")
 		local result1 = dofile_once("mods/wand_editor/cache/SpellsData.lua")
 		local result2 = dofile_once("mods/wand_editor/cache/TypeToSpellList.lua")

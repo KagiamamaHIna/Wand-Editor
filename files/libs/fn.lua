@@ -79,6 +79,22 @@ function TablePrint(t)
 	print()
 end
 
+function PushValueOnList(t, v)
+	if t == nil then
+		return
+	end
+	t[#t + 1] = v
+end
+
+function PopValueOnList(t)
+	if t == nil or #t == 0 then
+		return
+	end
+    local result = t[#t]
+    t[#t] = nil
+	return result
+end
+
 ---监听器，提供一个函数，监听表的变化
 ---@param t table
 ---@param callback function
@@ -768,6 +784,10 @@ end
 ---@param y number? y = 0
 ---@return integer
 function InitWand(wandData, wand, x, y)
+    if ___WandStack == nil then
+        ___WandStack = {}
+    end
+	
     local srcWand = wand
     local deck_capacity = wandData.deck_capacity
 	if wandData.spells then

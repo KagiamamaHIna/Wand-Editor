@@ -348,9 +348,10 @@ function DrawWandContainer(this, wandEntity, spellData)
 	local HScrollY = this.ScreenHeight - 38.5
 	local HScrollWidth = this.GetHScrollWidth("WandContainer")
 	if not Skip then
-        if HScrollWidth == nil or LastWand ~= wandEntity then --自动居中
+        if HScrollWidth == nil or LastWand ~= wandEntity or this.UserData["NextResetHScroll"] then --自动居中
             HScrollX = this.ScreenWidth * 2
             HScrollY = this.ScreenHeight * 2
+			this.UserData["NextResetHScroll"] = false
         elseif HScrollWidth < TrueWidth and HScrollWidth ~= 0 then
             TrueWidth = HScrollWidth
             HScrollX = this.ScreenWidth * 0.5 - HScrollWidth / 2
@@ -359,15 +360,20 @@ function DrawWandContainer(this, wandEntity, spellData)
         if wandData.spells then
             thisDecks = thisDecks + #wandData.spells.always
         end
-		if LastCapacity ~= thisDecks then --如果不一致就刷新数据
-			this.ResetHScrollSlider("WandContainer")
+        if LastCapacity ~= thisDecks then --如果不一致就刷新数据
+			this.UserData["NextResetHScroll"] = true
+			this.OnceCallOnExecute(function ()
+				this.ResetHScrollSlider("WandContainer")
+			end)
+        end
+		if wandData then--执行顺序问题，先放这里防止始终数量更改
+			LastCapacity = wandData.deck_capacity
+			if wandData.spells then
+				LastCapacity = LastCapacity + #wandData.spells.always
+			end
 		end
 	end
-	if wandData and wandData.spells then--执行顺序问题，先放这里防止始终数量更改
-		LastCapacity = wandData.deck_capacity + #wandData.spells.always
-	elseif wandData then
-		LastCapacity = wandData.deck_capacity
-	end
+
 
 	local HasViewerHover = false
 	this.HorizontalScroll("WandContainer", HScrollX, HScrollY, TrueWidth, 20, false, 0, 0)
