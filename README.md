@@ -51,6 +51,8 @@ goki_dev所开发的Goki' Things和Spell lab，法杖编辑器参考了其中的
 
 wand dbg的开发者：wand dbg的一些设计是法杖编辑器的灵感来源
 
+nxml库：简直就是必备品（）
+
 [pinyin-data](https://github.com/mozillazg/pinyin-data)项目：法杖编辑器使用了此项目的数据用于实现拼音搜索
 
 [rapidfuzz-cpp](https://github.com/rapidfuzz/rapidfuzz-cpp)项目：法杖编辑器使用这个库实现了模糊搜索功能
