@@ -259,7 +259,12 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
     local function Hover()
         UI.tooltips(function()
             GuiText(this.public.gui, 0, 0, Content)
+            if id == "MainButton" then
+                GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+                GuiText(this.public.gui, 0, 0, ModVersion)
+            end
 			GuiZSet(this.public.gui, this.private.ZDeep)
+			
             if not noMove then
                 local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
                 if CTRL then
