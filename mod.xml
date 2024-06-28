@@ -1,6 +1,6 @@
 <Mod
 	name="wand editor"
-	description="editor"
+	description="Build,edit and learn about wands."
 	request_no_api_restrictions="1" 
 > 
 </Mod>

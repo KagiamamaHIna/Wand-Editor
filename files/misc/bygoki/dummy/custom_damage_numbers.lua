@@ -22,7 +22,7 @@ function damage_received( damage, message, entity_thats_responsible, is_fatal )
         local total_damage = EntityGetVariableNumber(entity, "gkbrkn_total_damage", 0) + damage;
         EntitySetVariableNumber( entity, "gkbrkn_total_damage", total_damage );
         local damage_text = thousands_separator(total_damage * 25 );
-        EntitySetVariableString( entity, "gkbrkn_custom_damage_numbers_text", damage_text );
+        EntitySetVariableString(entity, "gkbrkn_custom_damage_numbers_text", damage_text);
     else
         local sprites = EntityGetComponentIncludingDisabled(entity,"SpriteComponent") or {};
         for k,v in pairs( sprites ) do

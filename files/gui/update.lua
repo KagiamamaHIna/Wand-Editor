@@ -9,7 +9,8 @@ function GUIUpdate()
 		dofile_once("mods/wand_editor/files/gui/SpellsScroll.lua")
         dofile_once("mods/wand_editor/files/gui/WandContainer.lua")
         dofile_once("mods/wand_editor/files/gui/WandBuilder.lua")
-		dofile_once("mods/wand_editor/files/gui/WandDepot.lua")
+        dofile_once("mods/wand_editor/files/gui/WandDepot.lua")
+		dofile_once("mods/wand_editor/files/gui/ToggleOptions.lua")
 		UI.UserData["HasSpellMove"] = false
 		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取法术数据
 		local spellData = data[1]
@@ -70,10 +71,13 @@ function GUIUpdate()
 				end
 			end
 		end
-		local function PickerGap(gap)
-			return 19 + gap * 22
+        local function PickerGap(gap)
+            return 19 + gap * 22
+        end
+		local function ClickSound()
+			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 		end
-		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN")
+		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN", "ToggleOptionsBTN")
         UI.SetCheckboxEnable("shuffle_builder", false)
 		UI.SetCheckboxEnable("update_image_builder", false)
 		local MainCB = function(left_click, right_click, x, y, enable)
@@ -93,17 +97,168 @@ function GUIUpdate()
 				"mods/wand_editor/files/gui/images/wand_depot.png", nil, WandDepotCB, nil, true, nil,
 				true)
 			
+			UI.MoveImagePicker("ToggleOptionsBTN", PickerGap(3), y + 30, 8, 0, GameTextGet("$wand_editor_toggle_options"),
+				"mods/wand_editor/files/gui/images/toggle_options_icon.png", nil, ToggleOptionsCB, nil, true, nil,
+                true)
+
+			GuiZSetForNextWidget(UI.gui, UI.GetZDeep())--生成假人于自身
+			UI.MoveImageButton("SpwanDummy", PickerGap(4), y + 30,
+				"mods/wand_editor/files/gui/images/spawn_target_dummy.png", nil, function()
+					GuiTooltip(UI.gui, GameTextGet("$wand_editor_spawn_dummy"), "")
+                end,
+				function (click)
+                    if not click then
+                        return
+                    end
+					ClickSound()
+					local px,py = Compose(EntityGetTransform, GetPlayer)()
+                    EntityLoad("mods/wand_editor/files/entity/dummy_target.xml", px, py)
+                end, false, true)
+
+			GuiZSetForNextWidget(UI.gui, UI.GetZDeep())--清除投射物
+			UI.MoveImageButton("ClearProj", PickerGap(5), y + 30,
+				"mods/wand_editor/files/gui/images/clear_projectiles.png", nil, function()
+					GuiTooltip(UI.gui, GameTextGet("$wand_editor_clear_proj"), "")
+                end,
+				function (click)
+                    if not click then
+                        return
+                    end
+					ClickSound()
+					for _,v in pairs( EntityGetWithTag( "projectile_player" ) or {} ) do
+						local projectile = EntityGetFirstComponent( v, "ProjectileComponent" )
+						if projectile ~= nil then
+							ComponentSetValue2( projectile, "on_death_explode", false )
+							ComponentSetValue2( projectile, "on_lifetime_out_explode", false )
+						end
+						EntityKill(v)
+					end
+                end, false, true)
+				
+			GuiZSetForNextWidget(UI.gui, UI.GetZDeep())--清除延迟
+			UI.MoveImageButton("ClearWait", PickerGap(6), y + 30,
+				"mods/wand_editor/files/gui/images/clear_wait.png", nil, function()
+					GuiTooltip(UI.gui, GameTextGet("$wand_editor_clear_wait"), "")
+                end,
+				function (click)
+                    if not click then
+                        return
+                    end
+					ClickSound()
+					local now = GameGetFrameNum()
+                    local player = GetPlayer()
+					for _,v in pairs( EntityGetWithTag("wand") ) do
+						if EntityGetRootEntity( v ) == player then
+							local ability = EntityGetFirstComponentIncludingDisabled( v, "AbilityComponent" )
+							if ability then
+								ComponentSetValue2( ability, "mReloadFramesLeft", 0 )
+								ComponentSetValue2( ability, "mNextFrameUsable", now )
+								ComponentSetValue2( ability, "mReloadNextFrameUsable", now )
+							end
+						end
+					end
+                end, false, true)
+				
+			GuiZSetForNextWidget(UI.gui, UI.GetZDeep())--刷新法术使用次数
+			UI.MoveImageButton("RefreshUses", PickerGap(7), y + 30,
+				"mods/wand_editor/files/gui/images/refresh_uses.png", nil, function()
+					GuiTooltip(UI.gui, GameTextGet("$wand_editor_refresh_uses"), "")
+                end,
+				function (click)
+                    if not click then
+                        return
+                    end
+					ClickSound()
+					GameRegenItemActionsInPlayer(GetPlayer())
+				end, false, true)
 		end
 		---@param this Gui
-		UI.TickEventFn["main"] = function(this)--我认为的主事件循环）
-            if not GameIsInventoryOpen() and GetPlayer() then
-				GuiOptionsAdd(UI.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
+        UI.TickEventFn["main"] = function(this) --我认为的主事件循环）
+            if GameIsInventoryOpen() or GetPlayer() == nil then
+                return
+            end
+			GuiOptionsAdd(UI.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 
-                GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
-                UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
-                    "mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
+			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
+			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
+				"mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
+        end
+		
+        UI.TickEventFn["ToggleOptions"] = function()
+			if GetPlayer() == nil then--找不到玩家时禁止执行下一步
+				return
+			end
+            if UI.GetPickerStatus("ProtectionAll") and EntityGetWithName("WandEditorProtectionAllEntity") == 0 then--无敌给予
+                local player = GetPlayer()
+                LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/protection_all.xml")
+            elseif (not UI.GetPickerStatus("ProtectionAll")) and EntityGetWithName("WandEditorProtectionAllEntity") ~= 0 then
+                EntityKill(EntityGetWithName("WandEditorProtectionAllEntity"))
+            end
+
+            if UI.GetPickerStatus("ProtectionPoly") and EntityGetWithName("WandEditorProtectionPolyEntity") == 0 then--变形免疫给予
+                local player = GetPlayer()
+                LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/protection_poly.xml")
+            elseif (not UI.GetPickerStatus("ProtectionPoly")) and EntityGetWithName("WandEditorProtectionPolyEntity") ~= 0 then
+                EntityKill(EntityGetWithName("WandEditorProtectionPolyEntity"))
             end
 			
+            if UI.GetPickerStatus("EditWandsEverywhere") and EntityGetWithName("WandEditorEditWandsEverywhereEntity") == 0 then --变形免疫给予
+                local player = GetPlayer()
+                LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/edit_wands_everywhere.xml")
+            elseif (not UI.GetPickerStatus("EditWandsEverywhere")) and EntityGetWithName("WandEditorEditWandsEverywhereEntity") ~= 0 then
+                EntityKill(EntityGetWithName("WandEditorEditWandsEverywhereEntity"))
+            end
+			
+			if UI.GetPickerStatus("UnlimitedSpells") and not GameHasFlagRun("WandEditorUnlimitedSpells") then--无限法术切换
+                local player = GetPlayer()
+                local world_entity_id = GameGetWorldStateEntity()
+                if world_entity_id ~= nil then
+                    local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
+                    if comp_worldstate ~= nil then
+                        ComponentSetValue2(comp_worldstate, "perk_infinite_spells", true)
+                    end
+                end
+                GameRegenItemActionsInPlayer(player)
+                UI.OnceCallOnExecute(function()
+                    RefreshHeldWands()
+                end)
+                GameAddFlagRun("WandEditorUnlimitedSpells")
+            elseif not UI.GetPickerStatus("UnlimitedSpells") and GameHasFlagRun("WandEditorUnlimitedSpells") then
+				local world_entity_id = GameGetWorldStateEntity()
+                if world_entity_id ~= nil then
+                    local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
+                    if comp_worldstate ~= nil then
+                        ComponentSetValue2(comp_worldstate, "perk_infinite_spells", false)
+                    end
+                end
+				UI.OnceCallOnExecute(function()
+                    RefreshHeldWands()
+                end)
+				GameRemoveFlagRun("WandEditorUnlimitedSpells")
+			end
+
+            if UI.GetPickerStatus("LockHP") then--血量锁定实现
+                local player = GetPlayer()
+				local damage_model = EntityGetFirstComponent( player, "DamageModelComponent" )
+                if UI.UserData["LockHPValue"] == nil and damage_model then
+                    local hp = ComponentGetValue2(damage_model, "hp")
+                    UI.UserData["LockHPValue"] = hp
+                elseif UI.UserData["LockHPValue"] and damage_model then
+                    ComponentSetValue2(damage_model, "hp", UI.UserData["LockHPValue"])
+                end
+            else
+				UI.UserData["LockHPValue"] = nil
+			end
+
+			if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then--主按钮关闭时和开启物品栏时禁止执行下一步
+				return
+			end
+            if UI.GetPickerStatus("DamageInfo") then
+                DrawDamageInfo()
+            end
+			if not UI.GetPickerStatus("SpellDepotBTN") and UI.GetPickerStatus("AlwaysDrawWandEditBox") then
+				DrawWandContainer(UI, Compose(GetEntityHeldWand, GetPlayer)(), spellData)
+			end
 		end
 	end
 

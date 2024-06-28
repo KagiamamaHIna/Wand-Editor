@@ -1,0 +1,8 @@
+<Entity name="WandEditorEditWandsEverywhereEntity">
+	<InheritTransformComponent>
+	</InheritTransformComponent>
+    <GameEffectComponent 
+        effect="EDIT_WANDS_EVERYWHERE"
+        frames="-1"
+    />
+</Entity>

@@ -197,10 +197,15 @@ function SpellDepotClickCB(_, _, _, _, depot_enable)
 			DrawWandContainer(UI, GetPlayerWandID(), spellData)
 		end
 	end
-	UI.MoveImagePicker("WandContainerBTN", 28, 247, 8, 20,
-		GameTextGet("$wand_editor_wand_edit_box"),
-		"mods/wand_editor/files/gui/images/wand_container.png", nil, WandContainerClickCB,
-		nil, true, nil, true)
+    local wandEditBoxText = GameTextGet("$wand_editor_wand_edit_box")
+	local y_offest = 20
+	if UI.GetPickerStatus("WandContainerBTN") then
+        wandEditBoxText = wandEditBoxText .. GameTextGet("$wand_editor_wand_edit_box_help")
+		y_offest = 0
+	end
+	UI.MoveImagePicker("WandContainerBTN", 28, 247, 8, y_offest,
+		wandEditBoxText,"mods/wand_editor/files/gui/images/wand_container.png", nil, WandContainerClickCB,
+		nil, true, true, true)
 
 	local DrawSpellList, InputType = SearchSpell(UI, spellData, TypeToSpellList,
 		SpellDrawType)

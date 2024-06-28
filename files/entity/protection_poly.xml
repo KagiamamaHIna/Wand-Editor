@@ -1,0 +1,8 @@
+<Entity name="WandEditorProtectionPolyEntity">
+	<InheritTransformComponent>
+	</InheritTransformComponent>
+    <GameEffectComponent 
+        effect="PROTECTION_POLYMORPH"
+        frames="-1"
+    />
+</Entity>

@@ -4,6 +4,7 @@ dofile_once("data/scripts/debug/keycodes.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 local DefaultZDeep = -1250
+local RefreshScaleTime = 90
 
 local this = {
 	private = {
@@ -26,7 +27,9 @@ local this = {
 		ScrollHover = {},
         HScrollData = {},
         HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
-		HScrollItemData = {},--元素数据，用于判断位置是否上下溢出
+        HScrollItemData = {}, --元素数据，用于判断位置是否上下溢出
+		
+		RefreshScale = RefreshScaleTime,
 	},
 	public = {
 		ScreenWidth = -1, --当前屏宽
@@ -195,12 +198,19 @@ function UI.OnMoveImage(id, x, y, image, isClose, scale, ZDeep, ClickAble, Alway
 end
 
 function UI.GetPickerStatus(id)
-	return this.private.CompToPickerBool[ConcatModID(id)]
+    local newid = ConcatModID(id)
+	if this.private.CompToPickerBool[newid] == nil and ModSettingGet(newid) ~= nil then
+		this.private.CompToPickerBool[newid] = ModSettingGet(newid)
+	end
+	return this.private.CompToPickerBool[newid]
 end
 
 function UI.SetPickerEnable(id, enable)
     local newid = ConcatModID(id)
-	this.private.CompToPickerBool[newid] = enable
+    this.private.CompToPickerBool[newid] = enable
+	if ModSettingGet(newid) ~= nil then
+		ModSettingSet(newid, this.private.CompToPickerBool[newid])
+	end
 end
 
 
@@ -216,17 +226,26 @@ end
 ---@param ClickCallBack function?
 ---@param OpenImage string?
 ---@param SemiTransparent boolean?
----@param AlwaysCBClick boolean?
+---@param SaveModSetting boolean?
+---@param noMove boolean?
 ---@return boolean
-function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, SemiTransparent, AlwaysCBClick, noMove)
+function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, SemiTransparent, SaveModSetting, noMove)
     local newid = ConcatModID(id)
+    if SaveModSetting and this.private.CompToPickerBool[newid] == nil then
+        if ModSettingGet(newid) == nil then
+            ModSettingSet(newid, false)
+        end
+		this.private.CompToPickerBool[newid] = ModSettingGet(newid)--通过模组设置初始化
+    end
+
     if this.private.PickerList[newid] then
 		local key = this.private.PickerList[newid]
-		if this.private.PickersCurrent[key] == newid then
+        if this.private.PickersCurrent[key] == newid then
             this.private.CompToPickerBool[newid] = true
         else
-			this.private.CompToPickerBool[newid] = false
-		end
+            this.private.CompToPickerBool[newid] = false
+        end
+		ModSettingSet(newid, this.private.CompToPickerBool[newid])
 	end
 	if this.private.CompToPickerBool[newid] == nil then
 		this.private.CompToPickerBool[newid] = false
@@ -267,6 +286,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
 			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 		elseif left_click then
             this.private.CompToPickerBool[newid] = not this.private.CompToPickerBool[newid]
+			ModSettingSet(newid, this.private.CompToPickerBool[newid])
 			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
         end
     end
@@ -278,7 +298,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
     end
     GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
 	this.private.ZDeep = this.private.ZDeep + 1
-    local result = { UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, AlwaysCBClick, noMove) }
+    local result = { UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, nil, noMove) }
 	return  unpack(result)
 end
 
@@ -368,7 +388,7 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 		return ModSettingGet(CanMoveStr)
 	end
 	--移动中
-	local mx, my = InputGetMousePosOnScreen()
+    local mx, my = InputGetMousePosOnScreen()
 	mx = mx / this.private.Scale
 	my = my / this.private.Scale
 	if image then --如果有图片
@@ -952,6 +972,12 @@ function UI.DarwHorizontalScroll(id)
 	end
 end
 
+---返回一个缩放参数，代表相对ui的位置与实际ui位置的倍率
+---@return number
+function UI.GetScale()
+	return this.private.Scale
+end
+
 ---添加计划刻事件
 ---@param fn function
 function UI.OnceCallOnExecute(fn)
@@ -973,10 +999,12 @@ end
 function UI.DispatchMessage()
 	GuiStartFrame(this.public.gui)
 	this.public.ScreenWidth, this.public.ScreenHeight = GuiGetScreenDimensions(this.public.gui)
-	if this.private.Scale == nil then --初始化设置缩放参数
-		local configXml = Nxml.parse(ReadFileAll(SavePath .. "save_shared/config.xml"))
-		this.private.Scale = configXml.attr.internal_size_h / this.public.ScreenHeight
-	end
+    if this.private.Scale == nil or this.private.RefreshScale == 0 then --初始化设置缩放参数
+        local configXml = Nxml.parse(ReadFileAll(SavePath .. "save_shared/config.xml"))
+        this.private.Scale = configXml.attr.internal_size_h / this.public.ScreenHeight
+		this.private.RefreshScale = RefreshScaleTime
+    end
+	this.private.RefreshScale = this.private.RefreshScale - 1--每1.5秒刷新一次
     for _, fn in pairs(this.private.FirstEventFn) do
         if type(fn) == "function" then
             fn(UI)

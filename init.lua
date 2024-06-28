@@ -3,6 +3,9 @@ dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("mods/wand_editor/files/gui/update.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 
+ModLuaFileAppend("data/scripts/gun/gun.lua", "mods/wand_editor/files/append/gun.lua")
+
+
 local SrcCsv = ModTextFileGetContent("data/translations/common.csv")--设置新语言文件
 local AddCsv = ModTextFileGetContent("mods/wand_editor/files/lang/lang.csv")
 ModTextFileSetContent("data/translations/common.csv", SrcCsv .. AddCsv)
@@ -20,12 +23,13 @@ end
 function OnPlayerSpawned(player)
 	RestoreInput()--防止笨蛋在一些情况下重启游戏
     if not GameHasFlagRun("world_editor_init") then
-		EntityLoadChild(player,"mods/wand_editor/files/entity/Restore.xml")
+        EntityLoadChild(player, "mods/wand_editor/files/entity/Restore.xml")
+        EntityAddComponent2(player, "LuaComponent", { script_shot = "mods/wand_editor/files/misc/self/player_shot.lua" })
         GameAddFlagRun("world_editor_init")
     end
 end
---TestAMonitor = Cpp.OpenMonitorLoadLuaLib(0x85AF1E)--非dev版为0x7ECD84
 
+--GUI绘制
 function OnWorldPostUpdate()
     GUIUpdate()
 end

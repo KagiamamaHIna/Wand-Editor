@@ -1,0 +1,12 @@
+<Entity name="WandEditorProtectionAllEntity">
+	<InheritTransformComponent>
+	</InheritTransformComponent>
+	<GameEffectComponent
+		effect="PROTECTION_ALL"
+		frames="-1"
+	/>
+	<GameEffectComponent
+		effect="PROTECTION_FREEZE"
+		frames="-1"
+	/>
+</Entity>

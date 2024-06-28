@@ -314,6 +314,8 @@ end
 local LastWand
 local LastCapacity = 0
 function DrawWandContainer(this, wandEntity, spellData)
+    local srcZDeep = UI.GetZDeep()
+	UI.SetZDeep(srcZDeep + 1000)
 	if this.UserData["HasShiftClick"] == nil then
 		this.UserData["HasShiftClick"] = {}
 	else
@@ -372,10 +374,10 @@ function DrawWandContainer(this, wandEntity, spellData)
 
 	local ViewerHover = function()
 		local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
-		local tip = GameTextGetTranslatedOrNot("$wand_editor_wand_spell_viewer_tip_close")
-		if this.UserData["FixedWand"] then
-			tip = GameTextGetTranslatedOrNot("$wand_editor_wand_spell_viewer_tip_open")
-		end
+		local tip = GameTextGet("$wand_editor_wand_spell_viewer_tip_close")
+        if this.UserData["FixedWand"] then
+            tip = GameTextGet("$wand_editor_wand_spell_viewer_tip_open")
+        end
 		GuiTooltip(this.gui, tip, "")
 		if hover or this.UserData["FixedWand"] then
 			HasViewerHover = true
@@ -432,22 +434,23 @@ function DrawWandContainer(this, wandEntity, spellData)
 		this.MoveImageButton("WandSpellViewer", 235, 64, "mods/wand_editor/files/gui/images/wand_spell_viewer.png", nil,
 			ViewerHover, ViewerClick, nil, true)
 	end
-	if not Skip then --绘制法术编辑栏
+    if not Skip then --绘制法术编辑栏
         if this.UserData["WandContainerHasHover"] == nil or (not HasViewerHover) then
             this.UserData["WandContainerHasHover"] = false
         end
-		for k,v in pairs(wandData.spells.always)do
-			this.AddHScrollItem("WandContainer", function()
-				SpellPicker(this, "WandContainer", wandEntity, wandData, spellData, k, v, true)
-			end)
-		end
-		for k, v in pairs(wandData.spells.spells) do
-			this.AddHScrollItem("WandContainer", function()
-				SpellPicker(this, "WandContainer", wandEntity, wandData, spellData, k, v)
-			end)
-		end
+        for k, v in pairs(wandData.spells.always) do
+            this.AddHScrollItem("WandContainer", function()
+                SpellPicker(this, "WandContainer", wandEntity, wandData, spellData, k, v, true)
+            end)
+        end
+        for k, v in pairs(wandData.spells.spells) do
+            this.AddHScrollItem("WandContainer", function()
+                SpellPicker(this, "WandContainer", wandEntity, wandData, spellData, k, v)
+            end)
+        end
 
         this.DarwHorizontalScroll("WandContainer")
-		LastWand = wandEntity
-	end
+        LastWand = wandEntity
+    end
+	UI.SetZDeep(srcZDeep)
 end

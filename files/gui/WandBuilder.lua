@@ -23,19 +23,19 @@ local function GetWand()
 	end
 	local NewWand = {
 		item_name = nil,
-		mana_charge_speed = GetValue("manachargespeed_builder"),      --回蓝速度
-		mana_max = GetValue("manamax_builder"),               --蓝上限
-		fire_rate_wait = GetValue("castdelay_builder"),         --施放延迟
-		reload_time = GetValue("rechargetime_builder"),            --充能延迟
+		mana_charge_speed = GetValue("manachargespeed_builder"),      					--回蓝速度
+		mana_max = GetValue("manamax_builder"),               							--蓝上限
+		fire_rate_wait = GetValue("castdelay_builder"),         						--施放延迟
+		reload_time = GetValue("rechargetime_builder"),            						--充能延迟
 		deck_capacity = Compose(tonumber,UI.GetInputText)("capacity_builder"),          --容量
-		spread_degrees = GetValue("spread_builder"),         --散射
-		shuffle_deck_when_empty = IsShuffle, --是否乱序
-		speed_multiplier = GetValue("speed_multiplier_builder", true),       --初速度加成
-		mana = GetValue("manamax_builder"),                   --蓝
-		actions_per_round = GetValue("cast_builder"),      --施放数
-		shoot_pos = { x = 0, y = 0 }, --发射位置
-		sprite_file = nil,            --贴图
-		sprite_pos = { x = 0, y = 0 } --精灵图偏移
+		spread_degrees = GetValue("spread_builder"),         							--散射
+		shuffle_deck_when_empty = IsShuffle, 											--是否乱序
+		speed_multiplier = GetValue("speed_multiplier_builder", true),       			--初速度加成
+		mana = GetValue("manamax_builder"),                   							--蓝
+		actions_per_round = GetValue("cast_builder"),      								--施放数
+		shoot_pos = { x = 0, y = 0 }, 													--发射位置
+		sprite_file = nil,            													--贴图
+		sprite_pos = { x = 0, y = 0 } 													--精灵图偏移
     }
     SetRandomSeed(Compose(EntityGetTransform, GetPlayer)())
 	--这里是改的原版生成贴图的代码
@@ -205,7 +205,7 @@ function WandBuilderCB(_, _, _, _, this_enable)
             if wand ~= nil then
 				local wandData = GetWandData(wand)
 				local new = GetWand()
-				new.spells = wandData.spells
+				new.spells = wandData.spells--更新法杖的时候不要更新法术啥的
                 if this.GetCheckboxEnable("update_image_builder") then
                     InitWand(new, wand)
                 else

@@ -36,6 +36,22 @@ local function GetModEnableList()
     end
 	return ModIdToEnable
 end
+local mustReload = false
+if ModSettingGet(ModID.."VerHash") == nil then--如果为空就尝试进行初始化
+	local hashPath = Cpp.CurrentPath().."/_version_hash.txt"
+    if Cpp.PathExists(hashPath) then
+        ModSettingSet(ModID .. "VerHash", ReadFileAll(hashPath))
+    end
+else
+	local hashPath = Cpp.CurrentPath().."/_version_hash.txt"
+    if Cpp.PathExists(hashPath) then--如果发现有的话就读取
+        local newHash = ReadFileAll(hashPath)
+		if newHash ~= ModSettingGet(ModID.."VerHash") then--不一致就设置新的
+            ModSettingSet(ModID .. "VerHash", ReadFileAll(hashPath))
+			mustReload = true --并且要刷新
+		end
+    end
+end
 
 --判断是否有缓存文件
 local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache/"
@@ -43,7 +59,7 @@ local HasCahce = Cpp.PathExists(cachePath.."SpellsData.lua") and Cpp.PathExists(
 
 --检查是否需要更新缓存
 local ModIdToEnable = GetModEnableList()
-if HasCahce then
+if HasCahce and (not mustReload) then
     local UpModEnable = dofile_once("mods/wand_editor/cache/ModEnable.lua")
 	local Change = false
     for k, v in pairs(ModIdToEnable) do
