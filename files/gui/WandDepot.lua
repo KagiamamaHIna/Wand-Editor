@@ -339,25 +339,38 @@ function WandDepotCB(_, _, _, _, this_enable)
 	UI.MoveImageButton("WandDepotSave", 20, 64 + WandDepotH + 7,
 		"mods/wand_editor/files/gui/images/wand_depot_save.png", nil, function()
 			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_save"), "")
-		end, DepotSaveCB, false, true)
-	local DepotDeleteCB = function(left_click)
-		if left_click then
-			ClickSound()
-			if UI.UserData["WandDepotKHighlight"] == nil then
-				return
-			end
-			local k = UI.UserData["WandDepotKHighlight"] + 1
-			table.remove(CurrentTable, k)
-			SetWandDepotLua(CurrentTable, CurrentIndex)
-			if k > #CurrentTable then
-				UI.UserData["WandDepotKHighlight"] = nil
-			end
-		end
+        end, DepotSaveCB, false, true)
+    local DepotDeleteCB = function(left_click)
+        if left_click then
+            ClickSound()
+            if UI.UserData["WandDepotKHighlight"] == nil then
+                return
+            end
+            if UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] == nil then
+                UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = true
+                return
+            end
+			UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = nil
+            local k = UI.UserData["WandDepotKHighlight"] + 1
+            table.remove(CurrentTable, k)
+            SetWandDepotLua(CurrentTable, CurrentIndex)
+            if k > #CurrentTable then
+                UI.UserData["WandDepotKHighlight"] = nil
+            end
+        end
+    end
+    local deleteTextKey = "$wand_editor_wand_depot_delete"
+	if UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] then
+		deleteTextKey = "$wand_editor_wand_depot_delete_IKnowWhatImDoing"
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotDelete", 50, 64 + WandDepotH + 7,
-		"mods/wand_editor/files/gui/images/wand_depot_delete.png", nil, function()
-			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_delete"), "")
+	UI.MoveImageButton("WandDepotDelete", 45, 64 + WandDepotH + 7,
+        "mods/wand_editor/files/gui/images/wand_depot_delete.png", nil, function()
+            local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
+			if not hover then
+				UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = nil
+			end
+			GuiTooltip(UI.gui, GameTextGet(deleteTextKey), "")
 		end, DepotDeleteCB, false, true)
 
 	local RewriteWandCB = function(left_click)
@@ -381,7 +394,7 @@ function WandDepotCB(_, _, _, _, this_enable)
 		end
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotRewriteWand", 80, 64 + WandDepotH + 7,
+	UI.MoveImageButton("WandDepotRewriteWand", 70, 64 + WandDepotH + 7,
 		"mods/wand_editor/files/gui/images/wand_depot_rewritewand.png", nil, function()
 			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_rewritewand"), "")
 		end, RewriteWandCB, false, true)
@@ -400,7 +413,7 @@ function WandDepotCB(_, _, _, _, this_enable)
 		end
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotLoadWand", 110, 64 + WandDepotH + 7,
+	UI.MoveImageButton("WandDepotLoadWand", 95, 64 + WandDepotH + 7,
 		"mods/wand_editor/files/gui/images/wand_depot_loadwand.png", nil, function()
 			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_loadwand"), "")
         end, LoadWandCB, false, true)
@@ -411,6 +424,6 @@ function WandDepotCB(_, _, _, _, this_enable)
         end, nil, 5)
     end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotHelp", 145,64 + WandDepotH + 11,
+	UI.MoveImageButton("WandDepotHelp", 130,64 + WandDepotH + 11,
 		"mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
 end
