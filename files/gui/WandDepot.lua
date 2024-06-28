@@ -355,7 +355,7 @@ function WandDepotCB(_, _, _, _, this_enable)
 		end
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotDelete", 40, 64 + WandDepotH + 7,
+	UI.MoveImageButton("WandDepotDelete", 50, 64 + WandDepotH + 7,
 		"mods/wand_editor/files/gui/images/wand_depot_delete.png", nil, function()
 			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_delete"), "")
 		end, DepotDeleteCB, false, true)
@@ -381,7 +381,7 @@ function WandDepotCB(_, _, _, _, this_enable)
 		end
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotRewriteWand", 60, 64 + WandDepotH + 7,
+	UI.MoveImageButton("WandDepotRewriteWand", 80, 64 + WandDepotH + 7,
 		"mods/wand_editor/files/gui/images/wand_depot_rewritewand.png", nil, function()
 			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_rewritewand"), "")
 		end, RewriteWandCB, false, true)
@@ -400,7 +400,7 @@ function WandDepotCB(_, _, _, _, this_enable)
 		end
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotLoadWand", 80, 64 + WandDepotH + 7,
+	UI.MoveImageButton("WandDepotLoadWand", 110, 64 + WandDepotH + 7,
 		"mods/wand_editor/files/gui/images/wand_depot_loadwand.png", nil, function()
 			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_loadwand"), "")
         end, LoadWandCB, false, true)
@@ -411,6 +411,6 @@ function WandDepotCB(_, _, _, _, this_enable)
         end, nil, 5)
     end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotHelp", 110,64 + WandDepotH + 11,
+	UI.MoveImageButton("WandDepotHelp", 145,64 + WandDepotH + 11,
 		"mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
 end

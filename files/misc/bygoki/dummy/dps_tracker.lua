@@ -26,7 +26,7 @@ function damage_received( damage, message, entity_thats_responsible, is_fatal )
     --if did_hit then
     --    EntityApplyTransform( entity, x, y - 5 );
     --end
-    --if entity_thats_responsible == 0 and setting_get( MISC.TargetDummy.AllowEnvironmentalDamage ) == false or damage < 0 then return; end
+    if entity_thats_responsible == 0 or damage < 0 then return; end
     
     -- reset tracker after 10 frames of dps
     if now >= reset_frame or (now - first_hit_frame) > 600 then
