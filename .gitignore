@@ -3,3 +3,5 @@
 /cache
 /files/cppproject/rapidfuzz-cpp-3.0.4
 /files/cppproject/lua
+/files/module/WandEditorDll.lib
+/files/module/WandEditorDll.exp

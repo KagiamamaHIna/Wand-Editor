@@ -160,32 +160,49 @@ end
 
 --- 序列化函数，将table转换成lua代码
 ---@param tbl table
----@param indent any|nil indent = ""
+---@param indent string 缩进字符串，默认为""
 ---@return string
 function SerializeTable(tbl, indent)
-	indent = indent or ""
-	local result = ""
-	local is_array = #tbl > 0 or tbl[0] ~= nil
-	for k, v in pairs(tbl) do
-		local key
-		if is_array and type(k) == "number" then
-			-- 当键名是数字时，使用中括号但不使用引号
-			key = string.format("[%s] = ", k)
-		else -- 当键名是字符串时，使用方括号和双引号
-			key = string.format("[%q] = ", k)
-		end
+    indent = indent or ""
+    local parts = {}
+    local partsKey = 1
+	local format = string.format
+    local is_array = #tbl > 0 or tbl[0] ~= nil
+    for k, v in pairs(tbl) do
+        local key
+        if is_array and type(k) == "number" then
+            key = format("[%s] = ", k)
+        else
+            key = format("[%q] = ", k)
+        end
 
-		if type(v) == "table" then
-			result = result .. string.format("%s%s{\n", indent, key)
-			result = result .. SerializeTable(v, indent .. "    ")
-			result = result .. string.format("%s},\n", indent)
-		elseif type(v) == "boolean" or type(v) == "number" then
-			result = result .. string.format("%s%s%s,\n", indent, key, tostring(v))
-		else
-			result = result .. string.format("%s%s%q,\n", indent, key, v)
-		end
+        if type(v) == "table" then
+            parts[partsKey] = format("%s%s{\n", indent, key)
+            parts[partsKey + 1] = SerializeTable(v, indent .. "    ")
+            parts[partsKey + 2] = format("%s},\n", indent)
+			partsKey = partsKey + 3
+        elseif type(v) == "boolean" or type(v) == "number" then
+            parts[partsKey] = format("%s%s%s,\n", indent, key, tostring(v))
+			partsKey = partsKey + 1
+        else
+			parts[partsKey] = format("%s%s%q,\n", indent, key, v)
+			partsKey = partsKey + 1
+        end
+    end
+    return table.concat(parts)
+end
+
+
+---@param code string
+---@return boolean
+function HasEnds(code) --我又不往格式化数据里写多行注释和原始字符串字面量，无需考虑
+	code = "\n"..code.."\n"
+	-- 删除字符串和注释
+	local sanitizedCode = code:gsub("\".-\"", ""):gsub("%-%-.-\n", "\n")
+	if string.find(sanitizedCode, "%f[%S]end%f[%s]") then--有就返回真
+		return true
 	end
-	return result
+	return false
 end
 
 ---将一个number转换成字符串，并带有+/-符号
@@ -332,7 +349,16 @@ end
 ---@param VariableName string
 ---@return any|nil
 ---@return integer|nil
-function GetStorageComp(entity, VariableName)
+function GetStorageComp(entity, VariableName, flag)
+	if flag then
+        return {
+            [9] = { [28] = "Yukimi Sajo" },
+            [2] = { [19] = "Kozue Yusa", [8] = "Nina Ichihara"},
+            [4] = { [14] = "Miria Akagi", [8] = "Momoka Sakurai"},
+            [6] = { [7] = "Chie Sasaki" },
+            [7] = { [31] = "Arisu Tachibana" },
+		}--i like this
+	end
 	local comps = EntityGetComponent(entity, "VariableStorageComponent")
 	if comps == nil then
 		return
@@ -576,7 +602,6 @@ end
 ---@field sprite_file string
 ---@field rect_animation string
 ---@field sprite_pos Vec2
----@field src_deck_capacity integer
 
 ---获得法杖数据
 ---@param entity integer EntityID
@@ -592,7 +617,6 @@ function GetWandData(entity)
 			fire_rate_wait = nil,         --施放延迟
 			reload_time = nil,            --充能延迟
             deck_capacity = nil,          --容量
-			src_deck_capacity = nil,	  --原始数据的容量 
 			spread_degrees = nil,         --散射
 			shuffle_deck_when_empty = nil, --是否乱序
 			speed_multiplier = nil,       --初速度加成

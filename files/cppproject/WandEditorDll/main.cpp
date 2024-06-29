@@ -31,6 +31,17 @@ namespace lua {
 		lua_pushnumber(L, s1.size());
 		return 1;
 	}
+
+	int lua_SetClipboard(lua_State* L) {
+		std::string str = luaL_checkstring(L, 1);
+		lua_pushboolean(L, fn::SetClipboard(str));
+		return 1;
+	}
+
+	int lua_GetClipboard(lua_State* L) {
+		lua_pushstring(L, fn::GetClipboard().c_str());
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -52,6 +63,9 @@ static luaL_Reg luaLibs[] = {
 	{ "PartialRatio", lua::lua_PartialRatio},
 	{ "PinyinRatio", lua::lua_PinyinRatio},
 	{ "AbsPartialPinyinRatio", lua::lua_AbsPartialPinyinRatio},
+
+	{ "SetClipboard", lua::lua_SetClipboard},
+	{ "GetClipboard", lua::lua_GetClipboard},
 
 	{ NULL, NULL }
 };

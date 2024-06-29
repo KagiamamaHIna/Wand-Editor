@@ -91,7 +91,7 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 			this.OnceCallOnExecute(function()
 				RefreshHeldWands()
 			end)
-        elseif (InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)) and click then--添加始终
+        elseif (InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)) and click and v ~= "nil" then--添加始终
             PushAlwaysSpell(wandData, v.id)
             RemoveTableSpells(wandData, k)
             InitWand(wandData, wandEntity)
@@ -417,7 +417,7 @@ function DrawWandContainer(this, wandEntity, spellData)
 				this.UserData["FixedWand"][1] = GetWandData(ViewerWandEntity)
 			end
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			this.DrawScrollContainer("WandSpellViewerContainer")
+			this.DrawScrollContainer("WandSpellViewerContainer", not UI.GetPickerStatus("KeyBoardInput"))
 		end
 	end
 	local ViewerClick = function(left_click)

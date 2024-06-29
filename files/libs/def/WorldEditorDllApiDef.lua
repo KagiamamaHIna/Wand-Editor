@@ -72,3 +72,12 @@ function Cpp.UTF8StringSize(s1)end
 ---@param pos2 integer
 ---@return string
 function Cpp.UTF8StringSub(str,pos1,pos2)end
+
+---设置剪切板的新内容，返回的为 是否设置成功
+---@param str string
+---@return boolean
+function Cpp.SetClipboard(str)end
+
+---获得剪切板的内容，如果不存在之类的为一个""
+---@return string
+function Cpp.GetClipboard()end

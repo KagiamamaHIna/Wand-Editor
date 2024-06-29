@@ -5,7 +5,6 @@ local TypeToSpellList = data[2]
 local function ClickSound()
 	GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 end
-
 ---返回法杖仓库大小
 ---@return integer
 local function GetWandDepotSize()
@@ -17,13 +16,54 @@ local function SetWandDepotSize(num)
 	ModSettingSet(ModID .. "WandDepotSize", num)
 end
 
+---获得法杖仓库表原始文本
+---@param index integer
+---@return string
+local function GetWandDepotStr(index)
+    local size = GetWandDepotSize()
+    if index <= size then
+        local result = ModSettingGet(ModID .. "WandDepot" .. tostring(index))
+        if result == nil then
+            return ""
+        end
+        return result
+    end
+    error("wand depot index out of bounds:" .. tostring(index))
+    return ""
+end
+local cache
+local cacheTable--缓存机制，只有在获取和上个字符串不同的时候才进行读取并检查安全性
 ---获得法杖仓库表
 ---@param index integer
 ---@return table
 local function GetWandDepot(index)
 	local size = GetWandDepotSize()
-	if index <= size then
-		return Compose(loadstring, ModSettingGet)(ModID .. "WandDepot" .. tostring(index))()
+    if index <= size then
+        local CheckFnStr = tostring(ModSettingGet(ModID .. "WandDepot" .. tostring(index)))
+        if cache == nil then--数据缓存
+            cache = CheckFnStr
+        elseif cache == CheckFnStr and cacheTable then
+            return cacheTable
+		elseif cache ~= CheckFnStr then
+			cache = CheckFnStr
+		end
+        if HasEnds(CheckFnStr) then
+            ModSettingSet(ModID .. "WandDepot" .. tostring(index), "return {}")
+            return {}
+        end
+		local CheckFn = loadstring(CheckFnStr)
+		if type(CheckFn) ~= "function" then--数据恢复为空表，有代码或其他行为试图篡改为非法数据
+			ModSettingSet(ModID .. "WandDepot" .. tostring(index),"return {}")
+			return {}
+		end
+        local fn = setfenv(CheckFn, {})
+        local flag, result = pcall(fn)
+        if not flag then --数据恢复为空表，有代码或其他行为试图篡改为非法数据
+            ModSettingSet(ModID .. "WandDepot" .. tostring(index), "return {}")
+            return {}
+        end
+		cacheTable = result
+		return result
 	end
 	error("wand depot index out of bounds:" .. tostring(index))
 	return {}
@@ -41,18 +81,75 @@ local function SetWandDepotLua(t, index)
 	end
 end
 
-local function NewWandDepot()
+---检查数据是否合法
+---@param str string
+---@return boolean
+local function CheckWandDepotData(str)
+	if HasEnds(str) then
+		return false
+	end
+    local CheckFn = loadstring(str)
+    if type(CheckFn) ~= "function" then
+		return false
+    end
+	local fn = setfenv(CheckFn, {}) --设置环境 防止注入攻击
+    local flag, result = pcall(fn)
+	if not flag then
+		return false
+	end
+    if type(result) ~= "table" then
+        return false
+	end
+	local baseWand = {
+		spells = true, --法术表
+		mana_charge_speed = true,      --回蓝速度
+		mana_max = true,               --蓝上限
+		fire_rate_wait = true,         --施放延迟
+		reload_time = true,            --充能延迟
+		deck_capacity = true,          --容量
+		spread_degrees = true,         --散射
+		shuffle_deck_when_empty = true, --是否乱序
+		speed_multiplier = true,       --初速度加成
+		mana = true,                   --蓝
+		actions_per_round = true,      --施放数
+		shoot_pos = true, --发射位置
+		sprite_file = true,            --贴图
+		sprite_pos = true, 	--精灵图偏移
+		rect_animation = true
+    }
+	
+	for _,wand in pairs(result)do--判断格式是否正确
+		for k,_ in pairs(baseWand)do
+            if wand[k] == nil then
+				return false
+			end
+		end
+	end
+	return true,result
+end
+
+---为法杖仓库新建一个页面
+---@param t table?
+---@return table
+local function NewWandDepot(t)
 	local index = GetWandDepotSize()
 	if index >= 99999 then
 		GamePrint(GameTextGet("$wand_editor_wand_depot_wandlist_limit"))
 		return {}
 	end
 	SetWandDepotSize(index + 1)
-	index = index + 1
-	ModSettingSet(ModID .. "WandDepot" .. tostring(index), "return {}")
-	return {}
+    index = index + 1
+	if t == nil then
+		ModSettingSet(ModID .. "WandDepot" .. tostring(index), "return {}")
+        return {}
+    else
+		ModSettingSet(ModID .. "WandDepot" .. tostring(index), "return {\n" .. SerializeTable(t) .. "}")
+		return t
+	end
 end
 
+---删除法杖仓库指定索引页面
+---@param index integer
 local function RemoveWandDepot(index)
 	local max = GetWandDepotSize()
 	for i = index, max - 1 do
@@ -195,14 +292,16 @@ local function DrawWandSlot(id, k, wand)
 	elseif left_click and CTRL and UI.UserData["WandDepotKHighlight"] then --交换法杖操作
 		if k ~= UI.UserData["WandDepotKHighlight"] then
 			local CurrentIndex = UI.UserData["WandDepotCurrentIndex"]
-			local CurrentTable = GetWandDepot(CurrentIndex)
-			local oldTable = CurrentTable[UI.UserData["WandDepotKHighlight"] + 1]
-			CurrentTable[UI.UserData["WandDepotKHighlight"] + 1] = wand
-			CurrentTable[k + 1] = oldTable
-			--TablePrint(CurrentTable)
-			--print("k:",k,"|HG:",UI.UserData["WandDepotKHighlight"])
-			SetWandDepotLua(CurrentTable, CurrentIndex)
-			UI.UserData["WandDepotKHighlight"] = nil
+            local CurrentTable = GetWandDepot(CurrentIndex)
+			if CurrentTable[UI.UserData["WandDepotKHighlight"] + 1] ~= nil and CurrentTable[k + 1] ~= nil then
+				local oldTable = CurrentTable[UI.UserData["WandDepotKHighlight"] + 1]
+				CurrentTable[UI.UserData["WandDepotKHighlight"] + 1] = wand
+				CurrentTable[k + 1] = oldTable
+				--TablePrint(CurrentTable)
+				--print("k:",k,"|HG:",UI.UserData["WandDepotKHighlight"])
+				SetWandDepotLua(CurrentTable, CurrentIndex)
+				UI.UserData["WandDepotKHighlight"] = nil
+			end
 		end
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 2)
@@ -241,31 +340,47 @@ function WandDepotCB(_, _, _, _, this_enable)
 		GuiLayoutBeginHorizontal(UI.gui, 2, WandDepotH - 10, true)
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
 		local add_click = GuiButton(UI.gui, UI.NewID("WandDepotAddTable"), 0, 0, "[+]") --新增页面按钮
-		GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_newpage"), "")
-		if add_click then
+        GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_newpage"), "")
+		local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+        if add_click and CTRL then
+            local ClipboardData = Cpp.GetClipboard()
+			local flag,newPage = CheckWandDepotData(ClipboardData)
+			if flag then
+                NewWandDepot(newPage)
+				GamePrint(GameTextGet("$wand_editor_wand_depot_copy_correctly"))
+            else
+				GamePrint(GameTextGet("$wand_editor_wand_depot_copy_error"))
+			end
+		elseif add_click then
 			NewWandDepot()
 		end
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
-		local delete_click = GuiButton(UI.gui, UI.NewID("WandDepotDeleteTable"), 5, 0, "[x]") --删除页面按钮
+		local delete_click = GuiButton(UI.gui, UI.NewID("WandDepotDeleteTable"), 11, 0, "[x]") --删除页面按钮
 		local deleteTextKey = "$wand_editor_wand_depot_deletepage"
 		if UI.UserData["wand_depot_IKnowWhatImDoing"] then
 			deleteTextKey = "$wand_editor_wand_depot_deletepage_IKnowWhatImDoing"
 		end
 		GuiTooltip(UI.gui, GameTextGet(deleteTextKey), "")
 		local _, _, delete_hover = GuiGetPreviousWidgetInfo(UI.gui)
-		if UI.UserData["wand_depot_IKnowWhatImDoing"] and delete_hover and delete_click then
-			UI.UserData["wand_depot_IKnowWhatImDoing"] = false
-			if CurrentIndex > GetWandDepotSize() - 1 and CurrentIndex - 1 ~= 0 then --防止越界
-				UI.UserData["WandDepotCurrentIndex"] = CurrentIndex - 1
-			end
-			RemoveWandDepot(CurrentIndex)
-		elseif UI.UserData["wand_depot_IKnowWhatImDoing"] and (not delete_hover) then
-			UI.UserData["wand_depot_IKnowWhatImDoing"] = false
-		elseif delete_click and delete_hover then
-			UI.UserData["wand_depot_IKnowWhatImDoing"] = true
+        if UI.UserData["wand_depot_IKnowWhatImDoing"] and delete_hover and delete_click then
+            UI.UserData["wand_depot_IKnowWhatImDoing"] = false
+            if CurrentIndex > GetWandDepotSize() - 1 and CurrentIndex - 1 ~= 0 then --防止越界
+                UI.UserData["WandDepotCurrentIndex"] = CurrentIndex - 1
+            end
+            RemoveWandDepot(CurrentIndex)
+        elseif UI.UserData["wand_depot_IKnowWhatImDoing"] and (not delete_hover) then
+            UI.UserData["wand_depot_IKnowWhatImDoing"] = false
+        elseif delete_click and delete_hover then
+            UI.UserData["wand_depot_IKnowWhatImDoing"] = true
+        end
+		
+		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
+        local CopyDepot_click = GuiButton(UI.gui, UI.NewID("WandDepotCopyDepot"), 12, 0, "[c]")
+		GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_copy"), "")
+        if CopyDepot_click then
+			Cpp.SetClipboard(GetWandDepotStr(CurrentIndex))
 		end
-
 		GuiLayoutEnd(UI.gui)
 
 		GuiLayoutBeginHorizontal(UI.gui, WandDepotW / 2 - 47, WandDepotH - 10, true)

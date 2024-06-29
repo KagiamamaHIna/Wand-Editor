@@ -16,10 +16,37 @@ if ModSettingGet("wand_editor_FavoriteTable") == nil then
     ModSettingSet("wand_editor_FavoriteTable", "return {}")
 end
 if ModSettingGet("wand_editor_HasFavorite") == nil then
-	ModSettingSet("wand_editor_HasFavorite","return {}")
+    ModSettingSet("wand_editor_HasFavorite", "return {}")
 end
-FavoriteTable = loadstring(ModSettingGet("wand_editor_FavoriteTable"))()
-HasFavorite = loadstring(ModSettingGet("wand_editor_HasFavorite"))()
+
+---安全性检查，防止其他模组篡改
+---@param str string
+---@return table
+local function SafeLoad(str)
+    local luaStr = tostring(ModSettingGet(str))
+	if HasEnds(luaStr) then
+        ModSettingSet("wand_editor_FavoriteTable", "return {}")
+        ModSettingSet("wand_editor_HasFavorite", "return {}")
+        return {}
+	end
+    local CheckFn = loadstring(tostring(luaStr))
+    if type(CheckFn) ~= "function" then
+        ModSettingSet("wand_editor_FavoriteTable", "return {}")
+        ModSettingSet("wand_editor_HasFavorite", "return {}")
+        return {}
+    end
+	local fn = setfenv(CheckFn, {})
+	local flag, result = pcall(fn)
+	if not flag then--数据恢复为空表，有代码或其他行为试图篡改为非法数据
+        ModSettingSet("wand_editor_FavoriteTable", "return {}")
+        ModSettingSet("wand_editor_HasFavorite", "return {}")
+		return {}
+	end
+	return result
+end
+
+FavoriteTable = SafeLoad("wand_editor_FavoriteTable")
+HasFavorite = SafeLoad("wand_editor_HasFavorite")
 
 local UesSearchRatio = Cpp.AbsPartialPinyinRatio
 if ModSettingGet("wand_editor_RatioMinScore") == nil then
@@ -545,5 +572,5 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		::continue::
 	end
     GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1) --设置深度，确保行为正确
-    this.DrawScrollContainer(ContainerName)
+    this.DrawScrollContainer(ContainerName,not UI.GetPickerStatus("KeyBoardInput"))
 end

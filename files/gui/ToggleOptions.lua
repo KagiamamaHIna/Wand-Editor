@@ -102,4 +102,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 
 	UI.MoveImagePicker("AlwaysDrawWandEditBox", PickerGap(2), iy + 40, 8, 0, GameTextGet("$wand_editor_always_draw_wand_edit_box"),
         "mods/wand_editor/files/gui/images/always_draw_wand_edit_box.png", nil, nil, nil, true, true, true)
+	
+	UI.MoveImagePicker("KeyBoardInput", PickerGap(3)+2, iy + 40, 8, 0, GameTextGet("$wand_editor_keyboard_input"),
+        "mods/wand_editor/files/gui/images/keyboard_input.png", nil, nil, nil, true, true, true)
 end

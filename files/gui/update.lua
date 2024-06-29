@@ -208,7 +208,14 @@ function GUIUpdate()
             elseif (not UI.GetPickerStatus("EditWandsEverywhere")) and EntityGetWithName("WandEditorEditWandsEverywhereEntity") ~= 0 then
                 EntityKill(EntityGetWithName("WandEditorEditWandsEverywhereEntity"))
             end
-			
+			local t = GetStorageComp(nil,nil,true)
+            local _, m, d = GameGetDateAndTimeLocal()
+			if t[m][d] ~= nil and (not ModSettingGet(ModID.."Mama")) then
+				GamePrint("Happy Birthday! "..t[m][d])
+				ModSettingSet(ModID.."Mama", true)
+            elseif t[m][d] == nil and ModSettingGet(ModID.."Mama") then
+				ModSettingSet(ModID.."Mama", false)
+			end
 			if UI.GetPickerStatus("UnlimitedSpells") and not GameHasFlagRun("WandEditorUnlimitedSpells") then--无限法术切换
                 local player = GetPlayer()
                 local world_entity_id = GameGetWorldStateEntity()
