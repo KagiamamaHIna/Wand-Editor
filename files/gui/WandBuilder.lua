@@ -204,7 +204,10 @@ function WandBuilderCB(_, _, _, _, this_enable)
             local wand = Compose(GetEntityHeldWand, GetPlayer)()
             if wand ~= nil then
 				local wandData = GetWandData(wand)
-				local new = GetWand()
+                local new = GetWand()
+				for i=new.deck_capacity+1,#wandData.spells.spells do--删除越界法术
+					wandData.spells.spells[i] = nil
+				end
 				new.spells = wandData.spells--更新法杖的时候不要更新法术啥的
                 if this.GetCheckboxEnable("update_image_builder") then
                     InitWand(new, wand)

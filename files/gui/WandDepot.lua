@@ -156,7 +156,7 @@ local function RemoveWandDepot(index)
     for i = index, max - 1 do
 		local newkey = key .. tostring(i + 1)
         local str = ModSettingGet(newkey)
-		ModSettingSet(str, i)
+        ModSettingSet(key .. tostring(i), str)
 	end
 	ModSettingRemove(ModID .. "WandDepot" .. tostring(max))
 	SetWandDepotSize(max - 1)
