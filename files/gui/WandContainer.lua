@@ -6,25 +6,28 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 		BaseName = BaseName .. "_isAlways"
 	end
 	local srcDeep = this.GetZDeep()
-	local BGAlpha = 1
-	local BGAlphaKey = id .. "LastWandContHoverAlpha" .. tostring(k)
-	local BGAlphaMaxKey = id .. "LastWandContHoverMax" .. tostring(k)
-	if this.UserData[id .. "LastWandContHover" .. tostring(k)] and v == "nil" and (not isAlways) then --法术为空的时候才渐变
-		if this.UserData[BGAlphaKey] == nil then                                   --格子渐变实现
-			this.UserData[BGAlphaKey] = 1
-			this.UserData[BGAlphaMaxKey] = 0.6
-		elseif this.UserData[BGAlphaKey] > this.UserData[BGAlphaMaxKey] then
-			this.UserData[BGAlphaKey] = this.UserData[BGAlphaKey] - 0.015
-			this.UserData[BGAlphaMaxKey] = 0.6
+    local BGAlpha = 1
+	if not isAlways then
+		local BGAlphaKey = id .. "LastWandContHoverAlpha" .. tostring(k)
+		local BGAlphaMaxKey = id .. "LastWandContHoverMax" .. tostring(k)
+		if this.UserData[id .. "LastWandContHover" .. tostring(k)] and v == "nil" and (not isAlways) then --法术为空的时候才渐变
+			if this.UserData[BGAlphaKey] == nil then                                   --格子渐变实现
+				this.UserData[BGAlphaKey] = 1
+				this.UserData[BGAlphaMaxKey] = 0.6
+			elseif this.UserData[BGAlphaKey] > this.UserData[BGAlphaMaxKey] then
+				this.UserData[BGAlphaKey] = this.UserData[BGAlphaKey] - 0.015
+				this.UserData[BGAlphaMaxKey] = 0.6
+			else
+				this.UserData[BGAlphaKey] = this.UserData[BGAlphaKey] + 0.015
+				this.UserData[BGAlphaMaxKey] = 1
+			end
+			BGAlpha = this.UserData[BGAlphaKey]
 		else
-			this.UserData[BGAlphaKey] = this.UserData[BGAlphaKey] + 0.015
-			this.UserData[BGAlphaMaxKey] = 1
+			this.UserData[BGAlphaKey] = nil
+			this.UserData[BGAlphaMaxKey] = nil
 		end
-		BGAlpha = this.UserData[BGAlphaKey]
-	else
-		this.UserData[BGAlphaKey] = nil
-		this.UserData[BGAlphaMaxKey] = nil
 	end
+
 	GuiZSetForNextWidget(this.gui, this.GetZDeep())
     this.SetZDeep(this.GetZDeep() - 1)
 	
