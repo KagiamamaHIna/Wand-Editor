@@ -244,7 +244,9 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
         if ModSettingGet(newid) == nil then
             ModSettingSet(newid, false)
         end
-		this.private.CompToPickerBool[newid] = ModSettingGet(newid)--通过模组设置初始化
+        this.private.CompToPickerBool[newid] = ModSettingGet(newid) --通过模组设置初始化
+    elseif not SaveModSetting and ModSettingGet(newid) then
+		ModSettingRemove(newid)
     end
 
     if this.private.PickerList[newid] then
@@ -254,7 +256,9 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
         else
             this.private.CompToPickerBool[newid] = false
         end
-		ModSettingSet(newid, this.private.CompToPickerBool[newid])
+		if SaveModSetting then
+			ModSettingSet(newid, this.private.CompToPickerBool[newid])
+		end
 	end
 	if this.private.CompToPickerBool[newid] == nil then
 		this.private.CompToPickerBool[newid] = false
