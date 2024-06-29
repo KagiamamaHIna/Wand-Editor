@@ -43,7 +43,7 @@ function DrawDamageInfo()
     GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_proj_dmg") .. thousands_separator(total_projectile_damage))
 
 	GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
-    GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_proj") .. thousands_separator(total_projectiles))
+    GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_proj") .. tostring(total_projectiles))
 	
     local highest_dps = GlobalsGetValue(ModID .. "highest_dps", "")--渲染dps数据，伤害来自假人
     if #highest_dps > 0 then
@@ -103,6 +103,9 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 	UI.MoveImagePicker("AlwaysDrawWandEditBox", PickerGap(2), iy + 40, 8, 0, GameTextGet("$wand_editor_always_draw_wand_edit_box"),
         "mods/wand_editor/files/gui/images/always_draw_wand_edit_box.png", nil, nil, nil, true, true, true)
 	
-	UI.MoveImagePicker("KeyBoardInput", PickerGap(3)+2, iy + 40, 8, 0, GameTextGet("$wand_editor_keyboard_input"),
+	UI.MoveImagePicker("KeyBoardInput", PickerGap(3)+1, iy + 40, 8, 0, GameTextGet("$wand_editor_keyboard_input"),
         "mods/wand_editor/files/gui/images/keyboard_input.png", nil, nil, nil, true, true, true)
+		
+	UI.MoveImagePicker("DisableSpellWobble", PickerGap(4), iy + 40, 8, 0, GameTextGet("$wand_editor_disable_spell_wobble"),
+        "mods/wand_editor/files/gui/images/disable_spell_wobble.png", nil, nil, nil, true, true, true)
 end

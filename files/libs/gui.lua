@@ -9,6 +9,7 @@ local RefreshScaleTime = 90
 local this = {
 	private = {
         CompToPickerBool = {}, --用于存储按钮点击状态
+		CompToPickerHoverBool = {},
         PickerList = {},--用于存储谁和谁是同一组的
 		PickersCurrent = {},--用于存储谁是当前开启的
 		TileTick = {},   --计划刻
@@ -213,6 +214,14 @@ function UI.SetPickerEnable(id, enable)
 	end
 end
 
+function UI.GetPickerHover(id)
+    local newid = ConcatModID(id)
+	local status = this.private.CompToPickerHoverBool[newid]
+    if status == nil then
+        return false
+    end
+	return status
+end
 
 ---自带开关显示的按钮
 ---@param id string
@@ -257,11 +266,13 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
 	end
 
     local function Hover()
+        local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)
+		this.private.CompToPickerHoverBool[newid]= hover
         UI.tooltips(function()
             GuiText(this.public.gui, 0, 0, Content)
             if id == "MainButton" then
                 GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                GuiText(this.public.gui, 0, 0, ModVersion)
+                GuiText(this.public.gui, 0, 0, ModVersion.."\n"..ModLink.."\n"..GameTextGet("$wand_editor_main_button_tips"))
             end
 			GuiZSet(this.public.gui, this.private.ZDeep)
 			

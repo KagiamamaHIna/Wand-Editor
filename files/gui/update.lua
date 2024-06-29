@@ -182,6 +182,9 @@ function GUIUpdate()
 			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
 			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
 				"mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
+			if UI.GetPickerHover("MainButton") and InputIsKeyDown(Key_c) then
+				Cpp.SetClipboard(ModLink)
+			end
         end
 		
         UI.TickEventFn["ToggleOptions"] = function()

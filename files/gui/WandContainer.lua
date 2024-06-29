@@ -299,8 +299,10 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 			1, 1)
 		GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
 		GuiZSetForNextWidget(this.gui, this.GetZDeep())
-		this.SetZDeep(this.GetZDeep() - 1)
-		GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
+        this.SetZDeep(this.GetZDeep() - 1)
+		if not UI.GetPickerStatus("DisableSpellWobble") then
+			GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
+		end
 		GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
         GuiImageButton(this.gui, this.NewID(id .. BaseName.. v.id .. tostring(k)), 0, 2, "", spellData[v.id].sprite)
 		if isAlways then

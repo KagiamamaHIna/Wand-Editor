@@ -1,5 +1,6 @@
 wand_editor_lang_id,en,ru,pt-br,es-es,de,fr-fr,it,pl,zh-cn,jp,ko,,NOTES – use \n for newline,max length,,,,,,,,,,占位符，用于表示每一格对应的语言
 wand_editor_main_button,Wand Editor,,,,,,,,法杖编辑器,,,,,,,,,,,,,,,
+wand_editor_main_button_tips,Press C to copy link,,,,,,,,按下C键去复制链接,,,,,,,,,,,,,,,
 wand_editor_picker_open,Open ,,,,,,,,打开,,,,,,,,,,,,,,,
 wand_editor_picker_close,Close ,,,,,,,,关闭,,,,,,,,,,,,,,,
 wand_editor_picker_desc,"This is the moveable button, press shift+left mouse button to move\nClick the left mouse button again to determine the position\nRight mouse button to reset the position",,,,,,,,这是可移动按钮，按shift+鼠标左键可以移动\n再点击一次鼠标左键确定位置\n鼠标右键重置位置,,,,,,,,,,,,,,,
@@ -75,3 +76,4 @@ wand_editor_unlimited_spells,Unlimited Spells,,,,,,,,无限法术,,,,,,,,,,,,,,,
 wand_editor_always_draw_wand_edit_box,Always Draw Wand Edit Box,,,,,,,,始终绘制法杖编辑栏,,,,,,,,,,,,,,,
 wand_editor_edit_wands_everywhere,Edit Wands Everywhere,,,,,,,,随时编辑,,,,,,,,,,,,,,,
 wand_editor_keyboard_input,Allow Spell Backpack and Fixed Wand Edit Box to enter all keystrokes action,,,,,,,,允许法术背包和固定的法杖编辑栏输入所有按键操作,,,,,,,,,,,,,,,
+wand_editor_disable_spell_wobble,No Spell Wobble,,,,,,,,禁用法术摇摆,,,,,,,,,,,,,,,

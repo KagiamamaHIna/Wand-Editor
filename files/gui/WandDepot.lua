@@ -152,8 +152,11 @@ end
 ---@param index integer
 local function RemoveWandDepot(index)
 	local max = GetWandDepotSize()
-	for i = index, max - 1 do
-		SetWandDepotLua(GetWandDepot(i + 1), i)
+	local key = ModID .. "WandDepot"
+    for i = index, max - 1 do
+		local newkey = key .. tostring(i + 1)
+        local str = ModSettingGet(newkey)
+		ModSettingSet(str, i)
 	end
 	ModSettingRemove(ModID .. "WandDepot" .. tostring(max))
 	SetWandDepotSize(max - 1)

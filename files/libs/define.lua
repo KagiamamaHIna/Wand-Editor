@@ -1,8 +1,8 @@
 dofile_once("data/scripts/gun/gun_enums.lua")
 ModDir = "mods/wand_editor/"
 ModID = "wand_editor"
-ModVersion = "1.1.0"
-
+ModVersion = "1.1.1"
+ModLink = "https://github.com/KagiamamaHIna/Wand-Editor"
 
 SpellTypeBG = {
 	[ACTION_TYPE_PROJECTILE] = "data/ui_gfx/inventory/item_bg_projectile.png",

@@ -560,7 +560,9 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 
 		this.AddScrollImageItem(ContainerName, sprite, function()--添加图片项目的回调绘制
             GuiZSetForNextWidget(this.gui, this.GetZDeep())
-			GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)--让法术摇摆
+			if not UI.GetPickerStatus("DisableSpellWobble") then
+				GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)--让法术摇摆
+			end
 			this.MoveImageButton("__SPELL_" .. id, 0, 2, sprite, nil, SpellHover, SpellCilck, nil, true)--最后两个参数是不始终调用点击回调和禁止移动
 			--绘制法术背景，深度要控制好
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
