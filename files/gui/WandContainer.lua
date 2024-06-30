@@ -153,7 +153,7 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 				this.OnceCallOnExecute(function()
 					RefreshHeldWands()
 				end)
-			else                                            --反之不同
+			elseif this.UserData["FixedWand"] then 	--反之不同，需要判空
 				local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
 				local FixedWand = this.UserData["FixedWand"][2] --如果是跨法杖编辑，那么代表这个是必然存在的
 				local IsFixed = false
@@ -426,12 +426,18 @@ function DrawWandContainer(this, wandEntity, spellData)
 		end
 	end
 	local ViewerClick = function(left_click)
-		if left_click then --点击左键就存储数据
-			if this.UserData["FixedWand"] == nil then
-				this.UserData["FixedWand"] = { wandData, wandEntity }
-			else
-				this.UserData["FixedWand"] = nil
-			end
+        if left_click or (InputIsKeyDown(Key_GRAVE) and UI.UserData["ViewerCKeyDown"] == nil) then --点击左键就存储数据
+			UI.UserData["ViewerCKeyDown"] = true
+            if this.UserData["FixedWand"] == nil then
+                this.UserData["FixedWand"] = { wandData, wandEntity }
+            else
+                this.UserData["FixedWand"] = nil
+            end
+        elseif not InputIsKeyDown(Key_GRAVE) and UI.UserData["ViewerCKeyDown"] then
+			RestoreInput()
+			UI.UserData["ViewerCKeyDown"] = nil
+        end
+		if left_click then
 			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 		end
 	end

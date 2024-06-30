@@ -59,18 +59,20 @@ local ModIdToEnable = GetModEnableList()
 if HasCahce and (not mustReload) then
     local UpModEnable = dofile_once("mods/wand_editor/cache/ModEnable.lua")
 	local Change = false
-    for k, v in pairs(ModIdToEnable) do
-        if UpModEnable[k] == nil then --代表有新模组
-            Change = ModIsEnabled(k)
-			if Change then--如果启动了这个模组就退出
-				break
-			end
-        elseif UpModEnable[k] ~= v then
-            --代表模组变动
+    for k, v in pairs(UpModEnable) do
+        if ModIdToEnable[k] == nil then --代表有变动
             Change = true
             break
         end
     end
+	if not Change then
+		for k, v in pairs(ModIdToEnable) do
+			if UpModEnable[k] == nil then --代表有变动
+				Change = true
+				break
+			end
+		end
+	end
 	if not Change then--可以直接读取缓存！
 		--print("Cache Get")
 		local result1 = dofile_once("mods/wand_editor/cache/SpellsData.lua")
