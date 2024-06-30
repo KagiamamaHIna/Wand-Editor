@@ -26,13 +26,10 @@ end
 ---返回模组加载情况
 ---@return table<string, boolean>
 local function GetModEnableList()
+	local temp = ModGetActiveModIDs()
 	local ModIdToEnable = {}
-	local ModsPath = Cpp.GetDirectoryPath(Cpp.CurrentPath() .. "/mods/")
-    for _, v in pairs(ModsPath.Path) do
-        if Cpp.PathExists(v.."/mod.xml") then--判断是否存在，通过这个判断是否为一个模组
-			local modid = Cpp.PathGetFileName(v)
-			ModIdToEnable[modid] = ModIsEnabled(modid)
-		end
+    for _, v in pairs(temp) do
+		ModIdToEnable[v] = true
     end
 	return ModIdToEnable
 end
