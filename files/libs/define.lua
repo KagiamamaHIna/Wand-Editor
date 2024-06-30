@@ -1,7 +1,7 @@
 dofile_once("data/scripts/gun/gun_enums.lua")
 ModDir = "mods/wand_editor/"
 ModID = "wand_editor"
-ModVersion = "1.1.2"
+ModVersion = "1.1.3"
 ModLink = "https://github.com/KagiamamaHIna/Wand-Editor"
 
 SpellTypeBG = {
