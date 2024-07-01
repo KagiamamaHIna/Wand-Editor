@@ -43,6 +43,23 @@ GamePrint = function(...)
 	noita_game_print(table.concat(cache))
 end
 
+---深拷贝函数，主要是拷贝表，因为只能深拷贝这个（
+---@param original any
+---@return any
+function DeepCopy(original)
+    local copy
+    if type(original) == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, original, nil do
+            copy[DeepCopy(orig_key)] = DeepCopy(orig_value)
+        end
+        setmetatable(copy, DeepCopy(getmetatable(original)))
+    else -- 非表类型直接复制
+        copy = original
+    end
+    return copy
+end
+
 ---打印一个表
 ---@param t table
 function TablePrint(t)
@@ -160,7 +177,7 @@ end
 
 --- 序列化函数，将table转换成lua代码
 ---@param tbl table
----@param indent string 缩进字符串，默认为""
+---@param indent string? 缩进字符串，默认为""
 ---@return string
 function SerializeTable(tbl, indent)
     indent = indent or ""
@@ -505,14 +522,31 @@ function SetActiveItem(id)
 end
 
 ---屏蔽掉按键操作
-function BlockAllInput()
+function BlockAllInput(blockNum)
 	local player = GetPlayer()
     local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
     if ModSettingGet(ModID .. "Blocked") or (not ComponentGetValue2(Controls, "enabled")) then --防止和其他模组冲突
         return
     end
-	ModSettingSet(ModID.."Blocked", true)
-	
+    ModSettingSet(ModID .. "Blocked", true)
+
+    local inventory_quick = EntityGetWithName("inventory_quick")
+    if inventory_quick ~= nil and blockNum then
+		local t = EntityGetAllChildren(inventory_quick)
+		for _,v in pairs(t or {}) do
+			if EntityHasTag(v, "wand") then
+                local AbilityComps = EntityGetComponentIncludingDisabled(v, "AbilityComponent")
+				for _,AbilityComp in pairs(AbilityComps or {})do
+					ComponentSetValue2(AbilityComp, "use_gun_script", false)
+				end
+            else
+				local ItemComps = EntityGetComponentIncludingDisabled(v, "ItemComponent")
+				for _, ItemComp in pairs(ItemComps or {}) do
+                    ComponentSetValue2(ItemComp, "is_equipable_forced", false)
+                end
+			end
+		end
+	end
     for k, v in pairs(ComponentGetMembers(Controls) or {}) do
         local HasMBtnDown = string.find(k, "mButtonDown")
         local HasMBtnDownDelay = string.find(k, "mButtonDownDelay")
@@ -528,6 +562,24 @@ end
 function RestoreInput()
 	if ModSettingGet(ModID.."Blocked") then
         ModSettingSet(ModID .. "Blocked", false)
+
+		local inventory_quick = EntityGetWithName("inventory_quick")
+		if inventory_quick ~= nil then
+			local t = EntityGetAllChildren(inventory_quick)
+			for _,v in pairs(t or {}) do
+				if EntityHasTag(v, "wand") then
+					local AbilityComps = EntityGetComponentIncludingDisabled(v, "AbilityComponent")
+					for _,AbilityComp in pairs(AbilityComps or {})do
+						ComponentSetValue2(AbilityComp, "use_gun_script", true)
+					end
+				else
+					local ItemComps = EntityGetComponentIncludingDisabled(v, "ItemComponent")
+					for _, ItemComp in pairs(ItemComps or {}) do
+						ComponentSetValue2(ItemComp, "is_equipable_forced", true)
+					end
+				end
+			end
+		end
 		local player = GetPlayer()
 		local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
 		ComponentSetValue2(Controls, "enabled", true)
@@ -800,7 +852,55 @@ function UpdateWand(wandData, wand)
 		return InitWand(SWandData, wand)
 	end
 end
+--[[
+function RemoveSaveMore()
+	if ___WandStack and #___WandStack > 31 then
+        table.remove(___WandStack, 1)
+    end
+	if ___ReWandStack and #___ReWandStack > 31 then
+		table.remove(___ReWandStack, 1)
+	end
+end
 
+function GetLastRestoreWand()
+	if ___WandStack and #___WandStack > 0 then
+		return ___WandStack[#___WandStack]
+	end
+end
+
+function NewUseForRestoreWand(wandEntity, wandData, upSetData, OtherWandEntity, OtherWandData, upSetOtherData)
+    PushValueOnList(___WandStack, { e1 = wandEntity, d1 = wandData, u1 = upSetData, e2 = OtherWandEntity, d2 = OtherWandData, u2 = upSetOtherData })
+	RemoveSaveMore()
+end
+
+function RestoreWand()
+    if ___WandStack and ___ReWandStack and #___WandStack > 0 then
+        local v = PopValueOnList(___WandStack)
+		if v.e2 ~= nil and EntityGetIsAlive(v.e1) and EntityGetIsAlive(v.e2) then
+            InitWand(v.d1, v.e1)
+            InitWand(v.d2, v.e2)
+        elseif EntityGetIsAlive(v.e1) then
+			InitWand(v.d1, v.e1)
+		end
+        PushValueOnList(___ReWandStack, v)
+    end
+	RemoveSaveMore()
+end
+
+function UnRestoreWand()
+    if ___WandStack and ___ReWandStack and #___ReWandStack > 0 then
+        local v = PopValueOnList(___ReWandStack)
+		if v.e2 ~= nil and EntityGetIsAlive(v.e1) and EntityGetIsAlive(v.e2) then
+            InitWand(v.u1, v.e1)
+            InitWand(v.u2, v.e2)
+        elseif EntityGetIsAlive(v.e1) then
+			InitWand(v.u1, v.e1)
+		end
+        PushValueOnList(___WandStack, v)
+    end
+	RemoveSaveMore()
+end
+]]
 ---通过法杖数据初始化一根法杖并返回其实体id...好大啊！
 ---@param wandData Wand 由GetWandData函数自动生成
 ---@param wand integer|nil? EntityID，当wand为nil的时候将自动生成一个实体用于加载魔杖
@@ -808,10 +908,6 @@ end
 ---@param y number? y = 0
 ---@return integer
 function InitWand(wandData, wand, x, y)
-    if ___WandStack == nil then
-        ___WandStack = {}
-    end
-	
     local srcWand = wand
     local deck_capacity = wandData.deck_capacity
 	if wandData.spells then

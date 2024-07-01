@@ -4,8 +4,10 @@ dofile_once("mods/wand_editor/files/gui/update.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 
 ModLuaFileAppend("data/scripts/gun/gun.lua", "mods/wand_editor/files/append/gun.lua")
-
-
+--[[
+___ReWandStack = {}
+___WandStack = {}
+]]
 local SrcCsv = ModTextFileGetContent("data/translations/common.csv")--设置新语言文件
 local AddCsv = ModTextFileGetContent("mods/wand_editor/files/lang/lang.csv")
 ModTextFileSetContent("data/translations/common.csv", SrcCsv .. AddCsv)

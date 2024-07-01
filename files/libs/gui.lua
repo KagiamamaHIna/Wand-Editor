@@ -644,16 +644,8 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
     end
     local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)--获得当前控件是否悬浮
     if hover then
-        if this.private.TextInputIDtoStr[newid].ActiveItem == nil then
-            this.private.TextInputIDtoStr[newid].ActiveItem = GetActiveItem()
-        end
 		--屏蔽按键输入
-		BlockAllInput()
-        if this.private.TextInputIDtoStr[newid].ActiveItem then--屏蔽切换物品
-            UI.OnceCallOnExecute(function()
-				SetActiveItem(this.private.TextInputIDtoStr[newid].ActiveItem)
-			end)
-		end
+		BlockAllInput(true)
         if this.private.TextInputIDtoStr[newid].DelFr == nil then --如果在悬浮，就分配一个帧检测时间
             this.private.TextInputIDtoStr[newid].DelFr = 30
         else
@@ -670,7 +662,6 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
         end
     elseif this.private.TextInputIDtoStr[newid].DelFr then --如果未悬浮就设为空
 		RestoreInput()
-		this.private.TextInputIDtoStr[newid].ActiveItem = nil
         this.private.TextInputIDtoStr[newid].DelFr = nil
     end
 	
@@ -1017,7 +1008,8 @@ end
 
 ---派发消息
 function UI.DispatchMessage()
-	GuiStartFrame(this.public.gui)
+    GuiStartFrame(this.public.gui)
+	GuiOptionsAdd(this.public.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 	this.public.ScreenWidth, this.public.ScreenHeight = GuiGetScreenDimensions(this.public.gui)
     if this.private.Scale == nil or this.private.RefreshScale == 0 then --初始化设置缩放参数
         local configXml = Nxml.parse(ReadFileAll(SavePath .. "save_shared/config.xml"))

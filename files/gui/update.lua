@@ -177,7 +177,6 @@ function GUIUpdate()
             if GameIsInventoryOpen() or GetPlayer() == nil then
                 return
             end
-			GuiOptionsAdd(UI.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 
 			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
 			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
@@ -260,9 +259,29 @@ function GUIUpdate()
 				UI.UserData["LockHPValue"] = nil
 			end
 
-			if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then--主按钮关闭时和开启物品栏时禁止执行下一步
-				return
+            if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then --主按钮关闭时和开启物品栏时禁止执行下一步
+                return
+            end
+			--[[
+            local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+			if UI.UserData["RestoredWand"] == nil and CTRL and InputIsKeyDown(Key_z) then
+                RestoreWand()
+				UI.OnceCallOnExecute(function()
+					RefreshHeldWands()
+				end)
+                UI.UserData["RestoredWand"] = true
+            elseif not InputIsKeyDown(Key_z) then
+				UI.UserData["RestoredWand"] = nil
 			end
+			if UI.UserData["UnRestoredWand"] == nil and CTRL and InputIsKeyDown(Key_y) then
+                UnRestoreWand()
+				UI.OnceCallOnExecute(function()
+					RefreshHeldWands()
+				end)
+                UI.UserData["UnRestoredWand"] = true
+            elseif not InputIsKeyDown(Key_y) then
+				UI.UserData["UnRestoredWand"] = nil
+			end]]
             if UI.GetPickerStatus("DamageInfo") then
                 DrawDamageInfo()
             end

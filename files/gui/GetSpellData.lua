@@ -115,7 +115,8 @@ local function ShotListener(key, value)
 end
 
 TableListener(shot_effects, ShotListener)
-
+local posX = 14600
+local posY = -45804
 
 reflecting = true
 Reflection_RegisterProjectile = function(filepath)
@@ -124,7 +125,7 @@ Reflection_RegisterProjectile = function(filepath)
 	end
 	--获取投射物数据，判断是否有缓存
 	if hasProj[filepath] == nil then
-		local proj = EntityLoad(filepath, 14600, -45804)
+		local proj = EntityLoad(filepath, posX, -posY)
 		hasProj[filepath] = {}
 		local projComp = EntityGetFirstComponent(proj, "ProjectileComponent")
         if projComp then
@@ -211,7 +212,6 @@ end
 
 local player = GetPlayer()
 EntityRemoveTag(player, "player_unit")
-
 local TypeToSpellListCount = {}
 
 local TypeToSpellList = {}

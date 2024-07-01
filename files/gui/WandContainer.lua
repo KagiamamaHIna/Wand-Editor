@@ -157,12 +157,12 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 				local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
 				local FixedWand = this.UserData["FixedWand"][2] --如果是跨法杖编辑，那么代表这个是必然存在的
 				local IsFixed = false
-				local AntherWand
+				local OtherWand
 				if FixedWand == wandEntity then --如果点击法杖等于固定法杖，那么其他数据就是手持法杖
-					AntherWand = GetWandData(HeldWand)
+					OtherWand = GetWandData(HeldWand)
 					IsFixed = true
 				else --否则是固定法杖
-					AntherWand = GetWandData(FixedWand)
+					OtherWand = GetWandData(FixedWand)
 				end
 				--如果没有问题(Bug)，那么应该只有一个是真（即有数据
 				local HasShiftClick = this.UserData["HasShiftClick"][HeldWand] or
@@ -173,18 +173,18 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 				max = math.max(HasShiftClick[2], max)
 				local ThisK = k
 				for i = min, max do                                                    --i是原始位置，k是目标位置
-					if i > AntherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
+					if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
 						break
 					end
-					Swap2InputSpellPos(wandData, AntherWand, ThisK, i)
+					Swap2InputSpellPos(wandData, OtherWand, ThisK, i)
 					ThisK = ThisK + 1
 				end
 				if IsFixed then
 					InitWand(wandData, wandEntity)
-					InitWand(AntherWand, HeldWand)
+					InitWand(OtherWand, HeldWand)
 				else
 					InitWand(wandData, wandEntity)
-					InitWand(AntherWand, FixedWand)
+					InitWand(OtherWand, FixedWand)
 				end
 				this.UserData["HasShiftClick"][HeldWand] = nil
 				this.UserData["HasShiftClick"][FixedWand] = nil
@@ -195,13 +195,13 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 		elseif click and this.UserData["FloatSpellID"] ~= nil then
 			if this.UserData["UpSpellIndex"] ~= nil and v ~= "nil" then --如果存在键，则代表这是一次交换操作
 				local i = this.UserData["UpSpellIndex"][1]
-				local AntherWand = this.UserData["UpSpellIndex"][3]
-				if AntherWand == wandEntity then --如果是同一实体
+				local OtherWand = this.UserData["UpSpellIndex"][3]
+				if OtherWand == wandEntity then --如果是同一实体
 					SetTableSpells(wandData, v.id, i, v.uses_remaining, false)
 				else                         --刷新另一根法杖
-					local AntherWandData = this.UserData["UpSpellIndex"][2]
-					SetTableSpells(AntherWandData, v.id, i, v.uses_remaining, false)
-					InitWand(AntherWandData, this.UserData["UpSpellIndex"][3])
+					local OtherWandData = this.UserData["UpSpellIndex"][2]
+					SetTableSpells(OtherWandData, v.id, i, v.uses_remaining, false)
+					InitWand(OtherWandData, this.UserData["UpSpellIndex"][3])
 				end --刷新手持法杖 这一步相当于交换
 				SetTableSpells(wandData, this.UserData["FloatSpellID"], k, this.UserData["UpSpellIndex"][4], false)
 				InitWand(wandData, wandEntity)
