@@ -181,15 +181,58 @@ function GUIUpdate()
 			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
 			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
 				"mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
-			if UI.GetPickerHover("MainButton") and InputIsKeyDown(Key_c) then
-				Cpp.SetClipboard(ModLink)
-			end
         end
 		
-        UI.TickEventFn["ToggleOptions"] = function()
-			if GetPlayer() == nil then--找不到玩家时禁止执行下一步
-				return
+        UI.TickEventFn["RequestAvatar"] = function()
+			if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then--请求头像
+				UI.TickEventFn["RequestAvatar"] = nil
 			end
+            if UI.UserData["RequestAvatarMode"] == nil then
+                local Request = function()
+                    local https = require("ssl.https")
+					local ltn12 = require("ltn12")
+                    require("github_mirror")
+                    local code = 0
+                    local Returns
+					-- 准备sink，用于收集响应体数据
+					local response_chunks = {}
+                    local response_sink = ltn12.sink.table(response_chunks)
+					local count = 0
+                    while code ~= 200 and count <= 12 do--失败太多次就不请求了
+                        Returns = { https.request {
+							url = "https://avatars.githubusercontent.com/u/128758465?s=200&v200",
+							sink = response_sink,
+						} }
+                        code = Returns[2]
+						count = count + 1
+                    end
+                    return response_chunks,code
+                end
+                local runner = effil.thread(Request)
+				UI.UserData["RequestAvatarhandle"] = runner()
+                UI.UserData["RequestAvatarMode"] = true
+            elseif UI.UserData["RequestAvatarMode"] then
+				local handle = UI.UserData["RequestAvatarhandle"]
+                local status = handle:status()
+                if status == "completed" then
+                    local response_chunks, code = handle:get()
+					if code == 200 then--如果正确请求了，那么就写入文件
+						local file = io.open("mods/wand_editor/cache/avatar.png", "wb")
+						for _, chunk in pairs(effil.dump(response_chunks)) do
+							file:write(chunk)
+						end
+						file:close()
+					end
+                    UI.TickEventFn["RequestAvatar"] = nil
+                    UI.UserData["RequestAvatarhandle"] = nil
+				end
+			end
+		end
+
+        UI.TickEventFn["ToggleOptions"] = function()
+            if GetPlayer() == nil then --找不到玩家时禁止执行下一步
+                return
+            end
             if UI.GetPickerStatus("ProtectionAll") and EntityGetWithName("WandEditorProtectionAllEntity") == 0 then--无敌给予
                 local player = GetPlayer()
                 LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/protection_all.xml")

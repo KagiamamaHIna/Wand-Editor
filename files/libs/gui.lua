@@ -276,7 +276,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
             GuiText(this.public.gui, 0, 0, Content)
             if id == "MainButton" then
                 GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                GuiText(this.public.gui, 0, 0, ModVersion.."\n"..ModLink.."\n"..GameTextGet("$wand_editor_main_button_tips"))
+                GuiText(this.public.gui, 0, 2, ModVersion)
             end
 			GuiZSet(this.public.gui, this.private.ZDeep)
 			

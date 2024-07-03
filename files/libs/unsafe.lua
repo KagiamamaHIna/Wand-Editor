@@ -11,10 +11,10 @@ package.cpath = package.cpath .. ";./" .. ModDir .. "files/module/socket/?.dll"
 package.cpath = package.cpath .. ";./" .. ModDir .. "files/module/socket/mime/?.dll"--mime，lua socker运行依赖
 package.path = package.path .. ";./" .. ModDir .. "files/socket_lua/?.lua"
 package.path = package.path .. ";./" .. ModDir .. "files/socket_lua/socket/?.lua"
-
+package.path = package.path .. ";./" .. ModDir .. "files/link/?.lua"
 Cpp = require("WandEditorDll")--加载模块
 Cpp.SetDllDirectory(Cpp.CurrentPath().."/mods/wand_editor/files/module/openssl")--提供openssl的动态链接库加载索引
-
+effil = require("effil")
 --初始化为绝对路径
 SavePath = Cpp.GetAbsPath(SavePath)
 
