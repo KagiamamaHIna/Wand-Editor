@@ -198,7 +198,7 @@ local function DrawWandSlot(id, k, wand)
 	local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
 	if hover then
 		local rightMargin = 70
-		local function NewLine(str1, str2, ShowFrTran)
+		local function NewLine(str1, str2)
 			local text = GameTextGetTranslatedOrNot(str1)
 			local w = GuiGetTextDimensions(UI.gui, text)
 			GuiLayoutBeginHorizontal(UI.gui, 0, 0, true, 2, -1)

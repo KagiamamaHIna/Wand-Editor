@@ -42,6 +42,12 @@ namespace lua {
 		lua_pushstring(L, fn::GetClipboard().c_str());
 		return 1;
 	}
+
+	int lua_SetDllDirectory(lua_State* L) {
+		const char* str = luaL_checkstring(L, 1);
+		lua_pushboolean(L,SetDllDirectoryA(str));
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -66,6 +72,7 @@ static luaL_Reg luaLibs[] = {
 
 	{ "SetClipboard", lua::lua_SetClipboard},
 	{ "GetClipboard", lua::lua_GetClipboard},
+	{ "SetDllDirectory", lua::lua_SetDllDirectory},
 
 	{ NULL, NULL }
 };

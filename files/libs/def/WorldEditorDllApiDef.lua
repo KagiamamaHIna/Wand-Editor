@@ -81,3 +81,8 @@ function Cpp.SetClipboard(str)end
 ---获得剪切板的内容，如果不存在之类的为一个""
 ---@return string
 function Cpp.GetClipboard()end
+
+---同windows api SetDllDirectoryA
+---@param str string
+---@return boolean
+function Cpp.SetDllDirectory(str) end

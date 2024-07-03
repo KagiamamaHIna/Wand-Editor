@@ -572,7 +572,7 @@ function RestoreInput()
 					for _,AbilityComp in pairs(AbilityComps or {})do
 						ComponentSetValue2(AbilityComp, "use_gun_script", true)
 					end
-				else
+				elseif not EntityHasTag(v, "this_is_sampo") then
 					local ItemComps = EntityGetComponentIncludingDisabled(v, "ItemComponent")
 					for _, ItemComp in pairs(ItemComps or {}) do
 						ComponentSetValue2(ItemComp, "is_equipable_forced", true)
