@@ -131,7 +131,6 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 	local SrcPlayerYKey = ModID .. "SpellLab_player_y"
     local LabStatus = ModSettingGet(LabSettingKey)
 	local HoverSpellLab = function ()
-        local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
         local tips
         if LabStatus then
             tips = GameTextGet("$wand_editor_spell_lab_button_leave")
@@ -141,9 +140,6 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 		UI.tooltips(function ()
 			GuiText(UI.gui,0,0,tips)
 		end,nil,8)
-		if hover then
-			
-		end
 	end
     local ClickSpellLab = function(left_click, right_click)
         if left_click then
