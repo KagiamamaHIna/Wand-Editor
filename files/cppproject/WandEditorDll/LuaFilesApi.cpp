@@ -83,12 +83,13 @@ namespace lua {
 	int lua_PathGetFileName(lua_State* L) {
 		std::string str = luaL_checkstring(L, 1);
 		size_t pos = str.rfind('/');
-		if (pos == -1) {//如果等于-1就搜索另一个
-			pos = str.rfind('\\');
-		}
-		if (pos == -1) {
+		size_t pos2 = str.rfind('\\');
+		if (pos == -1 && pos2 == -1) {
 			std::cerr << "not found file name\n";
 			return 0;
+		}
+		if (pos2 > pos) {
+			pos = pos2;
 		}
 		//有结果
 		str = str.substr(pos + 1);
@@ -103,5 +104,12 @@ namespace lua {
 			return 1;
 		}
 		return 0;
+	}
+
+	int lua_Rename(lua_State* L) {
+		const char* path = luaL_checkstring(L, 1);
+		const char* tar = luaL_checkstring(L, 2);
+		lua_pushinteger(L, std::rename(path, tar));
+		return 1;
 	}
 }

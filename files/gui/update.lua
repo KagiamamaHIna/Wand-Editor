@@ -124,8 +124,15 @@ function GUIUpdate()
                     if not click then
                         return
                     end
-					ClickSound()
-					for _,v in pairs( EntityGetWithTag( "projectile_player" ) or {} ) do
+                    ClickSound()
+                    local t
+					local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+					if CTRL then
+                        t = EntityGetWithTag("projectile") or {}
+                    else
+						t = EntityGetWithTag("projectile_player") or {}
+					end
+					for _,v in pairs(t) do
 						local projectile = EntityGetFirstComponent( v, "ProjectileComponent" )
 						if projectile ~= nil then
 							ComponentSetValue2( projectile, "on_death_explode", false )
@@ -177,18 +184,85 @@ function GUIUpdate()
             if GameIsInventoryOpen() or GetPlayer() == nil then
                 return
             end
+			if InputIsKeyDown(Key_BACKSPACE) then
+                local worldx, worldy = DEBUG_GetMouseWorld()
+                local entitys = EntityGetInRadiusWithTag(worldx, worldy, 12, "polymorphable_NOT")
+				for _,v in pairs(entitys)do
+					if EntityGetName(v) == "wand_editor_dummy_target" then
+                        EntityKill(v)
+						GamePrint(GameTextGet("$wand_editor_kill_dummy_tip"))
+					end
+				end
+			end
 
 			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
 			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
 				"mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
-			if UI.GetPickerHover("MainButton") and InputIsKeyDown(Key_c) then
-				Cpp.SetClipboard(ModLink)
-			end
         end
 		
+        UI.TickEventFn["RequestAvatar"] = function()
+			if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then--请求头像
+				UI.TickEventFn["RequestAvatar"] = nil
+			end
+            if UI.UserData["RequestAvatarMode"] == nil then
+                local Request = function()
+                    local https = require("ssl.https")
+					local ltn12 = require("ltn12")
+                    require("github_mirror")
+                    local code = 0
+                    local Returns
+					-- 准备sink，用于收集响应体数据
+					local response_chunks = {}
+                    local response_sink = ltn12.sink.table(response_chunks)
+					local count = 0
+                    while code ~= 200 and count <= 12 do--失败太多次就不请求了
+                        Returns = { https.request {
+							url = "https://avatars.githubusercontent.com/u/128758465",--?s=200&v200
+							sink = response_sink,
+						} }
+                        code = Returns[2]
+						count = count + 1
+                    end
+                    return response_chunks,code
+                end
+                local runner = effil.thread(Request)
+				UI.UserData["RequestAvatarhandle"] = runner()
+                UI.UserData["RequestAvatarMode"] = true
+            elseif UI.UserData["RequestAvatarMode"] then
+				local handle = UI.UserData["RequestAvatarhandle"]
+                local status = handle:status()
+                if status == "completed" then
+                    local response_chunks, code = handle:get()
+					if code == 200 then--如果正确请求了，那么就写入文件
+						local file = io.open("mods/wand_editor/cache/avatar.png", "wb")
+						for _, chunk in pairs(effil.dump(response_chunks)) do
+							file:write(chunk)
+						end
+						file:close()
+					end
+                    UI.TickEventFn["RequestAvatar"] = nil
+                    UI.UserData["RequestAvatarhandle"] = nil
+				end
+			end
+		end
+
         UI.TickEventFn["ToggleOptions"] = function()
-			if GetPlayer() == nil then--找不到玩家时禁止执行下一步
-				return
+            if GetPlayer() == nil then --找不到玩家时禁止执行下一步
+                return
+            end
+			if UI.GetPickerStatus("ProtectionBlindness") then
+                local player = GetPlayer()
+                local childs = EntityGetAllChildren(player)
+				for _,v in pairs(childs or {})do
+                    local GameEffects = EntityGetComponent(v, "GameEffectComponent")
+					for _,effect in pairs(GameEffects or {})do
+                        local effectName = ComponentGetValue2(effect, "effect")
+						if effectName == "BLINDNESS" then
+                            EntityKill(v)
+							break
+						end
+					end
+				end
 			end
             if UI.GetPickerStatus("ProtectionAll") and EntityGetWithName("WandEditorProtectionAllEntity") == 0 then--无敌给予
                 local player = GetPlayer()
@@ -204,7 +278,7 @@ function GUIUpdate()
                 EntityKill(EntityGetWithName("WandEditorProtectionPolyEntity"))
             end
 			
-            if UI.GetPickerStatus("EditWandsEverywhere") and EntityGetWithName("WandEditorEditWandsEverywhereEntity") == 0 then --变形免疫给予
+            if UI.GetPickerStatus("EditWandsEverywhere") and EntityGetWithName("WandEditorEditWandsEverywhereEntity") == 0 then --随编给予
                 local player = GetPlayer()
                 LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/edit_wands_everywhere.xml")
             elseif (not UI.GetPickerStatus("EditWandsEverywhere")) and EntityGetWithName("WandEditorEditWandsEverywhereEntity") ~= 0 then
@@ -245,7 +319,21 @@ function GUIUpdate()
                 end)
 				GameRemoveFlagRun("WandEditorUnlimitedSpells")
 			end
-
+			if UI.GetPickerStatus("InfFly") and not GameHasFlagRun("WandEditorInfFly") then
+                local player = GetPlayer()
+                local CharacterComp = EntityGetFirstComponent(player, "CharacterDataComponent")
+				if CharacterComp then
+                    ComponentSetValue2(CharacterComp, "flying_needs_recharge", false)
+					GameAddFlagRun("WandEditorInfFly")
+				end
+            elseif not UI.GetPickerStatus("InfFly") and GameHasFlagRun("WandEditorInfFly") then
+				local player = GetPlayer()
+                local CharacterComp = EntityGetFirstComponent(player, "CharacterDataComponent")
+				if CharacterComp then
+                    ComponentSetValue2(CharacterComp, "flying_needs_recharge", true)
+					GameRemoveFlagRun("WandEditorInfFly")
+				end
+			end
             if UI.GetPickerStatus("LockHP") then--血量锁定实现
                 local player = GetPlayer()
 				local damage_model = EntityGetFirstComponent( player, "DamageModelComponent" )
@@ -258,11 +346,29 @@ function GUIUpdate()
             else
 				UI.UserData["LockHPValue"] = nil
 			end
-
-            if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then --主按钮关闭时和开启物品栏时禁止执行下一步
+			if GameIsInventoryOpen() then--开启开启物品栏时禁止执行下一步
+				return
+			end
+            if UI.GetPickerStatus("QuickTP") then
+				local player = GetPlayer()
+                local Controls = EntityGetFirstComponent(player, "ControlsComponent")
+                local right = ComponentGetValue2(Controls, "mButtonDownThrow")
+				if right and (UI.UserData["QuickTPFr"] == nil or UI.UserData["QuickTPFr"] == 0) then
+                    local x, y = DEBUG_GetMouseWorld()
+                    EntitySetTransform(player, x, y)
+					if UI.UserData["QuickTPFr"] ~= 0 then
+						UI.UserData["QuickTPFr"] = 20
+					end
+                elseif right and UI.UserData["QuickTPFr"] and UI.UserData["QuickTPFr"] ~= 0 then
+                    UI.UserData["QuickTPFr"] = UI.UserData["QuickTPFr"] - 1
+                elseif not right and UI.UserData["QuickTPFr"] then
+					UI.UserData["QuickTPFr"] = nil
+				end
+			end
+            if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then --主按钮关闭时禁止下一步
                 return
             end
-			--[[
+			            --[[
             local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
 			if UI.UserData["RestoredWand"] == nil and CTRL and InputIsKeyDown(Key_z) then
                 RestoreWand()

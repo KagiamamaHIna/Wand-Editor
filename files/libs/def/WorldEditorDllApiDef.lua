@@ -81,3 +81,14 @@ function Cpp.SetClipboard(str)end
 ---获得剪切板的内容，如果不存在之类的为一个""
 ---@return string
 function Cpp.GetClipboard()end
+
+---同windows api SetDllDirectoryA
+---@param str string
+---@return boolean
+function Cpp.SetDllDirectory(str) end
+
+---std::rename的封装，返回0是成功，理论上还可用于移动文件
+---@param old_filename string
+---@param new_filename string
+---@return integer
+function Cpp.Rename(old_filename, new_filename)end

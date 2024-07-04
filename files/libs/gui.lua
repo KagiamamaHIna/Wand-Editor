@@ -276,7 +276,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
             GuiText(this.public.gui, 0, 0, Content)
             if id == "MainButton" then
                 GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                GuiText(this.public.gui, 0, 0, ModVersion.."\n"..ModLink.."\n"..GameTextGet("$wand_editor_main_button_tips"))
+                GuiText(this.public.gui, 0, 2, ModVersion)
             end
 			GuiZSet(this.public.gui, this.private.ZDeep)
 			
@@ -644,8 +644,16 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
     end
     local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)--获得当前控件是否悬浮
     if hover then
+		if this.private.TextInputIDtoStr[newid].ActiveItem == nil then
+            this.private.TextInputIDtoStr[newid].ActiveItem = GetActiveItem()
+        end
 		--屏蔽按键输入
-		BlockAllInput(true)
+        BlockAllInput(true)
+		if this.private.TextInputIDtoStr[newid].ActiveItem then--屏蔽切换物品
+            UI.OnceCallOnExecute(function()
+				SetActiveItem(this.private.TextInputIDtoStr[newid].ActiveItem)
+			end)
+		end
         if this.private.TextInputIDtoStr[newid].DelFr == nil then --如果在悬浮，就分配一个帧检测时间
             this.private.TextInputIDtoStr[newid].DelFr = 30
         else
@@ -662,7 +670,8 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
         end
     elseif this.private.TextInputIDtoStr[newid].DelFr then --如果未悬浮就设为空
 		RestoreInput()
-        this.private.TextInputIDtoStr[newid].DelFr = nil
+		this.private.TextInputIDtoStr[newid].ActiveItem = nil
+		this.private.TextInputIDtoStr[newid].DelFr = nil
     end
 	
 	return this.private.TextInputIDtoStr[newid].str

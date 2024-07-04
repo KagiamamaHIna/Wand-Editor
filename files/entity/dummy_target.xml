@@ -1,4 +1,4 @@
-<Entity tags="prop,hittable,mortal,homing_target,enemy,touchmagic_immunity,teleportable_NOT,polymorphable_NOT" >
+<Entity tags="prop,hittable,mortal,homing_target,enemy,touchmagic_immunity,teleportable_NOT,polymorphable_NOT" name="wand_editor_dummy_target">
 	<VelocityComponent gravity_y="0"/>
     <SimplePhysicsComponent/>
 	<SpriteComponent 

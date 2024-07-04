@@ -265,7 +265,11 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 	if isAlways then
 		GuiTooltip(this.gui, GameTextGet("$wand_editor_always")..tostring(k), "")		
     else
-		GuiTooltip(this.gui, tostring(k), "")
+		if v ~= "nil" and v.uses_remaining ~= -1 then
+            GuiTooltip(this.gui, tostring(k).." ("..GameTextGet("$inventory_usesremaining").." : "..v.uses_remaining..")", "")
+        else
+			GuiTooltip(this.gui, tostring(k), "")
+		end
 	end
 	if not isAlways then
 		this.UserData[id .. "LastWandContHover" .. tostring(k)] = hover
@@ -305,11 +309,17 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 		end
 		GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
         GuiImageButton(this.gui, this.NewID(id .. BaseName.. v.id .. tostring(k)), 0, 2, "", spellData[v.id].sprite)
-		if isAlways then
+        if isAlways then
+            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            this.SetZDeep(this.GetZDeep() - 1)
+            GuiImage(this.gui, this.NewID(id .. BaseName .. "Always" .. v.id .. tostring(k)), 1, 0,
+                "mods/wand_editor/files/gui/images/always_icon.png",
+                1, 1)
+        end
+		if not isAlways and v ~= "nil" and v.uses_remaining ~= -1 then
 			GuiZSetForNextWidget(this.gui, this.GetZDeep())
-			this.SetZDeep(this.GetZDeep() - 1)
-			GuiImage(this.gui, this.NewID(id .. BaseName.."Always" .. v.id .. tostring(k)), 1, 0, "mods/wand_editor/files/gui/images/always_icon.png",
-				1, 1)
+            this.SetZDeep(this.GetZDeep() - 1)
+            GuiText(UI.gui, 4, 2, tostring(v.uses_remaining),1,"data/fonts/font_small_numbers.xml")
 		end
 		GuiLayoutEnd(this.gui)
 	end
