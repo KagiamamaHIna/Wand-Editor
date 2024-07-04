@@ -1,0 +1,13 @@
+<Entity>
+	<PixelSceneComponent
+		pixel_scene="mods/wand_editor/files/biome_impl/wand_lab/wang.png"
+		pixel_scene_background="mods/wand_editor/files/biome_impl/wand_lab/background.png"
+		offset_x="-640"
+		offset_y="-360"
+		skip_biome_checks="1"
+	/>
+	<StreamingKeepAliveComponent>
+	</StreamingKeepAliveComponent>
+	<LifetimeComponent lifetime="2"/>
+  	<LuaComponent execute_on_added="1" remove_after_executed="1" script_source_file="mods/wand_editor/files/biome_impl/wand_lab/wand_lab.lua"/>
+</Entity>

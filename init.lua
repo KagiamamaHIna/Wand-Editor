@@ -20,15 +20,41 @@ end
 
 local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache"
 if not Cpp.PathExists(cachePath) then
-	Cpp.CreateDir(cachePath)
+    Cpp.CreateDir(cachePath)
 end
 
 function OnPlayerSpawned(player)
 	RestoreInput()--防止笨蛋在一些情况下重启游戏
     if not GameHasFlagRun("wand_editor_init") then
+        GameAddFlagRun("wand_editor_init")
         EntityLoadChild(player, "mods/wand_editor/files/entity/Restore.xml")
         EntityAddComponent2(player, "LuaComponent", { script_shot = "mods/wand_editor/files/misc/self/player_shot.lua" })
-        GameAddFlagRun("wand_editor_init")
+        EntityLoad("mods/wand_editor/files/biome_impl/wand_lab/wand_lab.xml", 12200, -5900)
+        ModSettingSet(ModID .. "SpellLab", false)
+		--初始化关于重置实验室的东西
+		if Cpp.PathExists("mods/wand_editor/files/biome_impl/wand_lab/reset") then
+			local t = Cpp.GetDirectoryPath("mods/wand_editor/files/biome_impl/wand_lab/reset")
+            Cpp.Rename(t.File[1], "mods/wand_editor/files/biome_impl/wand_lab/reset/0")
+        else
+            Cpp.CreateDir("mods/wand_editor/files/biome_impl/wand_lab/reset")
+            local png = io.open("mods/wand_editor/files/biome_impl/wand_lab/wang.png", "rb")
+			io.input(png)
+			local file = io.open("mods/wand_editor/files/biome_impl/wand_lab/reset/0", "wb") --将新内容写进文件中
+			file:write(io.read("*a"))
+            file:close()
+			io.close(png)
+		end
+		if Cpp.PathExists("mods/wand_editor/files/biome_impl/wand_lab/reset_xml") then
+			local t = Cpp.GetDirectoryPath("mods/wand_editor/files/biome_impl/wand_lab/reset_xml")
+			Cpp.Rename(t.File[1], "mods/wand_editor/files/biome_impl/wand_lab/reset_xml/0")
+        else
+			Cpp.CreateDir("mods/wand_editor/files/biome_impl/wand_lab/reset_xml")
+            local str = ReadFileAll("mods/wand_editor/files/biome_impl/wand_lab/overwrite.xml")
+			local file = io.open("mods/wand_editor/files/biome_impl/wand_lab/reset_xml/0", "w") --将新内容写进文件中
+			file:write(str)
+			file:close()
+		end
+
     end
 end
 

@@ -59,6 +59,7 @@ static luaL_Reg luaLibs[] = {
 	{ "PathGetFileName", lua::lua_PathGetFileName},
 	{ "PathExists", lua::lua_PathExists},
 	{ "CreateDir", lua::lua_CreateDir},
+	{ "Rename", lua::lua_Rename},
 
 	{ "UTF8StringSize", lua::lua_UTF8StringSize},
 	{ "UTF8StringSub", lua::lua_UTF8StringSub},

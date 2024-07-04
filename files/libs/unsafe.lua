@@ -33,7 +33,7 @@ function ReadFileAll(path)
 end
 
 dofile_once("data/scripts/gun/gun_enums.lua")
-
+dofile_once("data/scripts/status_effects/status_list.lua")
 SpellTypeBG = {
 	[ACTION_TYPE_PROJECTILE] = "data/ui_gfx/inventory/item_bg_projectile.png",
 	[ACTION_TYPE_STATIC_PROJECTILE] = "data/ui_gfx/inventory/item_bg_static_projectile.png",
@@ -44,3 +44,7 @@ SpellTypeBG = {
 	[ACTION_TYPE_UTILITY] = "data/ui_gfx/inventory/item_bg_utility.png",
 	[ACTION_TYPE_PASSIVE] = "data/ui_gfx/inventory/item_bg_passive.png"
 }
+StatusMap = {}
+for k,v in pairs(status_effects)do
+	StatusMap[v.id] = k+1
+end

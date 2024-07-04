@@ -86,3 +86,9 @@ function Cpp.GetClipboard()end
 ---@param str string
 ---@return boolean
 function Cpp.SetDllDirectory(str) end
+
+---std::rename的封装，返回0是成功，理论上还可用于移动文件
+---@param old_filename string
+---@param new_filename string
+---@return integer
+function Cpp.Rename(old_filename, new_filename)end

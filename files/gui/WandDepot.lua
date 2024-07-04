@@ -174,6 +174,10 @@ local HLSlotBG = "data/ui_gfx/inventory/full_inventory_box_highlight.png"
 ---@param k integer
 ---@param wand Wand
 local function DrawWandSlot(id, k, wand)
+	local world_entity_id = GameGetWorldStateEntity()
+	local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
+    local inf_spells_enable = ComponentGetValue2(comp_worldstate, "perk_infinite_spells")
+	
 	local sprite
 	local s = strip(wand.sprite_file)
 	if string.sub(s, #s - 3) == ".xml" then --特殊文件需要处理
@@ -270,13 +274,29 @@ local function DrawWandSlot(id, k, wand)
 						GuiLayoutBeginHorizontal(UI.gui, -11, 0, true, -8, 4) --使得正确的布局实现
 						GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 103)
 						GuiImage(UI.gui, UI.NewID(id .. v.id .. "spell" .. tostring(i)), 0, 1, spellData[v.id].sprite, 1,
-							0.5)
-						GuiLayoutEnd(UI.gui)
+                            0.5)
+						local DrawUses = function (thisUses)
+                            GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 104)
+							if thisUses then
+								GuiText(UI.gui, 0, 0, tostring(thisUses),0.5,"data/fonts/font_small_numbers.xml")
+                            else
+								GuiText(UI.gui, 0, 0, tostring(v.uses_remaining),0.5,"data/fonts/font_small_numbers.xml")
+							end
+						end
+						if v.uses_remaining ~= -1 and inf_spells_enable and spellData[v.id].never_unlimited then--开启无限法术了，还不为空，那么就直接作为结果
+                            DrawUses()
+						--没开启无限法术，使用次数为无限，但是查询其有使用次数为有限的那么就拿查询的作为结果
+                        elseif not inf_spells_enable and (v.uses_remaining == -1 or v.uses_remaining == nil) and (spellData[v.id].max_uses and spellData[v.id].max_uses ~= -1) then
+                            DrawUses(spellData[v.id].max_uses)
+                        elseif v.uses_remaining ~= -1 and not inf_spells_enable then
+							DrawUses()
+						end
+                        GuiLayoutEnd(UI.gui)
 					end
-					if weigthX + weigthW >= UI.ScreenWidth - 80 then
-						GuiLayoutEnd(UI.gui)
-						GuiLayoutBeginHorizontal(UI.gui, 0, 0, true)
-					end
+                    if weigthX + weigthW >= UI.ScreenWidth - 80 then
+                        GuiLayoutEnd(UI.gui)
+                        GuiLayoutBeginHorizontal(UI.gui, 0, 0, true)
+                    end
 				end
 				GuiLayoutEnd(UI.gui)
 				GuiColorSetForNextWidget(UI.gui, 0.5, 0.5, 0.5, 1.0)
@@ -348,14 +368,24 @@ function WandDepotCB(_, _, _, _, this_enable)
         if add_click and CTRL then
             local ClipboardData = Cpp.GetClipboard()
 			local flag,newPage = CheckWandDepotData(ClipboardData)
-			if flag then
-                NewWandDepot(newPage)
+            if flag then
+                local ALT = InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)
+                if ALT then
+					SetWandDepotLua(newPage,CurrentIndex)
+                else					
+                	NewWandDepot(newPage)
+				end
 				GamePrint(GameTextGet("$wand_editor_wand_depot_copy_correctly"))
             else
 				GamePrint(GameTextGet("$wand_editor_wand_depot_copy_error"))
 			end
-		elseif add_click then
-			NewWandDepot()
+        elseif add_click then
+            local ALT = InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)
+			if ALT then
+				SetWandDepotLua({},CurrentIndex)
+            else
+				NewWandDepot()
+			end
 		end
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
