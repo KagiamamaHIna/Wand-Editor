@@ -332,7 +332,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
                         local fn = loadstring(text)
                         local env = {}
                         setfenv(fn, env)() --设置环境执行以获得版本信息
-                        if true or env.ModVersion ~= ModVersion then
+                        if env.ModVersion ~= ModVersion then
                             UI.UserData["UpdateCheck"] = "new"
                             UI.UserData["UpdateDataVer"] = env.ModVersion
                         else --如果一致，则认为是最新版
