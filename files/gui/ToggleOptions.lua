@@ -306,7 +306,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
             end
         end
         local function RequestDefine()
-            local address = "/KagiamamaHIna/Wand-Editor/alpha/files/libs/define.lua" --合并主分支的时候记得改
+            local address = "/KagiamamaHIna/Wand-Editor/main/files/libs/define.lua" --合并主分支的时候记得改
             local https = require("ssl.https")
             require("github_mirror")
             local result = { https.request(CurrentMirror(address, true)) }
