@@ -910,12 +910,37 @@ end
 function InitWand(wandData, wand, x, y)
     local srcWand = wand
     local deck_capacity = wandData.deck_capacity
-	if wandData.spells then
-		deck_capacity = deck_capacity + #wandData.spells.always
-	end
+    if wandData.spells then
+        deck_capacity = deck_capacity + #wandData.spells.always
+    end
 	if wand == nil then
         wand = EntityLoad("mods/wand_editor/files/entity/WandBase.xml", x, y)
-    elseif wandData.spells and srcWand ~= nil then--已有实体
+    elseif wandData.spells and srcWand ~= nil then --已有实体
+        if not EntityGetIsAlive(wand) then         --如果不是存活的实体
+            return wand
+        end
+        local EnableColl = ModSettingGet(ModID .. "DisableWandHistory")
+        if not EnableColl then
+            local str = ModSettingGet(ModID .. "WandEditHistoryData")
+            if str == nil then
+				ModSettingSet(ModID .. "WandEditHistoryData", "return {}")
+				str = "return {}"
+            end
+            local fn = loadstring(str)
+			if type(fn) ~= "function" then
+				goto next
+            end
+            local flag, History = pcall(fn)
+            if flag then
+                local ThisWandData = GetWandData(wand)
+                while #History >= 96 do
+                    table.remove(History, 1)
+                end
+                PushValueOnList(History, ThisWandData)
+                ModSettingSet(ModID .. "WandEditHistoryData", "return {\n" .. SerializeTable(History) .. "}")
+            end
+        end
+		::next::
         local list = EntityGetChildWithTag(wand, "card_action")
         local Always = {}
         local spells = {}

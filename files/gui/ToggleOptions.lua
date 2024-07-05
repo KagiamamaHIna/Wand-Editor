@@ -126,6 +126,10 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 	UI.MoveImagePicker("DisableSpellWobble", PickerGap(6), iy + 40, 8, 0,
 		GameTextGet("$wand_editor_disable_spell_wobble"),
         "mods/wand_editor/files/gui/images/disable_spell_wobble.png", nil, nil, nil, true, true, true)
+
+	UI.MoveImagePicker("DisableWandHistory", PickerGap(7), iy + 40, 8, 0,
+		GameTextGet("$wand_editor_disable_wand_history"),
+        "mods/wand_editor/files/gui/images/disable_wand_history.png", nil, nil, nil, true, true, true)
     local LabSettingKey = ModID .. "SpellLab"
     local SrcPlayerXKey = ModID .. "SpellLab_player_x"
 	local SrcPlayerYKey = ModID .. "SpellLab_player_y"
@@ -189,13 +193,12 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
                 UI.UserData["ResetXmlBuffer"] = ResetXml
             end
 			AddResetCount()
-			print(GetResetCount())
 			local count = GetResetCount()
             UI.UserData["ResetXmlPathBuffer"].attr.pixel_scene = XmlSrcPath..count
 			local file = io.open("mods/wand_editor/files/biome_impl/wand_lab/reset_xml/"..tostring(count), "w") --将新内容写进文件中
 			file:write(tostring(ResetXml))
 			file:close()
-            local list = EntityGetInRadiusWithTag(12200, -5900, 525,"polymorphable_NOT")
+            local list = EntityGetInRadiusWithTag(12200, -5900, 530,"polymorphable_NOT")
             for _, v in pairs(list) do
                 if EntityGetName(v) == "wand_editor_dummy_target" then
                     EntityKill(v)

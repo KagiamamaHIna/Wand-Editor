@@ -74,9 +74,10 @@ function GUIUpdate()
         local function PickerGap(gap)
             return 19 + gap * 22
         end
-		local function ClickSound()
-			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
-		end
+        local function ClickSound()
+            GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+        end
+		UI.UserData["WandDepotHistoryEnable"] = false
 		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN", "ToggleOptionsBTN")
         UI.SetCheckboxEnable("shuffle_builder", false)
 		UI.SetCheckboxEnable("update_image_builder", false)
@@ -92,8 +93,13 @@ function GUIUpdate()
 			UI.MoveImagePicker("WandBuilderBTN", PickerGap(1), y + 30, 8, 0, GameTextGet("$wand_editor_wand_spawner"),
 				"mods/wand_editor/files/gui/images/wand_builder.png", nil, WandBuilderCB, nil, true, nil,
 				true)
-
-			UI.MoveImagePicker("WandDepotBTN", PickerGap(2), y + 30, 8, 0, GameTextGet("$wand_editor_wand_depot"),
+			local WandDepotTips
+			if UI.UserData["WandDepotHistoryEnable"] then
+				WandDepotTips = GameTextGet("$wand_editor_wand_depot_history")
+            else
+				WandDepotTips = GameTextGet("$wand_editor_wand_depot")
+			end
+			UI.MoveImagePicker("WandDepotBTN", PickerGap(2), y + 30, 8, 0, WandDepotTips,
 				"mods/wand_editor/files/gui/images/wand_depot.png", nil, WandDepotCB, nil, true, nil,
 				true)
 			
@@ -349,7 +355,7 @@ function GUIUpdate()
 			if GameIsInventoryOpen() then--开启开启物品栏时禁止执行下一步
 				return
 			end
-            if UI.GetPickerStatus("QuickTP") then
+            if UI.GetPickerStatus("QuickTP") and EntityGetWithName("advanced_map") == 0 then
 				local player = GetPlayer()
                 local Controls = EntityGetFirstComponent(player, "ControlsComponent")
                 local right = ComponentGetValue2(Controls, "mButtonDownThrow")

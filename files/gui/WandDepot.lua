@@ -2,6 +2,7 @@ local GetHeldWand = Compose(GetEntityHeldWand, GetPlayer)
 local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取法术数据
 local spellData = data[1]
 local TypeToSpellList = data[2]
+local deg57_5 = math.rad(-57.5)
 local function ClickSound()
 	GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 end
@@ -174,168 +175,214 @@ local HLSlotBG = "data/ui_gfx/inventory/full_inventory_box_highlight.png"
 ---@param k integer
 ---@param wand Wand
 local function DrawWandSlot(id, k, wand)
-	local world_entity_id = GameGetWorldStateEntity()
-	local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
+    local world_entity_id = GameGetWorldStateEntity()
+    local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
     local inf_spells_enable = ComponentGetValue2(comp_worldstate, "perk_infinite_spells")
-	
-	local sprite
-	local s = strip(wand.sprite_file)
-	if string.sub(s, #s - 3) == ".xml" then --特殊文件需要处理
-		local SpriteXml = ParseXmlAndBase(wand.sprite_file)
-		sprite = SpriteXml.attr.filename
-	else
-		sprite = wand.sprite_file
-	end
-	k = k - 1
-	local thisSlot
-	if UI.UserData["WandDepotKHighlight"] == k then
-		thisSlot = HLSlotBG
-	else
-		thisSlot = SlotBG
-	end
-	local column = math.floor(k % (RowMax))
-	local row = math.floor(k / (RowMax))
-	local x = ColGap * column
-	local y = row * RowGap
-	GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
-	local left_click = GuiImageButton(UI.gui, UI.NewID(id .. tostring(k) .. "BG"), 0 + x, 12 + y, "", thisSlot)
-	local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
-	if hover then
-		local rightMargin = 70
-		local function NewLine(str1, str2)
-			local text = GameTextGetTranslatedOrNot(str1)
-			local w = GuiGetTextDimensions(UI.gui, text)
-			GuiLayoutBeginHorizontal(UI.gui, 0, 0, true, 2, -1)
-			GuiText(UI.gui, 0, 0, text)
-			GuiRGBAColorSetForNextWidget(UI.gui, 255, 222, 173, 255)
-			GuiText(UI.gui, rightMargin - w, 0, str2)
-			GuiLayoutEnd(UI.gui)
-		end
-		local SecondWithSign = Compose(NumToWithSignStr, tonumber, FrToSecondStr)
-		UI.tooltips(function()
-			GuiLayoutBeginVertical(UI.gui, 0, 0, true)
-			if InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL) then
-				local shuffle
-				if wand.shuffle_deck_when_empty then
-					shuffle = GameTextGet("$menu_yes")
-				else
-					shuffle = GameTextGet("$menu_no")
-				end
-				NewLine("$inventory_shuffle", shuffle)
-				NewLine("$inventory_actionspercast", wand.actions_per_round)
-				NewLine("$inventory_castdelay", SecondWithSign(wand.fire_rate_wait) .. "s(" .. wand.fire_rate_wait ..
-					"f)")
-				NewLine("$inventory_rechargetime", SecondWithSign(wand.reload_time) .. "s(" .. wand.reload_time .. "f)")
-				NewLine("$inventory_manamax", math.floor(wand.mana_max))
-				NewLine("$inventory_manachargespeed", math.floor(wand.mana_charge_speed))
-				NewLine("$inventory_capacity", wand.deck_capacity)
-				NewLine("$inventory_spread", wand.spread_degrees .. GameTextGet("$wand_editor_deg"))
-				NewLine("$wand_editor_speed_multiplier", "x" .. string.format("%.8f", wand.speed_multiplier))
-			else
-				GuiLayoutBeginHorizontal(UI.gui, 0, 0, true)
-				for i = 1, #wand.spells.always do
-					local v = wand.spells.always[i]
-					GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 101)
-					GuiImage(UI.gui, UI.NewID(id .. "always_full_BG" .. tostring(i)), 0, 0,
-						"data/ui_gfx/inventory/full_inventory_box.png", 1, 0.5)
-					local _, _, _, weigthX, _, weigthW = GuiGetPreviousWidgetInfo(UI.gui)
-					if spellData[v.id] ~= nil then --判空，防止法术数据异常
-						GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 102)
-						GuiImage(UI.gui, UI.NewID(id .. v.id .. "always" .. tostring(i)), -12, 0,
-							SpellTypeBG[spellData[v.id].type],
-							1, 0.5)
-						GuiLayoutBeginHorizontal(UI.gui, -11, 0, true, -8, 4) --使得正确的布局实现
-						GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 103)
-						GuiImage(UI.gui, UI.NewID(id .. v.id .. "always_spell" .. tostring(i) .. "BG"), 0, 1,
-							spellData[v.id].sprite, 1, 0.5)
 
-						GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 104)
-						GuiImage(UI.gui, UI.NewID(id .. v.id .. "Always_icon" .. tostring(k)), 0, 0,
-							"mods/wand_editor/files/gui/images/always_icon.png",
-							1, 0.5)
-						GuiLayoutEnd(UI.gui)
-					end
-					if weigthX + weigthW >= UI.ScreenWidth - 80 then
-						GuiLayoutEnd(UI.gui)
-						GuiLayoutBeginHorizontal(UI.gui, 0, 0, true)
-					end
-				end
-				for i = 1, #wand.spells.spells do
-					local v = wand.spells.spells[i]
-					GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 101)
-					GuiImage(UI.gui, UI.NewID(id .. "full_BG" .. tostring(i)), 0, 0,
-						"data/ui_gfx/inventory/full_inventory_box.png", 1, 0.5)
-					local _, _, _, weigthX, _, weigthW = GuiGetPreviousWidgetInfo(UI.gui)
-					if v ~= "nil" and spellData[v.id] ~= nil then --判空，防止法术数据异常
-						GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 102)
-						GuiImage(UI.gui, UI.NewID(id .. v.id .. tostring(i) .. "BG"), -12, 0,
-							SpellTypeBG[spellData[v.id].type],
-							1, 0.5)
-						GuiLayoutBeginHorizontal(UI.gui, -11, 0, true, -8, 4) --使得正确的布局实现
-						GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 103)
-						GuiImage(UI.gui, UI.NewID(id .. v.id .. "spell" .. tostring(i)), 0, 1, spellData[v.id].sprite, 1,
-                            0.5)
-						local DrawUses = function (thisUses)
-                            GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 104)
-							if thisUses then
-								GuiText(UI.gui, 0, 0, tostring(thisUses),0.5,"data/fonts/font_small_numbers.xml")
-                            else
-								GuiText(UI.gui, 0, 0, tostring(v.uses_remaining),0.5,"data/fonts/font_small_numbers.xml")
-							end
-						end
-						if v.uses_remaining ~= -1 and inf_spells_enable and spellData[v.id].never_unlimited then--开启无限法术了，还不为空，那么就直接作为结果
-                            DrawUses()
-						--没开启无限法术，使用次数为无限，但是查询其有使用次数为有限的那么就拿查询的作为结果
-                        elseif not inf_spells_enable and (v.uses_remaining == -1 or v.uses_remaining == nil) and (spellData[v.id].max_uses and spellData[v.id].max_uses ~= -1) then
-                            DrawUses(spellData[v.id].max_uses)
-                        elseif v.uses_remaining ~= -1 and not inf_spells_enable then
-							DrawUses()
-						end
+    local sprite
+    local s = strip(wand.sprite_file)
+    if string.sub(s, #s - 3) == ".xml" then --特殊文件需要处理
+        local SpriteXml = ParseXmlAndBase(wand.sprite_file)
+        sprite = SpriteXml.attr.filename
+    else
+        sprite = wand.sprite_file
+    end
+    k = k - 1
+    local thisSlot
+    if UI.UserData["WandDepotKHighlight"] == k then
+        thisSlot = HLSlotBG
+    else
+        thisSlot = SlotBG
+    end
+    local column = math.floor(k % (RowMax))
+    local row = math.floor(k / (RowMax))
+    local x = ColGap * column
+    local y = row * RowGap
+    GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
+    local left_click = GuiImageButton(UI.gui, UI.NewID(id .. tostring(k) .. "BG"), 0 + x, 12 + y, "", thisSlot)
+    local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
+    if hover then
+        local rightMargin = 70
+        local function NewLine(str1, str2)
+            local text = GameTextGetTranslatedOrNot(str1)
+            local w = GuiGetTextDimensions(UI.gui, text)
+            GuiLayoutBeginHorizontal(UI.gui, 0, 0, true, 2, -1)
+            GuiText(UI.gui, 0, 0, text)
+            GuiRGBAColorSetForNextWidget(UI.gui, 255, 222, 173, 255)
+            GuiText(UI.gui, rightMargin - w, 0, str2)
+            GuiLayoutEnd(UI.gui)
+        end
+        local SecondWithSign = Compose(NumToWithSignStr, tonumber, FrToSecondStr)
+        UI.tooltips(function()
+            GuiLayoutBeginVertical(UI.gui, 0, 0, true)
+            if InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL) then
+                local shuffle
+                if wand.shuffle_deck_when_empty then
+                    shuffle = GameTextGet("$menu_yes")
+                else
+                    shuffle = GameTextGet("$menu_no")
+                end
+                NewLine("$inventory_shuffle", shuffle)
+                NewLine("$inventory_actionspercast", wand.actions_per_round)
+                NewLine("$inventory_castdelay", SecondWithSign(wand.fire_rate_wait) .. "s(" .. wand.fire_rate_wait ..
+                    "f)")
+                NewLine("$inventory_rechargetime", SecondWithSign(wand.reload_time) .. "s(" .. wand.reload_time .. "f)")
+                NewLine("$inventory_manamax", math.floor(wand.mana_max))
+                NewLine("$inventory_manachargespeed", math.floor(wand.mana_charge_speed))
+                NewLine("$inventory_capacity", wand.deck_capacity)
+                NewLine("$inventory_spread", wand.spread_degrees .. GameTextGet("$wand_editor_deg"))
+                NewLine("$wand_editor_speed_multiplier", "x" .. string.format("%.8f", wand.speed_multiplier))
+            else
+                GuiLayoutBeginHorizontal(UI.gui, 0, 0, true)
+                for i = 1, #wand.spells.always do
+                    local v = wand.spells.always[i]
+                    GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 101)
+                    GuiImage(UI.gui, UI.NewID(id .. "always_full_BG" .. tostring(i)), 0, 0,
+                        "data/ui_gfx/inventory/full_inventory_box.png", 1, 0.5)
+                    local _, _, _, weigthX, _, weigthW = GuiGetPreviousWidgetInfo(UI.gui)
+                    if spellData[v.id] ~= nil then --判空，防止法术数据异常
+                        GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 102)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "always" .. tostring(i)), -12, 0,
+                            SpellTypeBG[spellData[v.id].type],
+                            1, 0.5)
+                        GuiLayoutBeginHorizontal(UI.gui, -11, 0, true, -8, 4) --使得正确的布局实现
+                        GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 103)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "always_spell" .. tostring(i) .. "BG"), 0, 1,
+                            spellData[v.id].sprite, 1, 0.5)
+
+                        GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 104)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "Always_icon" .. tostring(k)), 0, 0,
+                            "mods/wand_editor/files/gui/images/always_icon.png",
+                            1, 0.5)
                         GuiLayoutEnd(UI.gui)
-					end
+                    end
                     if weigthX + weigthW >= UI.ScreenWidth - 80 then
                         GuiLayoutEnd(UI.gui)
                         GuiLayoutBeginHorizontal(UI.gui, 0, 0, true)
                     end
-				end
-				GuiLayoutEnd(UI.gui)
-				GuiColorSetForNextWidget(UI.gui, 0.5, 0.5, 0.5, 1.0)
-				GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_wand_depot_wand_desc"))
-			end
-			GuiLayoutEnd(UI.gui)
-		end, UI.GetZDeep() - 100, 10)
-	end
-	local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
-	if left_click and (not CTRL) then
-		if UI.UserData["WandDepotKHighlight"] == k then
-			UI.UserData["WandDepotKHighlight"] = nil
-		else
-			UI.UserData["WandDepotKHighlight"] = k
-		end
-	elseif left_click and CTRL and UI.UserData["WandDepotKHighlight"] then --交换法杖操作
-		if k ~= UI.UserData["WandDepotKHighlight"] then
-			local CurrentIndex = UI.UserData["WandDepotCurrentIndex"]
+                end
+                for i = 1, #wand.spells.spells do
+                    local v = wand.spells.spells[i]
+                    GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 101)
+                    GuiImage(UI.gui, UI.NewID(id .. "full_BG" .. tostring(i)), 0, 0,
+                        "data/ui_gfx/inventory/full_inventory_box.png", 1, 0.5)
+                    local _, _, _, weigthX, _, weigthW = GuiGetPreviousWidgetInfo(UI.gui)
+                    if v ~= "nil" and spellData[v.id] ~= nil then --判空，防止法术数据异常
+                        GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 102)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. tostring(i) .. "BG"), -12, 0,
+                            SpellTypeBG[spellData[v.id].type],
+                            1, 0.5)
+                        GuiLayoutBeginHorizontal(UI.gui, -11, 0, true, -8, 4) --使得正确的布局实现
+                        GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 103)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "spell" .. tostring(i)), 0, 1, spellData[v.id].sprite, 1,
+                            0.5)
+                        local DrawUses = function(thisUses)
+                            GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 104)
+                            if thisUses then
+                                GuiText(UI.gui, 0, 0, tostring(thisUses), 0.5, "data/fonts/font_small_numbers.xml")
+                            else
+                                GuiText(UI.gui, 0, 0, tostring(v.uses_remaining), 0.5,
+                                    "data/fonts/font_small_numbers.xml")
+                            end
+                        end
+                        if v.uses_remaining ~= -1 and inf_spells_enable and spellData[v.id].never_unlimited then --开启无限法术了，还不为空，那么就直接作为结果
+                            DrawUses()
+                            --没开启无限法术，使用次数为无限，但是查询其有使用次数为有限的那么就拿查询的作为结果
+                        elseif not inf_spells_enable and (v.uses_remaining == -1 or v.uses_remaining == nil) and (spellData[v.id].max_uses and spellData[v.id].max_uses ~= -1) then
+                            DrawUses(spellData[v.id].max_uses)
+                        elseif v.uses_remaining ~= -1 and not inf_spells_enable then
+                            DrawUses()
+                        end
+                        GuiLayoutEnd(UI.gui)
+                    end
+                    if weigthX + weigthW >= UI.ScreenWidth - 80 then
+                        GuiLayoutEnd(UI.gui)
+                        GuiLayoutBeginHorizontal(UI.gui, 0, 0, true)
+                    end
+                end
+                GuiLayoutEnd(UI.gui)
+                GuiColorSetForNextWidget(UI.gui, 0.5, 0.5, 0.5, 1.0)
+                GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_wand_depot_wand_desc"))
+            end
+            GuiLayoutEnd(UI.gui)
+        end, UI.GetZDeep() - 100, 10)
+    end
+    local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+    if left_click and (not CTRL) then
+        if UI.UserData["WandDepotKHighlight"] == k then
+            UI.UserData["WandDepotKHighlight"] = nil
+        else
+            UI.UserData["WandDepotKHighlight"] = k
+        end
+    elseif left_click and CTRL and UI.UserData["WandDepotKHighlight"] then --交换法杖操作
+        local HistoryMode = UI.UserData["WandDepotHistoryEnable"]
+        if k ~= UI.UserData["WandDepotKHighlight"] and not HistoryMode then
+            local CurrentIndex = UI.UserData["WandDepotCurrentIndex"]
             local CurrentTable = GetWandDepot(CurrentIndex)
-			if CurrentTable[UI.UserData["WandDepotKHighlight"] + 1] ~= nil and CurrentTable[k + 1] ~= nil then
-				local oldTable = CurrentTable[UI.UserData["WandDepotKHighlight"] + 1]
-				CurrentTable[UI.UserData["WandDepotKHighlight"] + 1] = wand
-				CurrentTable[k + 1] = oldTable
-				--TablePrint(CurrentTable)
-				--print("k:",k,"|HG:",UI.UserData["WandDepotKHighlight"])
-				SetWandDepotLua(CurrentTable, CurrentIndex)
-				UI.UserData["WandDepotKHighlight"] = nil
-			end
-		end
-	end
-	GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 2)
-	GuiImage(UI.gui, UI.NewID(id .. tostring(k)), 5 + x, 22 + y, sprite, 1, 1, 0,
-		math.rad(-57.5))
+            if CurrentTable[UI.UserData["WandDepotKHighlight"] + 1] ~= nil and CurrentTable[k + 1] ~= nil then
+                local oldTable = CurrentTable[UI.UserData["WandDepotKHighlight"] + 1]
+                CurrentTable[UI.UserData["WandDepotKHighlight"] + 1] = wand
+                CurrentTable[k + 1] = oldTable
+                --TablePrint(CurrentTable)
+                --print("k:",k,"|HG:",UI.UserData["WandDepotKHighlight"])
+                SetWandDepotLua(CurrentTable, CurrentIndex)
+                UI.UserData["WandDepotKHighlight"] = nil
+            end
+        end
+    end
+    GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 2)
+    GuiImage(UI.gui, UI.NewID(id .. tostring(k)), 5 + x, 22 + y, sprite, 1, 1, 0, deg57_5)
 end
 
-function WandDepotCB(_, _, _, _, this_enable)
-	if not this_enable then
-		return
+local HistoryCache
+local HistoryCacheTable
+local HistorySetKey = ModID.."WandEditHistoryData"
+local function GetHistoryData()
+    local str = ModSettingGet(HistorySetKey)
+	if str == nil then
+        ModSettingSet(HistorySetKey, "return {}")
+		str = "return {}"
 	end
+    local CheckFnStr = tostring(str)
+	CheckFnStr = CheckFnStr
+    if HistoryCache == nil then --数据缓存
+        HistoryCache = CheckFnStr
+    elseif HistoryCache == CheckFnStr and HistoryCacheTable then
+        return HistoryCacheTable
+    elseif HistoryCache ~= CheckFnStr then
+        HistoryCache = CheckFnStr
+    end
+	if HasEnds(CheckFnStr) then
+		ModSettingSet(HistorySetKey, "return {}")
+		return {}
+	end
+	local CheckFn = loadstring(CheckFnStr)
+	if type(CheckFn) ~= "function" then--数据恢复为空表，有代码或其他行为试图篡改为非法数据
+		ModSettingSet(HistorySetKey,"return {}")
+		return {}
+	end
+	local fn = setfenv(CheckFn, {})
+	local flag, result = pcall(fn)
+	if not flag then --数据恢复为空表，有代码或其他行为试图篡改为非法数据
+		ModSettingSet(HistorySetKey, "return {}")
+		return {}
+	end
+	HistoryCacheTable = result
+	return result
+end
+
+local function SetHisroryData(t)
+	ModSettingSet(HistorySetKey, "return {\n" .. SerializeTable(t) .. "}")
+end
+
+function WandDepotCB(_, _right, _, _, this_enable)
+	if _right then
+		UI.UserData["WandDepotHistoryEnable"] = not UI.UserData["WandDepotHistoryEnable"]
+	end
+    if not this_enable then
+        return
+    end
+	local HistoryMode = UI.UserData["WandDepotHistoryEnable"]
 	if UI.UserData["WandDepotCurrentIndex"] == nil then
 		UI.UserData["WandDepotCurrentIndex"] = 1
 	end
@@ -344,7 +391,12 @@ function WandDepotCB(_, _, _, _, this_enable)
         NewWandDepot()
         UI.UserData["WandDepotCurrentIndex"] = 1
     end
-	local CurrentTable = GetWandDepot(CurrentIndex)
+    local CurrentTable
+    if HistoryMode then
+        CurrentTable = GetHistoryData()
+    else
+		CurrentTable = GetWandDepot(CurrentIndex)
+	end
 	local WandDepotH = 210
 	local WandDepotW = 278
 	UI.ScrollContainer("WandDepot", 20, 64, WandDepotW, WandDepotH, 2, 2)
@@ -353,13 +405,44 @@ function WandDepotCB(_, _, _, _, this_enable)
 			DrawWandSlot("WandDepotSlot", k, v)
 		end)
 	end
-	if #CurrentTable == 0 then --如果是空的绘制一段文本
-		UI.AddAnywhereItem("WandDepot", function()
+    if #CurrentTable == 0 then --如果是空的绘制一段文本
+        UI.AddAnywhereItem("WandDepot", function()
+            GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
+            GuiText(UI.gui, 5, 5, GameTextGet("$wand_editor_wand_depot_isempty"))
+        end)
+    end
+
+    UI.AddAnywhereItem("WandDepot", function()
+        if HistoryMode then
+            GuiLayoutBeginHorizontal(UI.gui, 2, WandDepotH - 10, true)
+			local deleteTextKey = "$wand_editor_wand_depot_history_clear"
+            if UI.UserData["wand_editor_wand_depot_history_clear"] then
+                deleteTextKey = "$wand_editor_wand_depot_history_clear_IKnowWhatImDoing"
+            end
+
+            GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
+            local del_click = GuiButton(UI.gui, UI.NewID("WandDepotHistoryDel"), 0, 0, "[x]")
+			local _, _, del_hover = GuiGetPreviousWidgetInfo(UI.gui)
+            GuiTooltip(UI.gui, GameTextGet(deleteTextKey), "")
+			if not del_hover and UI.UserData["wand_editor_wand_depot_history_clear"] then
+				UI.UserData["wand_editor_wand_depot_history_clear"] = nil
+			end
+			if del_click and UI.UserData["wand_editor_wand_depot_history_clear"] == nil then
+                UI.UserData["wand_editor_wand_depot_history_clear"] = true
+            elseif del_click and UI.UserData["wand_editor_wand_depot_history_clear"] then
+                ModSettingSet(HistorySetKey, "return {}")
+				UI.UserData["wand_editor_wand_depot_history_clear"] = nil
+			end
+			
 			GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
-			GuiText(UI.gui, 5, 5, GameTextGet("$wand_editor_wand_depot_isempty"))
-		end)
-	end
-	UI.AddAnywhereItem("WandDepot", function()
+            local CopyDepot_click = GuiButton(UI.gui, UI.NewID("WandDepotHistoryCopyDepot"), 12, 0, "[c]")
+			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_history_copy"), "")
+			if CopyDepot_click then
+				Cpp.SetClipboard(ModSettingGet(HistorySetKey))
+			end
+			GuiLayoutEnd(UI.gui)
+			return
+		end
 		GuiLayoutBeginHorizontal(UI.gui, 2, WandDepotH - 10, true)
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
 		local add_click = GuiButton(UI.gui, UI.NewID("WandDepotAddTable"), 0, 0, "[+]") --新增页面按钮
@@ -465,46 +548,53 @@ function WandDepotCB(_, _, _, _, this_enable)
 		GuiLayoutEnd(UI.gui)
 	end)
 	UI.DrawScrollContainer("WandDepot", false) --绘制框内控件和框
-		
-	local DepotSaveCB = function(left_click)
-		if left_click then
-			ClickSound()
-			local held = GetHeldWand()
-			if held == nil then
-				return
+	
+	if not HistoryMode then
+		local DepotSaveCB = function(left_click)
+			if left_click then
+				ClickSound()
+				local held = GetHeldWand()
+				if held == nil then
+					return
+				end
+				if #CurrentTable >= TableMax then
+					GamePrint(GameTextGet("$wand_editor_wand_depot_limit"))
+					return
+				end
+				local wand = GetWandData(held)
+				wand.wandEntity = nil
+				CurrentTable[#CurrentTable + 1] = wand
+				SetWandDepotLua(CurrentTable, CurrentIndex)
 			end
-			if #CurrentTable >= TableMax then
-				GamePrint(GameTextGet("$wand_editor_wand_depot_limit"))
-				return
-			end
-			local wand = GetWandData(held)
-			wand.wandEntity = nil
-			CurrentTable[#CurrentTable + 1] = wand
-			SetWandDepotLua(CurrentTable, CurrentIndex)
 		end
+		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
+		UI.MoveImageButton("WandDepotSave", 20, 64 + WandDepotH + 7,
+			"mods/wand_editor/files/gui/images/wand_depot_save.png", nil, function()
+				GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_save"), "")
+			end, DepotSaveCB, false, true)
 	end
-	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("WandDepotSave", 20, 64 + WandDepotH + 7,
-		"mods/wand_editor/files/gui/images/wand_depot_save.png", nil, function()
-			GuiTooltip(UI.gui, GameTextGet("$wand_editor_wand_depot_save"), "")
-        end, DepotSaveCB, false, true)
+	
     local DepotDeleteCB = function(left_click)
         if left_click then
             ClickSound()
-            if UI.UserData["WandDepotKHighlight"] == nil then
-                return
+			if UI.UserData["WandDepotKHighlight"] == nil then
+				return
+			end
+			if UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] == nil then
+				UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = true
+				return
+			end
+            UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = nil
+			local k = UI.UserData["WandDepotKHighlight"] + 1
+			table.remove(CurrentTable, k)
+            if HistoryMode then
+				SetHisroryData(CurrentTable)
+            else
+                SetWandDepotLua(CurrentTable, CurrentIndex)
             end
-            if UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] == nil then
-                UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = true
-                return
-            end
-			UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = nil
-            local k = UI.UserData["WandDepotKHighlight"] + 1
-            table.remove(CurrentTable, k)
-            SetWandDepotLua(CurrentTable, CurrentIndex)
-            if k > #CurrentTable then
-                UI.UserData["WandDepotKHighlight"] = nil
-            end
+			if k > #CurrentTable then
+				UI.UserData["WandDepotKHighlight"] = nil
+			end
         end
     end
     local deleteTextKey = "$wand_editor_wand_depot_delete"
@@ -523,10 +613,10 @@ function WandDepotCB(_, _, _, _, this_enable)
 
 	local RewriteWandCB = function(left_click)
 		if left_click then
-			ClickSound()
-			if UI.UserData["WandDepotKHighlight"] == nil then
-				return
-			end
+            ClickSound()
+            if UI.UserData["WandDepotKHighlight"] == nil then
+                return
+            end
 			local k = UI.UserData["WandDepotKHighlight"] + 1
 			local held = GetHeldWand()
 			if held == nil then
@@ -550,9 +640,10 @@ function WandDepotCB(_, _, _, _, this_enable)
 	local LoadWandCB = function(left_click)
 		if left_click then
 			ClickSound()
-			if UI.UserData["WandDepotKHighlight"] == nil then
-				return
-			end
+            if UI.UserData["WandDepotKHighlight"] == nil then
+                return
+            end
+
 			local k = UI.UserData["WandDepotKHighlight"] + 1
 			if k <= #CurrentTable then
 				local wand = CurrentTable[k]
