@@ -395,7 +395,7 @@ end
 ---@param i_value any
 ---@return integer|nil
 function AddSetStorageComp(entity, i_name, i_value)
-	if entity == nil then
+	if entity == nil or not EntityGetIsAlive(entity) then
 		return
 	end
 	return EntityAddComponent(entity, "VariableStorageComponent", { name = i_name, value_int = i_value })

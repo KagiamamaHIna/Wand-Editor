@@ -577,7 +577,10 @@ function WandDepotCB(_, _right, _, _, this_enable)
     local DepotDeleteCB = function(left_click)
         if left_click then
             ClickSound()
-			if UI.UserData["WandDepotKHighlight"] == nil then
+            if UI.UserData["WandDepotKHighlight"] == nil then
+                return
+            end
+			if UI.UserData["WandDepotKHighlight"] > #CurrentTable then
 				return
 			end
 			if UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] == nil then
@@ -592,7 +595,7 @@ function WandDepotCB(_, _right, _, _, this_enable)
             else
                 SetWandDepotLua(CurrentTable, CurrentIndex)
             end
-			if k > #CurrentTable then
+			if k > #CurrentTable then--删除后检查
 				UI.UserData["WandDepotKHighlight"] = nil
 			end
         end

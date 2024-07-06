@@ -50,6 +50,11 @@ else
     end
 end
 
+if ModSettingGet(ModID.."ReloadSpellData") then
+    mustReload = true
+	ModSettingSet(ModID.."ReloadSpellData", false)
+end
+
 --判断是否有缓存文件
 local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache/"
 local HasCahce = Cpp.PathExists(cachePath.."SpellsData.lua") and Cpp.PathExists(cachePath.."ModEnable.lua") and Cpp.PathExists(cachePath.."TypeToSpellList.lua")

@@ -103,6 +103,9 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 	UI.MoveImagePicker("DisableProj", PickerGap(7), iy + 20, 8, 0, GameTextGet("$wand_editor_no_proj"),
 		"mods/wand_editor/files/gui/images/disable_projectiles.png", nil, nil, nil, true, true, true)
 
+	UI.MoveImagePicker("DisablePlayerGravity", PickerGap(8), iy + 20, 8, 0, GameTextGet("$wand_editor_disable_player_gravity"),
+        "mods/wand_editor/files/gui/images/disable_player_gravity.png", nil, nil, nil, true, true, true)
+
 	UI.MoveImagePicker("UnlimitedSpells", PickerGap(0), iy + 40, 8, 0, GameTextGet("$wand_editor_unlimited_spells"),
 		"mods/wand_editor/files/gui/images/unlimited_spells.png", nil, nil, nil, true, true, true)
 
@@ -350,9 +353,15 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
     end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
 	UI.MoveImageButton("UpdateMod", PickerGap(1), iy + 60, "mods/wand_editor/files/gui/images/update_mod.png", nil, UpdateHover, UpdateClick, nil, true)
-		
+    local reloadText = GameTextGet("$wand_editor_reload_spell_data")
+	if UI.GetPickerStatus("ReloadSpellData") then
+		reloadText = reloadText .."\n".. GameTextGet("$menu_mods_help_paused")
+	end
+	UI.MoveImagePicker("ReloadSpellData", PickerGap(2), iy + 60, 8, 0, reloadText,
+        "mods/wand_editor/files/gui/images/reload_spell_data.png", nil, nil, nil, true, true, true)
+
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("ModAbout", PickerGap(2), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, function()
+	UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, function()
         local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
 		UI.tooltips(function()
 			GuiText(UI.gui, 0, 0, ModVersion)

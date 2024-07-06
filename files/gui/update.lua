@@ -256,6 +256,23 @@ function GUIUpdate()
             if GetPlayer() == nil then --找不到玩家时禁止执行下一步
                 return
             end
+			local SkipDisableThrow = false
+            if not UI.GetPickerStatus("QuickTP") or InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT) then
+				SkipDisableThrow = true
+                local Active = GetActiveItem()
+				if Active ~= nil then
+                    local ItemAbility = EntityGetFirstComponentIncludingDisabled(Active, "AbilityComponent")
+					local HasData, comp = GetStorageComp(Active, "wand_editor_get_throw")
+                    if ItemAbility ~= nil and comp ~= nil then
+                        if HasData == 1 then
+                            ComponentSetValue2(ItemAbility, "throw_as_item", true)
+                        elseif HasData == 0 then
+                            ComponentSetValue2(ItemAbility, "throw_as_item", false)
+                        end
+                        EntityRemoveComponent(Active, comp)--只恢复这一次
+					end
+				end
+			end
 			if UI.GetPickerStatus("ProtectionBlindness") then
                 local player = GetPlayer()
                 local childs = EntityGetAllChildren(player)
@@ -355,21 +372,74 @@ function GUIUpdate()
 			if GameIsInventoryOpen() then--开启开启物品栏时禁止执行下一步
 				return
 			end
-            if UI.GetPickerStatus("QuickTP") and EntityGetWithName("advanced_map") == 0 then
-				local player = GetPlayer()
+			
+            if UI.GetPickerStatus("QuickTP") and EntityGetWithName("advanced_map") == 0 and not SkipDisableThrow then
+                local player = GetPlayer()
+                local Active = GetActiveItem()
+                if Active ~= nil then
+                    local ItemAbility = EntityGetFirstComponentIncludingDisabled(Active, "AbilityComponent")
+                    if ItemAbility ~= nil then
+                        local HasData, comp = GetStorageComp(Active, "wand_editor_get_throw")
+                        if comp == nil then
+                            local throw = ComponentGetValue2(ItemAbility, "throw_as_item")
+                            local throwInt
+                            if throw then
+                                throwInt = 1
+                            else
+                                throwInt = 0
+                            end
+                            AddSetStorageComp(Active, "wand_editor_get_throw", throwInt)
+                            ComponentSetValue2(ItemAbility, "throw_as_item", false)
+                        end
+                    end
+                end
+
                 local Controls = EntityGetFirstComponent(player, "ControlsComponent")
                 local right = ComponentGetValue2(Controls, "mButtonDownThrow")
-				if right and (UI.UserData["QuickTPFr"] == nil or UI.UserData["QuickTPFr"] == 0) then
+                if right and (UI.UserData["QuickTPFr"] == nil or UI.UserData["QuickTPFr"] == 0) then
                     local x, y = DEBUG_GetMouseWorld()
                     EntitySetTransform(player, x, y)
-					if UI.UserData["QuickTPFr"] ~= 0 then
-						UI.UserData["QuickTPFr"] = 20
-					end
+                    if UI.UserData["QuickTPFr"] ~= 0 then
+                        UI.UserData["QuickTPFr"] = 20
+                    end
                 elseif right and UI.UserData["QuickTPFr"] and UI.UserData["QuickTPFr"] ~= 0 then
                     UI.UserData["QuickTPFr"] = UI.UserData["QuickTPFr"] - 1
                 elseif not right and UI.UserData["QuickTPFr"] then
-					UI.UserData["QuickTPFr"] = nil
+                    UI.UserData["QuickTPFr"] = nil
+                end
+            end
+			if UI.GetPickerStatus("DisablePlayerGravity") and not GameHasFlagRun("wand_editor_disable_player_gravity") then
+                local player = GetPlayer()
+                local comp = EntityGetFirstComponentIncludingDisabled(player, "CharacterPlatformingComponent")
+                if comp ~= nil then
+                    local x_min = ComponentGetValue2(comp, "velocity_min_x")
+                    local x_max = ComponentGetValue2(comp, "velocity_max_x")
+                    local y_min = ComponentGetValue2(comp, "velocity_min_y")
+					local y_max = ComponentGetValue2(comp, "velocity_max_y")
+                    ModSettingSet(ModID .. "player_gra_x_min", x_min)
+                    ModSettingSet(ModID .. "player_gra_x_max", x_max)
+					ModSettingSet(ModID .. "player_gra_y_min", y_min)
+                    ModSettingSet(ModID .. "player_gra_y_max", y_max)
+                    ComponentSetValue2(comp, "velocity_min_x", 0)
+                    ComponentSetValue2(comp, "velocity_max_x", 0)
+					ComponentSetValue2(comp, "velocity_min_y", 0)
+					ComponentSetValue2(comp, "velocity_max_y", 0)
 				end
+                GameAddFlagRun("wand_editor_disable_player_gravity")
+            elseif not UI.GetPickerStatus("DisablePlayerGravity") and GameHasFlagRun("wand_editor_disable_player_gravity") then
+				local player = GetPlayer()
+                local comp = EntityGetFirstComponentIncludingDisabled(player, "CharacterPlatformingComponent")
+				if comp ~= nil then
+					local x_min = ModSettingGet(ModID .. "player_gra_x_min") or 0
+					local x_max = ModSettingGet(ModID .. "player_gra_x_max") or 0
+					local y_min = ModSettingGet(ModID .. "player_gra_y_min") or 0
+                    local y_max = ModSettingGet(ModID .. "player_gra_y_max") or 0
+					ComponentSetValue2(comp, "velocity_min_x", x_min)
+                    ComponentSetValue2(comp, "velocity_max_x", x_max)
+					ComponentSetValue2(comp, "velocity_min_y", y_min)
+					ComponentSetValue2(comp, "velocity_max_y", y_max)
+				end
+				GameRemoveFlagRun("wand_editor_disable_player_gravity")
 			end
             if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then --主按钮关闭时禁止下一步
                 return
