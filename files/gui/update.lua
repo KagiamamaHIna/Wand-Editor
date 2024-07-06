@@ -10,6 +10,7 @@ function GUIUpdate()
         dofile_once("mods/wand_editor/files/gui/WandContainer.lua")
         dofile_once("mods/wand_editor/files/gui/WandBuilder.lua")
         dofile_once("mods/wand_editor/files/gui/WandDepot.lua")
+		dofile_once("mods/wand_editor/files/gui/TargetDummyGUI.lua")
 		dofile_once("mods/wand_editor/files/gui/ToggleOptions.lua")
 		UI.UserData["HasSpellMove"] = false
 		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取法术数据
@@ -78,7 +79,7 @@ function GUIUpdate()
             GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
         end
 		UI.UserData["WandDepotHistoryEnable"] = false
-		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN", "ToggleOptionsBTN")
+		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN", "ToggleOptionsBTN", "SpwanDummyBTN")
         UI.SetCheckboxEnable("shuffle_builder", false)
 		UI.SetCheckboxEnable("update_image_builder", false)
 		local MainCB = function(left_click, right_click, x, y, enable)
@@ -102,11 +103,15 @@ function GUIUpdate()
 			UI.MoveImagePicker("WandDepotBTN", PickerGap(2), y + 30, 8, 0, WandDepotTips,
 				"mods/wand_editor/files/gui/images/wand_depot.png", nil, WandDepotCB, nil, true, nil,
 				true)
-			
-			UI.MoveImagePicker("ToggleOptionsBTN", PickerGap(3), y + 30, 8, 0, GameTextGet("$wand_editor_toggle_options"),
-				"mods/wand_editor/files/gui/images/toggle_options_icon.png", nil, ToggleOptionsCB, nil, true, nil,
+
+			UI.MoveImagePicker("SpwanDummyBTN", PickerGap(3), y + 30, 8, 0, GameTextGet("$wand_editor_spawn_dummy"),
+				"mods/wand_editor/files/gui/images/spawn_target_dummy.png", nil, SpwanDummyCB, nil, true, nil,
                 true)
 
+			UI.MoveImagePicker("ToggleOptionsBTN", PickerGap(4), y + 30, 8, 0, GameTextGet("$wand_editor_toggle_options"),
+				"mods/wand_editor/files/gui/images/toggle_options_icon.png", nil, ToggleOptionsCB, nil, true, nil,
+                true)
+				--[[
 			GuiZSetForNextWidget(UI.gui, UI.GetZDeep())--生成假人于自身
 			UI.MoveImageButton("SpwanDummy", PickerGap(4), y + 30,
 				"mods/wand_editor/files/gui/images/spawn_target_dummy.png", nil, function()
@@ -119,7 +124,7 @@ function GUIUpdate()
 					ClickSound()
 					local px,py = Compose(EntityGetTransform, GetPlayer)()
                     EntityLoad("mods/wand_editor/files/entity/dummy_target.xml", px, py)
-                end, false, true)
+                end, false, true)]]
 
 			GuiZSetForNextWidget(UI.gui, UI.GetZDeep())--清除投射物
 			UI.MoveImageButton("ClearProj", PickerGap(5), y + 30,
@@ -444,26 +449,7 @@ function GUIUpdate()
             if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then --主按钮关闭时禁止下一步
                 return
             end
-			            --[[
-            local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
-			if UI.UserData["RestoredWand"] == nil and CTRL and InputIsKeyDown(Key_z) then
-                RestoreWand()
-				UI.OnceCallOnExecute(function()
-					RefreshHeldWands()
-				end)
-                UI.UserData["RestoredWand"] = true
-            elseif not InputIsKeyDown(Key_z) then
-				UI.UserData["RestoredWand"] = nil
-			end
-			if UI.UserData["UnRestoredWand"] == nil and CTRL and InputIsKeyDown(Key_y) then
-                UnRestoreWand()
-				UI.OnceCallOnExecute(function()
-					RefreshHeldWands()
-				end)
-                UI.UserData["UnRestoredWand"] = true
-            elseif not InputIsKeyDown(Key_y) then
-				UI.UserData["UnRestoredWand"] = nil
-			end]]
+
             if UI.GetPickerStatus("DamageInfo") then
                 DrawDamageInfo()
             end

@@ -13,7 +13,8 @@ end
 
 function damage_received( damage, message, entity_thats_responsible, is_fatal )
     local entity = GetUpdatedEntityID();
-    if EntityHasNamedVariable( entity, "gkbrkn_always_show_damage_numbers" ) or is_fatal == false then
+    if EntityHasNamedVariable(entity, "gkbrkn_always_show_damage_numbers") or is_fatal == false then
+		if entity_thats_responsible == 0 or damage < 0 then return; end
         local now = GameGetFrameNum();
         if now - ( last_damage_frame[entity] or 0 ) > 180 then
             EntitySetVariableNumber( entity, "gkbrkn_total_damage", 0 );
