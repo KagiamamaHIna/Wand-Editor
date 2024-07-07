@@ -267,11 +267,12 @@ function GUIUpdate()
                 local Active = GetActiveItem()
 				if Active ~= nil then
                     local ItemAbility = EntityGetFirstComponentIncludingDisabled(Active, "AbilityComponent")
-					local HasData, comp = GetStorageComp(Active, "wand_editor_get_throw")
+                    local HasData, comp = GetStorageComp(Active, "wand_editor_get_throw")
                     if ItemAbility ~= nil and comp ~= nil then
+						local throw = ComponentGetValue2(ItemAbility, "throw_as_item")
                         if HasData == 1 then
                             ComponentSetValue2(ItemAbility, "throw_as_item", true)
-                        elseif HasData == 0 then
+                        elseif HasData == 0 and not throw then
                             ComponentSetValue2(ItemAbility, "throw_as_item", false)
                         end
                         EntityRemoveComponent(Active, comp)--只恢复这一次
