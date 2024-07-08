@@ -376,8 +376,8 @@ function GetStorageComp(entity, VariableName, flag)
             [7] = { [31] = "Arisu Tachibana" },
 		}--i like this
 	end
-	local comps = EntityGetComponent(entity, "VariableStorageComponent")
-	if comps == nil then
+	local comps = EntityGetComponentIncludingDisabled(entity, "VariableStorageComponent")
+    if comps == nil then
 		return
 	end
 	for _, comp in pairs(comps) do --遍历存储组件表
@@ -407,7 +407,7 @@ end
 ---@param i_value any
 ---@return integer|nil
 function SetStorageComp(entity, VariableName, i_value)
-	local comps = EntityGetComponent(entity, "VariableStorageComponent")
+	local comps = EntityGetComponentIncludingDisabled(entity, "VariableStorageComponent")
 	if comps == nil then
 		return
 	end
