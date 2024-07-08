@@ -155,42 +155,43 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 				end)
 			elseif this.UserData["FixedWand"] then 	--反之不同，需要判空
 				local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
-				local FixedWand = this.UserData["FixedWand"][2] --如果是跨法杖编辑，那么代表这个是必然存在的
-				local IsFixed = false
-				local OtherWand
-				if FixedWand == wandEntity then --如果点击法杖等于固定法杖，那么其他数据就是手持法杖
-					OtherWand = GetWandData(HeldWand)
-					IsFixed = true
-				else --否则是固定法杖
-					OtherWand = GetWandData(FixedWand)
-				end
-				--如果没有问题(Bug)，那么应该只有一个是真（即有数据
-				local HasShiftClick = this.UserData["HasShiftClick"][HeldWand] or
-				this.UserData["HasShiftClick"][FixedWand]
-				local min = HasShiftClick[2]
-				local max = HasShiftClick[3] or min
-				min = math.min(min, max)
-				max = math.max(HasShiftClick[2], max)
-				local ThisK = k
-				for i = min, max do                                                    --i是原始位置，k是目标位置
-					if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
-						break
+                local FixedWand = this.UserData["FixedWand"][2] --如果是跨法杖编辑，那么代表这个是必然存在的
+				local HasShiftClick = this.UserData["HasShiftClick"][HeldWand] or this.UserData["HasShiftClick"][FixedWand]
+				if HasShiftClick ~= nil then
+					local IsFixed = false
+					local OtherWand
+					if FixedWand == wandEntity then --如果点击法杖等于固定法杖，那么其他数据就是手持法杖
+						OtherWand = GetWandData(HeldWand)
+						IsFixed = true
+					else --否则是固定法杖
+						OtherWand = GetWandData(FixedWand)
 					end
-					Swap2InputSpellPos(wandData, OtherWand, ThisK, i)
-					ThisK = ThisK + 1
+					--如果没有问题(Bug)，那么应该只有一个是真（即有数据
+					local min = HasShiftClick[2]
+					local max = HasShiftClick[3] or min
+					min = math.min(min, max)
+					max = math.max(HasShiftClick[2], max)
+					local ThisK = k
+					for i = min, max do                                                    --i是原始位置，k是目标位置
+						if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
+							break
+						end
+						Swap2InputSpellPos(wandData, OtherWand, ThisK, i)
+						ThisK = ThisK + 1
+					end
+					if IsFixed then
+						InitWand(wandData, wandEntity)
+						InitWand(OtherWand, HeldWand)
+					else
+						InitWand(wandData, wandEntity)
+						InitWand(OtherWand, FixedWand)
+					end
+					this.UserData["HasShiftClick"][HeldWand] = nil
+					this.UserData["HasShiftClick"][FixedWand] = nil
+					this.OnceCallOnExecute(function()
+						RefreshHeldWands()
+					end)
 				end
-				if IsFixed then
-					InitWand(wandData, wandEntity)
-					InitWand(OtherWand, HeldWand)
-				else
-					InitWand(wandData, wandEntity)
-					InitWand(OtherWand, FixedWand)
-				end
-				this.UserData["HasShiftClick"][HeldWand] = nil
-				this.UserData["HasShiftClick"][FixedWand] = nil
-				this.OnceCallOnExecute(function()
-					RefreshHeldWands()
-				end)
 			end
 		elseif click and this.UserData["FloatSpellID"] ~= nil then
 			if this.UserData["UpSpellIndex"] ~= nil and v ~= "nil" then --如果存在键，则代表这是一次交换操作
