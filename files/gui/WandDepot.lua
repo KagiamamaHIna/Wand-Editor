@@ -3,6 +3,8 @@ local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取
 local spellData = data[1]
 local TypeToSpellList = data[2]
 local deg57_5 = math.rad(-57.5)
+local CurrentPin
+
 local function ClickSound()
 	GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 end
@@ -163,6 +165,52 @@ local function RemoveWandDepot(index)
 	SetWandDepotSize(max - 1)
 end
 
+local PinList = {
+	"white",
+	"black",
+	"red",
+	"lime",
+	"blue",
+	"yellow",
+	"cyan",
+	"fuchsia",
+	"sliver",
+	"grey",
+	"maroon",
+	"olive",
+	"green",
+	"purple",
+	"teal",
+	"navy",
+}
+
+local PinImageMap = {
+	white = "mods/wand_editor/files/gui/images/pin/white.png",
+	black = "mods/wand_editor/files/gui/images/pin/black.png",
+	red = "mods/wand_editor/files/gui/images/pin/red.png",
+	lime = "mods/wand_editor/files/gui/images/pin/lime.png",
+	blue = "mods/wand_editor/files/gui/images/pin/blue.png",
+	yellow = "mods/wand_editor/files/gui/images/pin/yellow.png",
+	cyan = "mods/wand_editor/files/gui/images/pin/cyan.png",
+	fuchsia = "mods/wand_editor/files/gui/images/pin/fuchsia.png",
+	sliver = "mods/wand_editor/files/gui/images/pin/sliver.png",
+	grey = "mods/wand_editor/files/gui/images/pin/grey.png",
+	maroon = "mods/wand_editor/files/gui/images/pin/maroon.png",
+	olive = "mods/wand_editor/files/gui/images/pin/olive.png",
+	green = "mods/wand_editor/files/gui/images/pin/green.png",
+	purple = "mods/wand_editor/files/gui/images/pin/purple.png",
+	teal = "mods/wand_editor/files/gui/images/pin/teal.png",
+	navy = "mods/wand_editor/files/gui/images/pin/navy.png",
+}
+
+local RegList = {}
+for _,v in pairs(PinList)do
+	RegList[#RegList + 1] = "WandDepotPinList" .. v
+end
+
+UI.PickerEnableList(unpack(RegList))
+RegList = nil
+
 local RowMax = 12
 local ColMax = 8
 local TableMax = RowMax * ColMax
@@ -178,7 +226,8 @@ local function DrawWandSlot(id, k, wand)
     local world_entity_id = GameGetWorldStateEntity()
     local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
     local inf_spells_enable = ComponentGetValue2(comp_worldstate, "perk_infinite_spells")
-
+    local HistoryMode = UI.UserData["WandDepotHistoryEnable"]
+	
     local sprite
     local s = strip(wand.sprite_file)
     if string.sub(s, #s - 3) == ".xml" then --特殊文件需要处理
@@ -198,8 +247,12 @@ local function DrawWandSlot(id, k, wand)
     local row = math.floor(k / (RowMax))
     local x = ColGap * column
     local y = row * RowGap
+	if wand.__DepotPin and PinImageMap[wand.__DepotPin] then
+		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 4)
+		GuiImage(UI.gui,UI.NewID(id..tostring(k)..wand.__DepotPin),x,11 + y,PinImageMap[wand.__DepotPin],1,1)
+	end
     GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
-    local left_click = GuiImageButton(UI.gui, UI.NewID(id .. tostring(k) .. "BG"), 0 + x, 12 + y, "", thisSlot)
+    local left_click, right_click = GuiImageButton(UI.gui, UI.NewID(id .. tostring(k) .. "BG"), 0 + x, 12 + y, "", thisSlot)
     local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
     if hover then
         local rightMargin = 70
@@ -303,6 +356,13 @@ local function DrawWandSlot(id, k, wand)
                 GuiLayoutEnd(UI.gui)
                 GuiColorSetForNextWidget(UI.gui, 0.5, 0.5, 0.5, 1.0)
                 GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_wand_depot_wand_desc"))
+                if not HistoryMode and wand.__DepotPin and PinImageMap[wand.__DepotPin] then
+                    GuiColorSetForNextWidget(UI.gui, 0.5, 0.5, 0.5, 1.0)
+					GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_pin_del_tip",string.lower(GameTextGet("$wand_editor_pin_" .. wand.__DepotPin))))
+				elseif CurrentPin and not HistoryMode then
+					GuiColorSetForNextWidget(UI.gui, 0.5, 0.5, 0.5, 1.0)
+					GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_pin_add_tip", string.lower(GameTextGet("$wand_editor_pin_" .. CurrentPin))))
+				end
             end
             GuiLayoutEnd(UI.gui)
         end, UI.GetZDeep() - 100, 10)
@@ -315,7 +375,6 @@ local function DrawWandSlot(id, k, wand)
             UI.UserData["WandDepotKHighlight"] = k
         end
     elseif left_click and CTRL and UI.UserData["WandDepotKHighlight"] then --交换法杖操作
-        local HistoryMode = UI.UserData["WandDepotHistoryEnable"]
         if k ~= UI.UserData["WandDepotKHighlight"] and not HistoryMode then
             local CurrentIndex = UI.UserData["WandDepotCurrentIndex"]
             local CurrentTable = GetWandDepot(CurrentIndex)
@@ -330,6 +389,16 @@ local function DrawWandSlot(id, k, wand)
             end
         end
     end
+    if not HistoryMode and right_click then
+        if wand.__DepotPin then
+            wand.__DepotPin = nil
+		elseif CurrentPin then
+            wand.__DepotPin = CurrentPin
+        end
+		local CurrentIndex = UI.UserData["WandDepotCurrentIndex"]
+        local CurrentTable = GetWandDepot(CurrentIndex)
+		SetWandDepotLua(CurrentTable, CurrentIndex)
+	end
     GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 2)
     GuiImage(UI.gui, UI.NewID(id .. tostring(k)), 5 + x, 22 + y, sprite, 1, 1, 0, deg57_5)
 end
@@ -587,22 +656,33 @@ function WandDepotCB(_, _right, _, _, this_enable)
 				UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = true
 				return
 			end
-            UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = nil
-			local k = UI.UserData["WandDepotKHighlight"] + 1
-			table.remove(CurrentTable, k)
-            if HistoryMode then
-				SetHisroryData(CurrentTable)
-            else
-                SetWandDepotLua(CurrentTable, CurrentIndex)
-            end
-			if k > #CurrentTable then--删除后检查
-				UI.UserData["WandDepotKHighlight"] = nil
+			local hgK = UI.UserData["WandDepotKHighlight"] + 1
+			local wand = CurrentTable[hgK]
+			if not (wand.__DepotPin and PinImageMap[wand.__DepotPin]) then
+				UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] = nil
+				local k = UI.UserData["WandDepotKHighlight"] + 1
+				table.remove(CurrentTable, k)
+				if HistoryMode then
+					SetHisroryData(CurrentTable)
+				else
+					SetWandDepotLua(CurrentTable, CurrentIndex)
+				end
+				if k > #CurrentTable then--删除后检查
+					UI.UserData["WandDepotKHighlight"] = nil
+				end
 			end
+
         end
     end
     local deleteTextKey = "$wand_editor_wand_depot_delete"
-	if UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] then
-		deleteTextKey = "$wand_editor_wand_depot_delete_IKnowWhatImDoing"
+    if UI.UserData["wand_depot_deleteWand_IKnowWhatImDoing"] then
+		local hgK = UI.UserData["WandDepotKHighlight"] + 1
+		local wand = CurrentTable[hgK]
+		if not HistoryMode and wand.__DepotPin and PinImageMap[wand.__DepotPin] then
+			deleteTextKey = "$wand_editor_wand_depot_delete_pin"
+        else
+			deleteTextKey = "$wand_editor_wand_depot_delete_IKnowWhatImDoing"
+		end
 	end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
 	UI.MoveImageButton("WandDepotDelete", 45, 64 + WandDepotH + 7,
@@ -667,5 +747,24 @@ function WandDepotCB(_, _right, _, _, this_enable)
     end
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
 	UI.MoveImageButton("WandDepotHelp", 130,64 + WandDepotH + 11,
-		"mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
+        "mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
+	if not HistoryMode then
+		local PinSelectText = {GameTextGet("$wand_editor_pin_deselect"),GameTextGet("$wand_editor_pin_select")}
+		for k, v in pairs(PinList) do
+			local function PinCB(pin_click, _, _, _, pin_enable)
+				if not pin_enable then
+					if CurrentPin == v then
+						CurrentPin = nil
+					end
+					return
+				end
+				CurrentPin = v
+			end
+			GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 3)
+			UI.MoveImagePicker("WandDepotPinList" .. v, 6, 64 + (k - 1) * 13, 8, 4,
+				GameTextGet("$wand_editor_pin_" .. v) .. GameTextGet("$wand_editor_pin"), PinImageMap[v], PinSelectText, PinCB,
+				nil, true, nil, true, true)
+			
+		end
+	end
 end

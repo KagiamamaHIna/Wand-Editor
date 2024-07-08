@@ -231,15 +231,17 @@ end
 ---@param my number
 ---@param Content string
 ---@param image string
----@param AlwaysCallBack function?
+---@param StatusCustomText table?
 ---@param ClickCallBack function?
 ---@param OpenImage string?
 ---@param SemiTransparent boolean?
 ---@param SaveModSetting boolean?
 ---@param noMove boolean?
+---@param NoYAutoMove boolean?
 ---@return boolean
-function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, ClickCallBack, OpenImage, SemiTransparent, SaveModSetting, noMove)
+function UI.MoveImagePicker(id, x, y, mx, my, Content, image, StatusCustomText, ClickCallBack, OpenImage, SemiTransparent, SaveModSetting, noMove, NoYAutoMove)
     local newid = ConcatModID(id)
+	NoYAutoMove = Default(NoYAutoMove, false)
     if SaveModSetting and this.private.CompToPickerBool[newid] == nil then
         if ModSettingGet(newid) == nil then
             ModSettingSet(newid, false)
@@ -260,13 +262,21 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
 			ModSettingSet(newid, this.private.CompToPickerBool[newid])
 		end
 	end
-	if this.private.CompToPickerBool[newid] == nil then
-		this.private.CompToPickerBool[newid] = false
-	end
-	if this.private.CompToPickerBool[newid] then
-		Content = GameTextGetTranslatedOrNot("$wand_editor_picker_close") .. Content
-	else
-		Content = GameTextGetTranslatedOrNot("$wand_editor_picker_open") .. Content
+    if this.private.CompToPickerBool[newid] == nil then
+        this.private.CompToPickerBool[newid] = false
+    end
+	if StatusCustomText then
+		if this.private.CompToPickerBool[newid] then
+			Content = GameTextGetTranslatedOrNot(StatusCustomText[1]) .. Content
+		else
+			Content = GameTextGetTranslatedOrNot(StatusCustomText[2]) .. Content
+		end
+    else
+		if this.private.CompToPickerBool[newid] then
+			Content = GameTextGetTranslatedOrNot("$wand_editor_picker_close") .. Content
+		else
+			Content = GameTextGetTranslatedOrNot("$wand_editor_picker_open") .. Content
+		end
 	end
 
     local function Hover()
@@ -290,7 +300,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
                     GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
                 end
             end
-        end, DefaultZDeep-100, mx, my)
+        end, DefaultZDeep-100, mx, my, NoYAutoMove)
     end
     local function Click(left_click, right_click, ix, iy)
         if ClickCallBack ~= nil then
@@ -318,7 +328,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, AlwaysCallBack, Cl
     end
     GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
 	this.private.ZDeep = this.private.ZDeep + 1
-    local result = { UI.MoveImageButton(id, x, y, image, AlwaysCallBack, Hover, Click, nil, noMove) }
+    local result = { UI.MoveImageButton(id, x, y, image, nil, Hover, Click, nil, noMove) }
 	return  unpack(result)
 end
 

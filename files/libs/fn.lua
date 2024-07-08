@@ -654,6 +654,7 @@ end
 ---@field sprite_file string
 ---@field rect_animation string
 ---@field sprite_pos Vec2
+---@field __DepotPin string
 
 ---获得法杖数据
 ---@param entity integer EntityID
