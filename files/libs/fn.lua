@@ -529,7 +529,7 @@ function BlockAllInput(blockNum)
         return
     end
     ModSettingSet(ModID .. "Blocked", true)
-
+	--[[
     local inventory_quick = EntityGetWithName("inventory_quick")
     if inventory_quick ~= nil and blockNum then
 		local t = EntityGetAllChildren(inventory_quick)
@@ -546,7 +546,7 @@ function BlockAllInput(blockNum)
                 end
 			end
 		end
-	end
+	end]]
     for k, v in pairs(ComponentGetMembers(Controls) or {}) do
         local HasMBtnDown = string.find(k, "mButtonDown")
         local HasMBtnDownDelay = string.find(k, "mButtonDownDelay")
@@ -562,7 +562,7 @@ end
 function RestoreInput()
 	if ModSettingGet(ModID.."Blocked") then
         ModSettingSet(ModID .. "Blocked", false)
-
+		--[[
 		local inventory_quick = EntityGetWithName("inventory_quick")
 		if inventory_quick ~= nil then
 			local t = EntityGetAllChildren(inventory_quick)
@@ -579,7 +579,7 @@ function RestoreInput()
 					end
 				end
 			end
-		end
+		end]]
 		local player = GetPlayer()
 		local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
 		ComponentSetValue2(Controls, "enabled", true)
