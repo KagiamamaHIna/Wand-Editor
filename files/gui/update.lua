@@ -212,7 +212,8 @@ function GUIUpdate()
 		
         UI.TickEventFn["RequestAvatar"] = function()
 			if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then--请求头像
-				UI.TickEventFn["RequestAvatar"] = nil
+                UI.TickEventFn["RequestAvatar"] = nil
+				return
 			end
             if UI.UserData["RequestAvatarMode"] == nil then
                 local Request = function()
