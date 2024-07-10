@@ -21,50 +21,55 @@ local function get_screen_position(x, y)
 end
 
 function DrawDamageInfo()
-	GuiLayoutBeginLayer(UI.gui)
-	GuiLayoutBeginVertical(UI.gui, UI.ScreenWidth * 0.5, 0, true)
-	GuiLayoutAddVerticalSpacing(UI.gui, 5)
-
-	local player_projectiles = EntityGetWithTag("projectile_player") or {}
-	local highest_projectile_damage = 0
-	local highest_damage_projectile = nil
-	local total_projectile_damage = 0
-	local total_projectiles = #player_projectiles
-	for k, v in pairs(player_projectiles) do
-		local projectile = EntityGetFirstComponent(v, "ProjectileComponent")
-		if projectile then
-			local damage = ComponentGetValue2(projectile, "damage") * 25
-			if damage > highest_projectile_damage then
-				highest_damage_projectile = v
-				highest_projectile_damage = damage
+	local function InfoCallBack(s_x, s_y)
+		GuiLayoutBeginLayer(UI.gui)
+		GuiLayoutBeginVertical(UI.gui, s_x, s_y+5, true)
+		GuiLayoutAddVerticalSpacing(UI.gui, 5)
+	
+		local player_projectiles = EntityGetWithTag("projectile_player") or {}
+		local highest_projectile_damage = 0
+		local highest_damage_projectile = nil
+		local total_projectile_damage = 0
+		local total_projectiles = #player_projectiles
+		for k, v in pairs(player_projectiles) do
+			local projectile = EntityGetFirstComponent(v, "ProjectileComponent")
+			if projectile then
+				local damage = ComponentGetValue2(projectile, "damage") * 25
+				if damage > highest_projectile_damage then
+					highest_damage_projectile = v
+					highest_projectile_damage = damage
+				end
+				total_projectile_damage = total_projectile_damage + damage
 			end
-			total_projectile_damage = total_projectile_damage + damage
+		end
+		GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
+		GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_proj_dmg") .. thousands_separator(total_projectile_damage))
+	
+		GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
+		GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_proj") .. tostring(total_projectiles))
+	
+		local highest_dps = GlobalsGetValue(ModID .. "highest_dps", "") --渲染dps数据，伤害来自假人
+		if #highest_dps > 0 then
+			GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
+			GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_dps") .. highest_dps)
+		end
+	
+		local total_damage = GlobalsGetValue(ModID .. "total_damage", "") --渲染总伤数据，伤害来自假人
+		if #total_damage > 0 then
+			GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
+			GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_damage") .. total_damage)
+		end
+	
+		GuiLayoutEnd(UI.gui)
+		GuiLayoutEndLayer(UI.gui)
+		if highest_damage_projectile ~= nil then
+			local esx, esy = get_screen_position(EntityGetTransform(highest_damage_projectile))
+			GuiText(UI.gui, esx, esy, thousands_separator(highest_projectile_damage))
 		end
 	end
-	GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
-	GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_proj_dmg") .. thousands_separator(total_projectile_damage))
-
-	GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
-	GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_proj") .. tostring(total_projectiles))
-
-	local highest_dps = GlobalsGetValue(ModID .. "highest_dps", "") --渲染dps数据，伤害来自假人
-	if #highest_dps > 0 then
-		GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
-		GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_dps") .. highest_dps)
-	end
-
-	local total_damage = GlobalsGetValue(ModID .. "total_damage", "") --渲染总伤数据，伤害来自假人
-	if #total_damage > 0 then
-		GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Align_HorizontalCenter)
-		GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_total_damage") .. total_damage)
-	end
-
-	GuiLayoutEnd(UI.gui)
-	GuiLayoutEndLayer(UI.gui)
-	if highest_damage_projectile ~= nil then
-		local esx, esy = get_screen_position(EntityGetTransform(highest_damage_projectile))
-		GuiText(UI.gui, esx, esy, thousands_separator(highest_projectile_damage))
-	end
+	UI.MoveImageButton("DamageInfoMoveBTN",UI.ScreenWidth * 0.5,2,"mods/wand_editor/files/gui/images/move.png",InfoCallBack,function ()
+		GuiTooltip(UI.gui,GameTextGet("$wand_editor_picker_desc"),"")
+	end)
 end
 
 local function PickerGap(gap)

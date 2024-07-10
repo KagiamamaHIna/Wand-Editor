@@ -72,16 +72,17 @@ end
 ---@param xOffset integer?
 ---@param yOffset integer?
 ---@param NoYAutoMove boolean?
-function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove)
+function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 	local gui = this.public.gui
 	xOffset = Default(xOffset, 0)
     yOffset = Default(yOffset, 0)
+	YMoreOffset = Default(YMoreOffset,0)
 	NoYAutoMove = Default(NoYAutoMove, false)
 	z = Default(z, DefaultZDeep)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
 		GuiGetPreviousWidgetInfo(gui)
 	if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
-		yOffset = yOffset - height
+		yOffset = yOffset - height + YMoreOffset
 	end
 
 	if hover then

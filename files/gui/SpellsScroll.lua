@@ -345,8 +345,12 @@ local function DarwSpellText(this, id, idata)
                 end
             end
         end
-        --散射(实在是看不出来哪里来的，先放着)
-
+        --散射
+        if idata.projComp.direction_random_rad ~= "0" then
+            local rad = tonumber(idata.projComp.direction_random_rad)
+			local formatted = string.format("%.2f",math.deg(rad)) .. GameTextGetTranslatedOrNot("$wand_editor_deg")
+			NewLine("$inventory_spread", formatted)
+		end
         --速度
         local speed_min = tonumber(idata.projComp.speed_min)
         local speed_max = tonumber(idata.projComp.speed_max)
@@ -469,7 +473,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
             if not this.UserData["HasSpellMove"] then --法术悬浮窗绘制
                 this.tooltips(function()
                     DarwSpellText(this, id, spellData[id])
-                end, this.GetZDeep() - 114514, 9, -10)
+                end, this.GetZDeep() - 114514, 9, -10, false, -10)
             end
         end
 		
