@@ -525,10 +525,10 @@ end
 function BlockAllInput(blockNum)
 	local player = GetPlayer()
     local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
-    if ModSettingGet(ModID .. "Blocked") or (not ComponentGetValue2(Controls, "enabled")) then --防止和其他模组冲突
+    if GlobalsGetValue(ModID .. "Blocked") == "1" or (not ComponentGetValue2(Controls, "enabled")) then --防止和其他模组冲突
         return
     end
-    ModSettingSet(ModID .. "Blocked", true)
+    GlobalsSetValue(ModID .. "Blocked", "1")
 	--[[
     local inventory_quick = EntityGetWithName("inventory_quick")
     if inventory_quick ~= nil and blockNum then
@@ -560,8 +560,8 @@ end
 
 ---恢复按键操作
 function RestoreInput()
-	if ModSettingGet(ModID.."Blocked") then
-        ModSettingSet(ModID .. "Blocked", false)
+	if GlobalsGetValue(ModID.."Blocked") == "1" then
+        GlobalsSetValue(ModID .. "Blocked", "0")
 		--[[
 		local inventory_quick = EntityGetWithName("inventory_quick")
 		if inventory_quick ~= nil then
