@@ -298,7 +298,7 @@ function HoverDarwSpellText(this, id, idata, LastText)
 		GuiLayoutEnd(this.gui)
 	end
 
-	GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot(idata.name))
+	GuiText(this.gui, 0, 0, string.upper(GameTextGetTranslatedOrNot(idata.name)))
 	GuiColorSetForNextWidget(this.gui, 0.5, 0.5, 0.5, 1.0)
 	GuiText(this.gui, 0, 0, id)
 	GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot(idata.description))

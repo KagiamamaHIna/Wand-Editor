@@ -121,45 +121,30 @@ function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargi
 		local OffsetW = this.private.TooltipsData[6]
         local OffsetH = this.private.TooltipsData[7]
 
-        xOffset = xOffset - OffsetW / 2
-        if y + yOffset > this.public.ScreenHeight * 0.5 then
+        xOffset = xOffset - OffsetW / 2 --居中
+        if y + yOffset > this.public.ScreenHeight * 0.5 then--自动上下切换
             yOffset = -yOffset - OffsetH + height + 10
         end
-        if y + yOffset- 10 < 0 then
+        if y + yOffset- 10 < 0 then--上超出
             yOffset = 0
             y = 10
         end
-        if x + OffsetW + 10 > this.public.ScreenWidth then
-            xOffset = -((x + OffsetW + 5) - this.public.ScreenWidth + 10)
+        if x + OffsetW /2 + 10 + rightMargin > this.public.ScreenWidth then--右超出
+            xOffset = -((x + OffsetW) - this.public.ScreenWidth + rightMargin)
         end
-		if x + xOffset - leftMargin < 0 then
+		if x + xOffset - leftMargin < 0 then--左超出
             x = leftMargin + 5
 			xOffset = 0
         end
     else
-		xOffset = 2000
+		yOffset = 4000
 	end
-
-	--[[
-    if this.private.TooltipsData and this.private.TooltipsHover then
-		local OffsetW = this.private.TooltipsData[1]
-		xOffset = -(OffsetW / 2) + xOffset
-        if draw_x < leftMargin then
-            xOffset = draw_x + leftMargin + xOffset
-        elseif draw_x > this.public.ScreenWidth - leftMargin then
-            xOffset = draw_x - leftMargin + xOffset
-        end
-		xOffset = xOffset + width
-    else
-		xOffset = 2000
-	end]]
-
 	if hover then
 		GuiZSet(gui, z)
         GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
-		if callback ~= nil then callback() end
+        if callback ~= nil then callback() end
 		GuiZSetForNextWidget(gui, z + 1)
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
