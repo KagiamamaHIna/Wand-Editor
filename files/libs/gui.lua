@@ -23,13 +23,17 @@ local this = {
         Scale = nil,  --缩放参数
 		ZDeep = DefaultZDeep,--深度
         IDMax = 0x7FFFFFFF, --下一个id分配的数字
-		SliderData = {},
+        SliderData = {},
+        SliderMax = {},
+		SliderMin = {},
         ScrollData = {},
 		ScrollHover = {},
         HScrollData = {},
         HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
         HScrollItemData = {}, --元素数据，用于判断位置是否上下溢出
-		
+		TooltipsData = nil,
+		TooltipsHover = false,
+
 		RefreshScale = RefreshScaleTime,
 	},
 	public = {
@@ -95,6 +99,72 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
 		GuiLayoutEndLayer(gui)
+	end
+end
+
+---组件悬浮窗提示,应当在一个组件后面使用
+---@param callback function
+---@param z integer?
+---@param xOffset integer?
+---@param yOffset integer?
+function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargin)
+	local gui = this.public.gui
+	xOffset = Default(xOffset, 0)
+    yOffset = Default(yOffset, 0)
+    leftMargin = Default(leftMargin, 10)
+	rightMargin = Default(rightMargin, 10)
+	z = Default(z, DefaultZDeep)
+	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
+        GuiGetPreviousWidgetInfo(gui)
+	this.private.TooltipsHover = this.private.TooltipsHover or hover
+    if this.private.TooltipsData then
+		local OffsetW = this.private.TooltipsData[6]
+        local OffsetH = this.private.TooltipsData[7]
+
+        xOffset = xOffset - OffsetW / 2
+        if y + yOffset > this.public.ScreenHeight * 0.5 then
+            yOffset = -yOffset - OffsetH + height + 10
+        end
+        if y + yOffset- 10 < 0 then
+            yOffset = 0
+            y = 10
+        end
+        if x + OffsetW + 10 > this.public.ScreenWidth then
+            xOffset = -((x + OffsetW + 5) - this.public.ScreenWidth + 10)
+        end
+		if x + xOffset - leftMargin < 0 then
+            x = leftMargin + 5
+			xOffset = 0
+        end
+    else
+		xOffset = 2000
+	end
+
+	--[[
+    if this.private.TooltipsData and this.private.TooltipsHover then
+		local OffsetW = this.private.TooltipsData[1]
+		xOffset = -(OffsetW / 2) + xOffset
+        if draw_x < leftMargin then
+            xOffset = draw_x + leftMargin + xOffset
+        elseif draw_x > this.public.ScreenWidth - leftMargin then
+            xOffset = draw_x - leftMargin + xOffset
+        end
+		xOffset = xOffset + width
+    else
+		xOffset = 2000
+	end]]
+
+	if hover then
+		GuiZSet(gui, z)
+        GuiLayoutBeginLayer(gui)
+        GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
+		GuiBeginAutoBox(gui)
+		if callback ~= nil then callback() end
+		GuiZSetForNextWidget(gui, z + 1)
+		GuiEndAutoBoxNinePiece(gui)
+		GuiLayoutEnd(gui)
+        GuiLayoutEndLayer(gui)
+		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
 	end
 end
 
@@ -809,7 +879,8 @@ function UI.Slider(id,x,y,text,value_min, value_max, value_default, value_displa
     if this.private.SliderData[newid] == nil or value_min > this.private.SliderData[newid] or this.private.SliderData[newid] > value_max then
         this.private.SliderData[newid] = value_default
     end
-
+    this.private.SliderMax[newid] = value_max
+	this.private.SliderMin[newid] = value_min
     this.private.SliderData[newid] = GuiSlider(this.public.gui, UI.NewID(id), x, y, text, this.private.SliderData[newid],
         value_min, value_max, value_default, value_display_multiplier, value_formatting, width)
 
@@ -829,8 +900,16 @@ end
 ---@param value number
 function UI.SetSliderValue(id, value)
     local newid = ConcatModID(id)
-	if this.private.SliderData[newid] then
-		this.private.SliderData[newid] = value
+    if this.private.SliderData[newid] then
+		if value <= this.private.SliderMax[newid] and value >= this.private.SliderMin[newid] then
+			this.private.SliderData[newid] = value
+        else
+			if value <= this.private.SliderMax[newid] then
+                this.private.SliderData[newid] = this.private.SliderMin[newid]
+            else
+				this.private.SliderData[newid] = this.private.SliderMax[newid]
+			end
+		end
 	end
 end
 
@@ -921,8 +1000,10 @@ function UI.DarwHorizontalScroll(id)
 			GuiLayoutBeginHorizontal(this.public.gui, x + margin_x, y, true) --横向布局
 		end
         for k, v in pairs(this.private.HScrollData[newid].Item) do
-			v(this.private.HScrollItemData[k])--传入一个参数，如果参数是真，那么就代表没有超出位置，如果是nil，那么代表超出位置
-            local _, _, _, ItemX, _, ItemW = GuiGetPreviousWidgetInfo(this.public.gui)
+            local flag, _, _, ItemX, _, ItemW = v(this.private.HScrollItemData[k]) --传入一个参数，如果参数是真，那么就代表没有超出位置，如果是nil，那么代表超出位置
+			if flag == nil then
+				_, _, _, ItemX, _, ItemW = GuiGetPreviousWidgetInfo(this.public.gui)
+			end
 			if DarwContainer then
 				if ItemX + ItemW/2 > x and ItemX + ItemW/2 <= x + w then--判断x轴有没有超出位置
 					this.private.HScrollItemData[k] = true
@@ -1076,7 +1157,11 @@ function UI.DispatchMessage()
 	if next(this.private.HScrollData) then --如果表有数据
         this.private.HScrollData = {}   --清空数据		
     end
-	this.private.ZDeep = DefaultZDeep
+    this.private.ZDeep = DefaultZDeep
+	if not this.private.TooltipsHover then
+		this.private.TooltipsData = nil
+	end
+	this.private.TooltipsHover = false
 end
 
 return UI

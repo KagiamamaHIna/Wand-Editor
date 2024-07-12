@@ -263,14 +263,29 @@ local function SpellPicker(this, id, wandEntity, wandData, spellData, k, v, isAl
 			this.UserData["AlwaysClickFr"] = nil
 		end
 	end
-	if isAlways then
-		GuiTooltip(this.gui, GameTextGet("$wand_editor_always")..tostring(k), "")		
-    else
-		if v ~= "nil" and v.uses_remaining ~= -1 then
-            GuiTooltip(this.gui, tostring(k).." ("..GameTextGet("$inventory_usesremaining").." : "..v.uses_remaining..")", "")
+    if isAlways then
+        if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
+            UI.BetterTooltips(function()
+                HoverDarwSpellText(UI, v.id, spellData[v.id], GameTextGet("$wand_editor_always") .. tostring(k))
+            end, UI.GetZDeep()-114514, 8, 26)
         else
-			GuiTooltip(this.gui, tostring(k), "")
+            GuiTooltip(UI.gui, GameTextGet("$wand_editor_always") .. tostring(k), "")
+        end
+    else
+		if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
+			UI.BetterTooltips(function()
+				local text
+				if v.uses_remaining ~= -1 then
+					text = GameTextGet("$wand_editor_slot",tostring(k)).." ("..GameTextGet("$inventory_usesremaining").." : "..v.uses_remaining..")"
+				else
+					text = GameTextGet("$wand_editor_slot",tostring(k))
+				end
+				HoverDarwSpellText(UI, v.id, spellData[v.id], text)
+			end,UI.GetZDeep()-114514,8,26)
+        else
+			GuiTooltip(UI.gui,GameTextGet("$wand_editor_slot",tostring(k)),"")
 		end
+
 	end
 	if not isAlways then
 		this.UserData[id .. "LastWandContHover" .. tostring(k)] = hover

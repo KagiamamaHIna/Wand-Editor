@@ -214,7 +214,7 @@ function SpellDepotClickCB(_, _, _, _, depot_enable)
 	local function HelpHover()
 		UI.tooltips(function()
 			GuiText(UI.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_search_help"))
-		end, nil, 5)
+		end, UI.GetZDeep()-114514, 5)
 	end
 	UI.MoveImageButton("SpellDepotHelp", 200, 249,
 		"mods/wand_editor/files/gui/images/help.png", nil, HelpHover, nil, nil, true)
@@ -265,9 +265,10 @@ function SpellDepotClickCB(_, _, _, _, depot_enable)
 				end, nil, nil, nil, true)
 			end
 		end
-		if SpellDrawType ~= v then
-			GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.DrawSemiTransparent)
-		end
+        if SpellDrawType ~= v then
+            GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.DrawSemiTransparent)
+        end
+		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
 		UI.MoveImageButton("Switch" .. v, 7, 44 + i * 20, sprite, nil, Hover, nil, nil, true)
 	end
 end
@@ -285,7 +286,7 @@ local SkipDrawMoreText = {
 ---@param this table
 ---@param id string
 ---@param idata table
-local function DarwSpellText(this, id, idata)
+function HoverDarwSpellText(this, id, idata, LastText)
 	local rightMargin = 70
 	local function NewLine(str1, str2)
 		local text = GameTextGetTranslatedOrNot(str1)
@@ -446,10 +447,12 @@ local function DarwSpellText(this, id, idata)
 		NewLine("$inventory_mod_damage_fire", NumToWithSignStr(idata.c.damage_fire_add * 25))
 	end
 
-	if idata.c.damage_electricity_add ~= 0 then--雷电伤害修正
-		NewLine("$inventory_mod_damage_electric", NumToWithSignStr(idata.c.damage_electricity_add * 25))
+    if idata.c.damage_electricity_add ~= 0 then --雷电伤害修正
+        NewLine("$inventory_mod_damage_electric", NumToWithSignStr(idata.c.damage_electricity_add * 25))
+    end
+	if LastText then
+		GuiText(UI.gui,0,5,LastText)
 	end
-
 	GuiLayoutEnd(this.gui)
 end
 
@@ -471,9 +474,9 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 
         local SpellHover = function() --绘制法术悬浮窗用函数
             if not this.UserData["HasSpellMove"] then --法术悬浮窗绘制
-                this.tooltips(function()
-                    DarwSpellText(this, id, spellData[id])
-                end, this.GetZDeep() - 114514, 9, -10, false, -10)
+                UI.BetterTooltips(function()
+                    HoverDarwSpellText(this, id, spellData[id])
+                end, this.GetZDeep() - 114514,8,24)
             end
         end
 		
