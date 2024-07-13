@@ -375,7 +375,7 @@ function GUIUpdate()
             else
 				UI.UserData["LockHPValue"] = nil
 			end
-			if GameIsInventoryOpen() then--开启开启物品栏时禁止执行下一步
+			if GameIsInventoryOpen() then--开启物品栏时禁止执行下一步
 				return
 			end
 			

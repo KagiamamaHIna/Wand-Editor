@@ -286,7 +286,11 @@ local SkipDrawMoreText = {
 ---@param this table
 ---@param id string
 ---@param idata table
-function HoverDarwSpellText(this, id, idata, LastText)
+function HoverDarwSpellText(this, id, idata, Uses, LastText)
+    local world_entity_id = GameGetWorldStateEntity()
+    local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
+    local inf_spells_enable = ComponentGetValue2(comp_worldstate, "perk_infinite_spells")
+	
 	local rightMargin = 70
 	local function NewLine(str1, str2)
 		local text = GameTextGetTranslatedOrNot(str1)
@@ -297,8 +301,11 @@ function HoverDarwSpellText(this, id, idata, LastText)
 		GuiText(this.gui, rightMargin - w, 0, str2)
 		GuiLayoutEnd(this.gui)
 	end
-
-	GuiText(this.gui, 0, 0, string.upper(GameTextGetTranslatedOrNot(idata.name)))
+    local name = GameTextGetTranslatedOrNot(idata.name)
+	if Uses and Uses ~= -1 then
+		name = name.." ("..tostring(Uses)..")"
+	end
+	GuiText(this.gui, 0, 0, string.upper(name))
 	GuiColorSetForNextWidget(this.gui, 0.5, 0.5, 0.5, 1.0)
 	GuiText(this.gui, 0, 0, id)
 	GuiText(this.gui, 0, 0, GameTextGetTranslatedOrNot(idata.description))
@@ -307,7 +314,9 @@ function HoverDarwSpellText(this, id, idata, LastText)
 	
 	GuiLayoutBeginVertical(this.gui, 0, 7, true) --垂直布局
     if idata.max_uses and idata.max_uses ~= -1 then
-        NewLine("$wand_editor_max_uses", tostring(idata.max_uses)) --使用次数
+		if (inf_spells_enable and idata.never_unlimited) or not inf_spells_enable then
+			NewLine("$wand_editor_max_uses", tostring(idata.max_uses)) --使用次数
+		end
     end
 	
 	NewLine("$inventory_manadrain", tostring(idata.mana))--耗蓝
@@ -475,7 +484,15 @@ function DrawSpellContainer(this, spellData, spellTable, type)
         local SpellHover = function() --绘制法术悬浮窗用函数
             if not this.UserData["HasSpellMove"] then --法术悬浮窗绘制
                 UI.BetterTooltips(function()
-                    HoverDarwSpellText(this, id, spellData[id])
+					local world_entity_id = GameGetWorldStateEntity()
+					local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
+                    local inf_spells_enable = ComponentGetValue2(comp_worldstate, "perk_infinite_spells")
+					
+                    local max
+					if (inf_spells_enable and spellData[id].never_unlimited) or not inf_spells_enable then
+						max = spellData[id].max_uses
+					end
+                    HoverDarwSpellText(this, id, spellData[id],max)
                 end, this.GetZDeep() - 114514,8,24)
             end
         end
