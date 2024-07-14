@@ -125,7 +125,7 @@ local posY = -45804
 
 reflecting = true
 Reflection_RegisterProjectile = function(filepath)
-	if not isAssign then
+	if not isAssign or filepath == nil then
 		return
 	end
 	--获取投射物数据，判断是否有缓存
