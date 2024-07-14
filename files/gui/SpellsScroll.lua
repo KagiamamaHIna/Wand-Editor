@@ -295,7 +295,7 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
 	local function NewLine(str1, str2)
 		local text = GameTextGetTranslatedOrNot(str1)
 		local w = GuiGetTextDimensions(this.gui,text)
-		GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
+        GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
         GuiText(this.gui, 0, 0, text)
 		GuiRGBAColorSetForNextWidget(this.gui, 255,222,173, 255)
 		GuiText(this.gui, rightMargin - w, 0, str2)
@@ -312,7 +312,8 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
 	GuiColorSetForNextWidget(this.gui, 0.5, 0.5, 1.0, 1.0)
 	GuiText(this.gui, 0, 0, SpellTypeEnumToStr(idata.type))
 	
-	GuiLayoutBeginVertical(this.gui, 0, 7, true) --垂直布局
+	GuiLayoutAddVerticalSpacing(UI.gui,7)
+	--GuiLayoutBeginVertical(this.gui, 0, 7, true) --垂直布局
     if idata.max_uses and idata.max_uses ~= -1 then
 		if (inf_spells_enable and idata.never_unlimited) or not inf_spells_enable then
 			NewLine("$wand_editor_max_uses", tostring(idata.max_uses)) --使用次数
@@ -459,10 +460,14 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
     if idata.c.damage_electricity_add ~= 0 then --雷电伤害修正
         NewLine("$inventory_mod_damage_electric", NumToWithSignStr(idata.c.damage_electricity_add * 25))
     end
-	if LastText then
-		GuiText(UI.gui,0,5,LastText)
+    if LastText then
+        GuiLayoutAddVerticalSpacing(UI.gui, 5)
+		local spaceX = GuiGetTextDimensions(UI.gui,LastText)
+		GuiText(UI.gui, spaceX, 0, " ")
+		local _,_,_,x,y = GuiGetPreviousWidgetInfo(UI.gui)
+		GuiOptionsAddForNextWidget(UI.gui,GUI_OPTION.Layout_NoLayouting)
+        GuiText(UI.gui, x-spaceX, y, LastText)
 	end
-	GuiLayoutEnd(this.gui)
 end
 
 ---用于绘制法术容器

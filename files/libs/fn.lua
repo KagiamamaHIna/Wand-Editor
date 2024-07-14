@@ -183,23 +183,27 @@ function SerializeTable(tbl, indent)
     indent = indent or ""
     local parts = {}
     local partsKey = 1
-	local format = string.format
+	local L_SerializeTable = SerializeTable
+
+    local format = string.format
+    local _tostr = tostring
+	local _type = type
     local is_array = #tbl > 0 or tbl[0] ~= nil
     for k, v in pairs(tbl) do
         local key
-        if is_array and type(k) == "number" then
+        if is_array and _type(k) == "number" then
             key = format("[%s] = ", k)
         else
             key = format("[%q] = ", k)
         end
 
-        if type(v) == "table" then
+        if _type(v) == "table" then
             parts[partsKey] = format("%s%s{\n", indent, key)
-            parts[partsKey + 1] = SerializeTable(v, indent .. "    ")
+            parts[partsKey + 1] = L_SerializeTable(v, indent .. "    ")
             parts[partsKey + 2] = format("%s},\n", indent)
 			partsKey = partsKey + 3
-        elseif type(v) == "boolean" or type(v) == "number" then
-            parts[partsKey] = format("%s%s%s,\n", indent, key, tostring(v))
+        elseif _type(v) == "boolean" or _type(v) == "number" then
+            parts[partsKey] = format("%s%s%s,\n", indent, key, _tostr(v))
 			partsKey = partsKey + 1
         else
 			parts[partsKey] = format("%s%s%q,\n", indent, key, v)
