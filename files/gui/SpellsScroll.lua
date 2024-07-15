@@ -297,8 +297,12 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
 		local w = GuiGetTextDimensions(this.gui,text)
         GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
         GuiText(this.gui, 0, 0, text)
-		GuiRGBAColorSetForNextWidget(this.gui, 255,222,173, 255)
-		GuiText(this.gui, rightMargin - w, 0, str2)
+        GuiRGBAColorSetForNextWidget(this.gui, 255, 222, 173, 255)
+		if w + 10 > rightMargin then
+			GuiText(this.gui, w + 10 - w, 0, str2)
+        else
+			GuiText(this.gui, rightMargin - w, 0, str2)
+		end
 		GuiLayoutEnd(this.gui)
 	end
     local name = GameTextGetTranslatedOrNot(idata.name)
@@ -486,7 +490,9 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		this.SetZDeep(this.GetZDeep() + 3)--设置深度，确保行为正确
 		local sprite = spellData[id].sprite
 
-        local SpellHover = function() --绘制法术悬浮窗用函数
+        local SpellHover = function()                 --绘制法术悬浮窗用函数
+            local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
+			this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
             if not this.UserData["HasSpellMove"] then --法术悬浮窗绘制
                 UI.BetterTooltips(function()
 					local world_entity_id = GameGetWorldStateEntity()
@@ -506,38 +512,38 @@ function DrawSpellContainer(this, spellData, spellTable, type)
             local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
             local ALT = InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)
             local SHIFT = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
-            if left_click and SHIFT then--快捷添加法术
-				local CurrentWand
-				if this.UserData["FixedWand"] and this.UserData["HasShiftClick"][this.UserData["FixedWand"][2]] then--固定的法杖必须是有选框才能判定
+            if left_click and SHIFT then                                                                                                                --快捷添加法术
+                local CurrentWand
+                if this.UserData["FixedWand"] and this.UserData["HasShiftClick"] and this.UserData["HasShiftClick"][this.UserData["FixedWand"][2]] then --固定的法杖必须是有选框才能判定
                     CurrentWand = this.UserData["FixedWand"][2]
-                else--否则就判断手持
-					local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
-					if HeldWand then
-						CurrentWand = HeldWand
-					end
-				end
-                if CurrentWand and this.UserData["HasShiftClick"][CurrentWand] then --如果是有选框的
-					local wandData = GetWandData(CurrentWand)
-					local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
-					local min = HasShiftClick[2]
-					local max = HasShiftClick[3] or min
-					min = math.min(min, max)
+                else                                                                                                                                    --否则就判断手持
+                    local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
+                    if HeldWand then
+                        CurrentWand = HeldWand
+                    end
+                end
+                if CurrentWand and this.UserData["HasShiftClick"] and this.UserData["HasShiftClick"][CurrentWand] then --如果是有选框的
+                    local wandData = GetWandData(CurrentWand)
+                    local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
+                    local min = HasShiftClick[2]
+                    local max = HasShiftClick[3] or min
+                    min = math.min(min, max)
                     max = math.max(HasShiftClick[2], max)
-                    if min == max then--如果是单个选框的
+                    if min == max then --如果是单个选框的
                         SetTableSpells(wandData, id, min)
                         InitWand(wandData, CurrentWand)
-						HasShiftClick[2] = HasShiftClick[2] + 1
-                    else--反之就是多个
+                        HasShiftClick[2] = HasShiftClick[2] + 1
+                    else --反之就是多个
                         for i = min, max do
                             SetTableSpells(wandData, id, i)
                         end
-						InitWand(wandData, CurrentWand)
-						this.UserData["HasShiftClick"][CurrentWand] = nil
+                        InitWand(wandData, CurrentWand)
+                        this.UserData["HasShiftClick"][CurrentWand] = nil
                     end
-					this.OnceCallOnExecute(function()
-						RefreshHeldWands()
-					end)
-                elseif CurrentWand then--没有选框
+                    this.OnceCallOnExecute(function()
+                        RefreshHeldWands()
+                    end)
+                elseif CurrentWand then --没有选框
                     local wandData = GetWandData(CurrentWand)
                     for k, v in pairs(wandData.spells.spells) do
                         if v == "nil" then
@@ -546,12 +552,12 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                             break
                         end
                     end
-					this.OnceCallOnExecute(function()
-						RefreshHeldWands()
-					end)
-				end
-			elseif left_click and CTRL then --CTRL+左键
-				local inventory_full = EntityGetChildWithName(GetPlayer(), "inventory_full")
+                    this.OnceCallOnExecute(function()
+                        RefreshHeldWands()
+                    end)
+                end
+            elseif left_click and CTRL then --CTRL+左键
+                local inventory_full = EntityGetChildWithName(GetPlayer(), "inventory_full")
                 if inventory_full then
                     local px, py = GetPlayerXY()
                     local spell = CreateItemActionEntity(id, px, py)
@@ -560,31 +566,36 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                     GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
                         GameTextGetTranslatedOrNot("$wand_editor_added_spell"))
                 end
-            elseif left_click and ALT then--ALT+左键收藏/删除法术
-				if IsFavorite then
+            elseif left_click and ALT then --ALT+左键收藏/删除法术
+                if IsFavorite then
                     HasFavorite[id] = nil
                     table.remove(FavoriteTable, pos)
-					GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
-						GameTextGetTranslatedOrNot("$wand_editor_remove_favorite"))
-					ModSettingSet("wand_editor_FavoriteTable", "return {" .. SerializeTable(FavoriteTable) .. "}")
-					ModSettingSet("wand_editor_HasFavorite", "return {" .. SerializeTable(HasFavorite) .. "}")
+                    GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
+                        GameTextGetTranslatedOrNot("$wand_editor_remove_favorite"))
+                    ModSettingSet("wand_editor_FavoriteTable", "return {" .. SerializeTable(FavoriteTable) .. "}")
+                    ModSettingSet("wand_editor_HasFavorite", "return {" .. SerializeTable(HasFavorite) .. "}")
                 else
-					if HasFavorite[id] == nil then
+                    if HasFavorite[id] == nil then
                         table.insert(FavoriteTable, 1, id)
-						HasFavorite[id] = true
-						GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
-							GameTextGetTranslatedOrNot("$wand_editor_added_favorite_spell"))
+                        HasFavorite[id] = true
+                        GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
+                            GameTextGetTranslatedOrNot("$wand_editor_added_favorite_spell"))
                         ModSettingSet("wand_editor_FavoriteTable", "return {" .. SerializeTable(FavoriteTable) .. "}")
-						ModSettingSet("wand_editor_HasFavorite", "return {" .. SerializeTable(HasFavorite) .. "}")
+                        ModSettingSet("wand_editor_HasFavorite", "return {" .. SerializeTable(HasFavorite) .. "}")
                     else
-						GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
-							GameTextGetTranslatedOrNot("$wand_editor_added_favorite_Already"))
-					end
-				end
-            elseif left_click and not this.GetNoMoveBool() then --纯左键
-				this.UserData["SpellHoverEnable"] = false
-				DrawFloatSpell(x,y,sprite,id)
-			end
+                        GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
+                            GameTextGetTranslatedOrNot("$wand_editor_added_favorite_Already"))
+                    end
+                end
+            elseif left_click and not UI.UserData["HasSpellMove"]and not this.GetNoMoveBool() then --纯左键
+                this.UserData["SpellHoverEnable"] = false
+                DrawFloatSpell(x, y, sprite, id)
+            elseif left_click and UI.UserData["HasSpellMove"] then
+                UI.UserData["HasSpellMove"] = false
+                UI.UserData["FloatSpellID"] = nil
+                UI.UserData["UpSpellIndex"] = nil
+				this.UserData["SpellHoverEnable"] = true
+            end
 		end
 
 		this.AddScrollImageItem(ContainerName, sprite, function()--添加图片项目的回调绘制
@@ -592,7 +603,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 			if not UI.GetPickerStatus("DisableSpellWobble") then
 				GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)--让法术摇摆
 			end
-			this.MoveImageButton("__SPELL_" .. id, 0, 2, sprite, nil, SpellHover, SpellCilck, nil, true)--最后两个参数是不始终调用点击回调和禁止移动
+			UI.MoveImageButton("__SPELL_" .. id, 0, 2, sprite, nil, SpellHover, SpellCilck, true, true)--最后两个参数是不始终调用点击回调和禁止移动
 			--绘制法术背景，深度要控制好
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
 			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_BG"), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
