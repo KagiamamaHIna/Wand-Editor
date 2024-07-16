@@ -33,17 +33,27 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
     this.SetZDeep(this.GetZDeep() - 1)
 	
 	GuiImage(this.gui, this.NewID(id .. BaseName.."full_BG" .. tostring(k)), 0, 0,
-		"data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
-
-    local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
-	local scale = UI.GetScale()
-    local _, my = InputGetMousePosOnScreen()
-    my = my / scale
-    local ScrollY = UI.GetScrollY(ScrollID)
-	local ScrollH = UI.GetScrollHeight(ScrollID)
-    local ScrollMarginY = UI.GetScrollMY(ScrollID)
-	if ScrollY and ScrollMarginY and (my < ScrollY - ScrollMarginY or my > ScrollY + ScrollH + ScrollMarginY) then
-        click = false
+        "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
+	local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
+	local CacheKey = id.."HoverCache"
+	if UI.UserData[CacheKey] == nil then
+		local scale = UI.GetScale()
+		local _, my = InputGetMousePosOnScreen()
+		my = my / scale
+		local ScrollY = UI.GetScrollY(ScrollID)
+		local ScrollH = UI.GetScrollHeight(ScrollID)
+		local ScrollMarginY = UI.GetScrollMY(ScrollID)
+        if ScrollY and ScrollMarginY and (my < ScrollY - ScrollMarginY or my > ScrollY + ScrollH + ScrollMarginY) then
+            UI.UserData[CacheKey] = true
+        else
+			UI.UserData[CacheKey] = UI.UserData[CacheKey] or false
+        end
+		UI.OnceCallOnExecute(function ()
+			UI.UserData[CacheKey] = nil
+		end)
+	end
+	if UI.UserData[CacheKey] then
+		click = false
 		hover = false
 	end
 

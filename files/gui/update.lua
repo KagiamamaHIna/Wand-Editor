@@ -192,6 +192,9 @@ function GUIUpdate()
 		end
 		---@param this Gui
         UI.TickEventFn["main"] = function(this) --我认为的主事件循环）
+			if CSV == nil then
+				CSV = dofile_once("mods/wand_editor/files/libs/csv.lua")(ModTextFileGetContent("data/translations/common.csv"))
+			end
             if GameIsInventoryOpen() or GetPlayer() == nil then
                 return
             end

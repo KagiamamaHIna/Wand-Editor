@@ -133,13 +133,24 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
                 goto continue
             end
             local searchText
+			local lowerSearch = string.lower(Search)
+            local score = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), lowerSearch) --大小写不敏感
+            local IDScore = 0
             if IDSearchMode then
-                searchText = v
-            else
-                searchText = GameTextGetTranslatedOrNot(spellData[v].name)
+                IDScore = UesSearchRatio(string.lower(v), lowerSearch)
             end
-
-            local score = UesSearchRatio(string.lower(searchText), string.lower(Search)) --大小写不敏感
+            local key = string.sub(spellData[v].name, 2)
+            local EnStr = CSV.get(key, "en")
+			local EnScore = 0
+            if EnStr ~= nil then
+                EnScore = UesSearchRatio(string.lower(EnStr), lowerSearch)
+            end
+            if IDScore > score then
+                score = IDScore
+            end
+			if EnScore > score then
+				score = EnScore
+			end
             if ScoreToSpellID[score] == nil then
                 ScoreToSpellID[score] = {}
                 ScoreToSpellIDCount[score] = 1
