@@ -132,7 +132,6 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
             if spellData[v] == nil then
                 goto continue
             end
-            local searchText
 			local lowerSearch = string.lower(Search)
             local score = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), lowerSearch) --大小写不敏感
             local IDScore = 0

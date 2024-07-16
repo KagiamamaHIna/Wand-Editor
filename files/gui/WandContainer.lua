@@ -315,24 +315,24 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 
 	if not isAlways then
 		this.UserData[id .. "LastWandContHover" .. tostring(k)] = hover
-		this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
-		if hover and InputIsKeyDown(Key_BACKSPACE) and v ~= "nil" then --按下退格键删除法术
-			RemoveTableSpells(wandData, k)
-			InitWand(wandData, wandEntity)
-			this.OnceCallOnExecute(function()
-				RefreshHeldWands()
-			end)
-		elseif hover and InputIsKeyDown(Key_BACKSPACE) and highlight then --按下退格键多选删除法术
+        this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
+        if hover and InputIsKeyJustDown(Key_BACKSPACE) and highlight then --按下退格键多选删除法术
 			local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
 			local min = HasShiftClick[2]
 			local max = HasShiftClick[3] or min
 			min = math.min(min, max)
-			max = math.max(HasShiftClick[2], max)
+            max = math.max(HasShiftClick[2], max)
 			for i = min, max do
 				RemoveTableSpells(wandData, i)
 			end
 			InitWand(wandData, wandEntity)
 			this.UserData["HasShiftClick"][wandEntity] = nil
+			this.OnceCallOnExecute(function()
+				RefreshHeldWands()
+			end)
+		elseif hover and InputIsKeyJustDown(Key_BACKSPACE) and v ~= "nil" then --按下退格键删除法术
+			RemoveTableSpells(wandData, k)
+			InitWand(wandData, wandEntity)
 			this.OnceCallOnExecute(function()
 				RefreshHeldWands()
 			end)
