@@ -77,24 +77,24 @@ end
 ---@param yOffset integer?
 ---@param NoYAutoMove boolean?
 function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
-	local gui = this.public.gui
-	xOffset = Default(xOffset, 0)
-    yOffset = Default(yOffset, 0)
-	YMoreOffset = Default(YMoreOffset,0)
-	NoYAutoMove = Default(NoYAutoMove, false)
-	z = Default(z, DefaultZDeep)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
-		GuiGetPreviousWidgetInfo(gui)
-	if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
-		yOffset = yOffset - height + YMoreOffset
-	end
-
+        GuiGetPreviousWidgetInfo(this.public.gui)
 	if hover then
+		local gui = this.public.gui
+		xOffset = Default(xOffset, 0)
+		yOffset = Default(yOffset, 0)
+		YMoreOffset = Default(YMoreOffset,0)
+		NoYAutoMove = Default(NoYAutoMove, false)
+		z = Default(z, DefaultZDeep)
+		if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
+			yOffset = yOffset - height + YMoreOffset
+		end
+	
 		GuiZSet(gui, z)
-        GuiLayoutBeginLayer(gui)
-        GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
+		GuiLayoutBeginLayer(gui)
+		GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
-		if callback ~= nil then callback() end
+		callback()
 		GuiZSetForNextWidget(gui, z + 1)
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
@@ -108,43 +108,43 @@ end
 ---@param xOffset integer?
 ---@param yOffset integer?
 function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargin)
-	local gui = this.public.gui
-	xOffset = Default(xOffset, 0)
-    yOffset = Default(yOffset, 0)
-    leftMargin = Default(leftMargin, 10)
-	rightMargin = Default(rightMargin, 10)
-	z = Default(z, DefaultZDeep)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
-        GuiGetPreviousWidgetInfo(gui)
-	this.private.TooltipsHover = this.private.TooltipsHover or hover
-    if this.private.TooltipsData then
-		local OffsetW = this.private.TooltipsData[6]
-        local OffsetH = this.private.TooltipsData[7]
-
-        xOffset = xOffset - OffsetW / 2 --居中
-        if y + yOffset > this.public.ScreenHeight * 0.5 then--自动上下切换
-            yOffset = -yOffset - OffsetH + height + 10
-        end
-        if y + yOffset- 10 < 0 then--上超出
-            yOffset = 0
-            y = 10
-        end
-        if x + OffsetW /2 + 10 + rightMargin > this.public.ScreenWidth then--右超出
-            xOffset = -((x + OffsetW) - this.public.ScreenWidth + rightMargin)
-        end
-		if x + xOffset - leftMargin < 0 then--左超出
-            x = leftMargin + 5
-			xOffset = 0
-        end
-    else
-		yOffset = 4000
-	end
-	if hover then
+        GuiGetPreviousWidgetInfo(this.public.gui)
+    this.private.TooltipsHover = this.private.TooltipsHover or hover
+    if hover then
+		local gui = this.public.gui
+		xOffset = Default(xOffset, 0)
+    	yOffset = Default(yOffset, 0)
+    	leftMargin = Default(leftMargin, 10)
+		rightMargin = Default(rightMargin, 10)
+		z = Default(z, DefaultZDeep)
+		if this.private.TooltipsData then
+			local OffsetW = this.private.TooltipsData[6]
+			local OffsetH = this.private.TooltipsData[7]
+	
+			xOffset = xOffset - OffsetW / 2 --居中
+			if y + yOffset > this.public.ScreenHeight * 0.5 then--自动上下切换
+				yOffset = -yOffset - OffsetH + height + 10
+			end
+			if y + yOffset- 10 < 0 then--上超出
+				yOffset = 0
+				y = 10
+			end
+			if x + OffsetW /2 + 10 + rightMargin > this.public.ScreenWidth then--右超出
+				xOffset = -((x + OffsetW) - this.public.ScreenWidth + rightMargin)
+			end
+			if x + xOffset - leftMargin < 0 then--左超出
+				x = leftMargin + 5
+				xOffset = 0
+			end
+		else
+			yOffset = 4000
+		end
 		GuiZSet(gui, z)
         GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
-        if callback ~= nil then callback() end
+        callback()
 		GuiZSetForNextWidget(gui, z + 1)
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
