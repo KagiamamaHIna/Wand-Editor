@@ -27,6 +27,7 @@ local this = {
         SliderMax = {},
 		SliderMin = {},
         ScrollData = {},
+		ScrollItemData = {},
 		ScrollHover = {},
         HScrollData = {},
         HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
@@ -594,10 +595,60 @@ end
 ---获得Item表
 ---@param id string
 ---@return table|nil
-function GetScrollItemList(id)
+function UI.GetScrollItemList(id)
 	local newid = ConcatModID(id)
     if this.private.ScrollData[newid] then --判断是否有数据
         return this.private.ScrollData[newid].Item
+    end
+end
+
+---@param id string
+---@return number|nil
+function UI.GetScrollWidth(id)
+    local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+        return this.private.ScrollData[newid].w
+    end
+end
+
+---@param id string
+---@return number|nil
+function UI.GetScrollHeight(id)
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+        return this.private.ScrollData[newid].h
+    end
+end
+
+---@param id string
+---@return number|nil
+function UI.GetScrollX(id)
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+        return this.private.ScrollData[newid].x
+    end
+end
+
+---@param id string
+---@return number|nil
+function UI.GetScrollY(id)
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+        return this.private.ScrollData[newid].y
+    end
+end
+
+function UI.GetScrollMX(id)
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+        return this.private.ScrollData[newid].margin_x
+    end
+end
+
+function UI.GetScrollMY(id)
+	local newid = ConcatModID(id)
+    if this.private.ScrollData[newid] then --判断是否有数据
+        return this.private.ScrollData[newid].margin_y
     end
 end
 
@@ -641,7 +692,6 @@ function UI.DrawScrollContainer(id, IsBlock)
 		
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
 		GuiZSetForNextWidget(this.public.gui,this.private.ZDeep)
-		this.private.ZDeep = this.private.ZDeep + 1
         GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
 			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
