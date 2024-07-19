@@ -50,12 +50,16 @@ function GUIUpdate()
 							GuiImage(UI.gui, UI.NewID("MoveSpell_BG"), movex - 2, movey - 2,
 								SpellTypeBG[spellData[id].type], 1, 1)                                         --绘制背景
 						end)
-					if not UI.UserData["WandContainerHasHover"] and InputIsMouseButtonDown(Mouse_left) then
-						UI.UserData["SpellHoverEnable"] = true
+					local LeftClick = (InputIsMouseButtonDown(Mouse_left) and not ModSettingGet(ModID.."SpellDepotCloseSpellOnGround"))
+					if not UI.UserData["WandContainerHasHover"] and LeftClick then
+                        UI.UserData["SpellHoverEnable"] = true
+                    elseif UI.UserData["WandContainerHasHover"] and LeftClick and not EntityHasTag(GetActiveItem() or 0, "wand") then
+                        UI.UserData["SpellHoverEnable"] = true
+						UI.UserData["CreateItemActionEntityEnable"] = true
 					end
 					if not status then
 						UI.TickEventFn["MoveSpellFn"] = nil
-						if not UI.UserData["WandContainerHasHover"] then
+						if not UI.UserData["WandContainerHasHover"] or UI.UserData["CreateItemActionEntityEnable"] then
 							local worldx, worldy = DEBUG_GetMouseWorld()
 							local spell = CreateItemActionEntity(id, worldx, worldy + 5)
 							if UI.UserData["UpSpellIndex"] and UI.UserData["UpSpellIndex"][4] ~= nil then
@@ -64,7 +68,8 @@ function GUIUpdate()
 								ComponentSetValue2(item, "uses_remaining", uses_remaining)
 							end
 							UI.UserData["FloatSpellID"] = nil
-							UI.UserData["UpSpellIndex"] = nil
+                            UI.UserData["UpSpellIndex"] = nil
+							UI.UserData["CreateItemActionEntityEnable"] = false
 						end
 						UI.UserData["HasSpellMove"] = false
 						UI.OnMoveImage("MoveSpell", x, y, sprite, true)
@@ -86,8 +91,14 @@ function GUIUpdate()
 			if not enable then
 				return
 			end
-			--开启状态
-			UI.MoveImagePicker("SpellDepotBTN", PickerGap(0), y + 30, 8, 0, GameTextGet("$wand_editor_spell_depot"),
+            --开启状态
+            local spellDepotText = GameTextGet("$wand_editor_spell_depot")
+			if ModSettingGet(ModID.."SpellDepotCloseSpellOnGround") then
+                spellDepotText = spellDepotText .."\n".. GameTextGet("$wand_editor_spell_depot_close_tips")
+            else
+				spellDepotText = spellDepotText .."\n".. GameTextGet("$wand_editor_spell_depot_open_tips")
+			end
+			UI.MoveImagePicker("SpellDepotBTN", PickerGap(0), y + 30, 8, 0, spellDepotText,
 				"mods/wand_editor/files/gui/images/spell_depot.png", nil, SpellDepotClickCB, nil, true, nil,
 				true)
 				

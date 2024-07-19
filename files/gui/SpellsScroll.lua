@@ -217,7 +217,16 @@ local SpellList = {
 
 local GetPlayerWandID = Compose(GetEntityHeldWand, GetPlayer)
 
-function SpellDepotClickCB(_, _, _, _, depot_enable)
+function SpellDepotClickCB(_, right_click, _, _, depot_enable)
+	if right_click then
+		local status = ModSettingGet(ModID.."SpellDepotCloseSpellOnGround")
+        if status == nil then
+            ModSettingSet(ModID .. "SpellDepotCloseSpellOnGround", true)
+        else
+            ModSettingSet(ModID .. "SpellDepotCloseSpellOnGround", not status)
+        end
+		GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+	end
 	if not depot_enable then
 		return
 	end

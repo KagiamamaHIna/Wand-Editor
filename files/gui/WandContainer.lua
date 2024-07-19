@@ -145,7 +145,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                     this.UserData["HasShiftClick"][wandEntity][1] = id
                     this.UserData["HasShiftClick"][wandEntity][2] = k
                     this.UserData["HasShiftClick"][wandEntity][3] = nil
-                    if FixedWand ~= wandEntity then --如果你看不懂没关系，我你叫我来可能也要反应半天
+                    if FixedWand and FixedWand ~= wandEntity then --如果你看不懂没关系，你叫我来可能也要反应半天
                         this.UserData["HasShiftClick"][FixedWand] = nil
                     end
                 else --如果是id相同且索引一致，那么就清空数据，代表取消
