@@ -129,12 +129,15 @@ Reflection_RegisterProjectile = function(filepath)
 		return
 	end
 	--获取投射物数据，判断是否有缓存
-	if hasProj[filepath] == nil then
+    if hasProj[filepath] == nil then
+		local projXML = ParseXmlAndBase(filepath)
+		if projXML == nil then
+			return
+		end
 		local proj = EntityLoad(filepath, posX, -posY)
 		hasProj[filepath] = {}
 		local projComp = EntityGetFirstComponent(proj, "ProjectileComponent")
         if projComp then
-            local projXML = ParseXmlAndBase(filepath)
 			for _,v in pairs(projXML.children)do
 				if v.name == "ProjectileComponent" then
                     result[CurrentID].lifetime = v.attr.lifetime
@@ -221,7 +224,7 @@ local TypeToSpellListCount = {}
 
 local TypeToSpellList = {}
 TypeToSpellList.AllSpells = {}
-for k, v in pairs(actions) do
+for k, v in pairs(actions or {}) do
 	result[v.id] = {}
 	CurrentID = v.id
     result[v.id].type = v.type
@@ -242,7 +245,7 @@ for k, v in pairs(actions) do
     result[v.id].spawn_probability = v.spawn_probability
     result[v.id].spawn_level = v.spawn_level
 	result[v.id].never_unlimited = v.never_unlimited
-	v.action() --执行
+	pcall(v.action) --执行
 	result[v.id].reload_time = current_reload_time
 	if result[v.id].c == nil then
 		result[v.id].c = {}
@@ -254,24 +257,26 @@ for k, v in pairs(actions) do
 		result[v.id].shot = {}
 	end
     if not isAssign then
-        v.action()
+        pcall(v.action)
     end
     for shotkey, shotv in pairs(shot_effects()) do
         result[v.id].shot[shotkey] = shotv
     end
     isAssign = true
-	if c.extra_entities ~= "" then
+	if c.extra_entities and c.extra_entities ~= "" then
         local extra_entities = split(c.extra_entities, ",")
 		for _,ExtraEntityPath in pairs(extra_entities) do
             local ExtraEntity = ParseXmlAndBase(ExtraEntityPath)
-			for _,EEv in pairs(ExtraEntity.children)do
-                if EEv.name == "LifetimeComponent" then
-                    result[v.id].lifetimeLimit = tonumber(EEv.attr.lifetime)
-					if EEv.attr["randomize_lifetime.min"] ~= nil then
-                        result[v.id].lifetimeLimitMin = tonumber(EEv.attr["randomize_lifetime.min"])
-					end
-                    if EEv.attr["randomize_lifetime.max"] ~= nil then
-						result[v.id].lifetimeLimitMax = tonumber(EEv.attr["randomize_lifetime.max"])
+			if ExtraEntity then
+				for _,EEv in pairs(ExtraEntity.children)do
+					if EEv.name == "LifetimeComponent" then
+						result[v.id].lifetimeLimit = tonumber(EEv.attr.lifetime)
+						if EEv.attr["randomize_lifetime.min"] ~= nil then
+							result[v.id].lifetimeLimitMin = tonumber(EEv.attr["randomize_lifetime.min"])
+						end
+						if EEv.attr["randomize_lifetime.max"] ~= nil then
+							result[v.id].lifetimeLimitMax = tonumber(EEv.attr["randomize_lifetime.max"])
+						end
 					end
 				end
 			end
