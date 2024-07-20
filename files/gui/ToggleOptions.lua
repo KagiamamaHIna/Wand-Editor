@@ -1,6 +1,6 @@
 dofile_once("mods/wand_editor/files/misc/bygoki/lib/helper.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
-
+local fastConcatStr = Cpp.ConcatStr
 local old_thousands_separator = thousands_separator
 local thousands_separator = function(num)
 	if num > 1e15 then
@@ -149,9 +149,9 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 		GameTextGet("$wand_editor_disable_spell_hover"),
         "mods/wand_editor/files/gui/images/disable_spell_hover.png", nil, nil, nil, true, true, true)
 
-    local LabSettingKey = ModID .. "SpellLab"
-    local SrcPlayerXKey = ModID .. "SpellLab_player_x"
-	local SrcPlayerYKey = ModID .. "SpellLab_player_y"
+    local LabSettingKey = fastConcatStr(ModID , "SpellLab")
+    local SrcPlayerXKey = fastConcatStr(ModID , "SpellLab_player_x")
+	local SrcPlayerYKey = fastConcatStr(ModID , "SpellLab_player_y")
     local LabStatus = ModSettingGet(LabSettingKey)
 	local HoverSpellLab = function ()
         local tips

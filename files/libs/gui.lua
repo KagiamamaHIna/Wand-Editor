@@ -34,6 +34,7 @@ local this = {
         HScrollItemData = {}, --元素数据，用于判断位置是否上下溢出
 		TooltipsData = nil,
 		TooltipsHover = false,
+		ConcatCache = {},
 
 		RefreshScale = RefreshScaleTime,
 	},
@@ -60,7 +61,12 @@ this.__index = this.public
 ---@param str string
 ---@return string
 local function ConcatModID(str)
-	return ModID .. str
+	if this.private.ConcatCache[str] == nil then
+        local result = ModID .. str
+        return result
+    else
+		return this.private.ConcatCache[str]
+	end
 end
 
 function UI.GetZDeep()

@@ -4,7 +4,7 @@ local spellData = data[1]
 local TypeToSpellList = data[2]
 local deg57_5 = math.rad(-57.5)
 local CurrentPin
-
+local fastConcatStr = Cpp.ConcatStr
 local function ClickSound()
 	GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 end
@@ -249,10 +249,10 @@ local function DrawWandSlot(id, k, wand)
     local y = row * RowGap
 	if wand.__DepotPin and PinImageMap[wand.__DepotPin] then
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 4)
-		GuiImage(UI.gui,UI.NewID(id..tostring(k)..wand.__DepotPin),x,11 + y,PinImageMap[wand.__DepotPin],1,1)
+		GuiImage(UI.gui,UI.NewID(fastConcatStr(id,tostring(k),wand.__DepotPin)),x,11 + y,PinImageMap[wand.__DepotPin],1,1)
 	end
     GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
-    local left_click, right_click = GuiImageButton(UI.gui, UI.NewID(id .. tostring(k) .. "BG"), 0 + x, 12 + y, "", thisSlot)
+    local left_click, right_click = GuiImageButton(UI.gui, UI.NewID(fastConcatStr(id , tostring(k) , "BG")), 0 + x, 12 + y, "", thisSlot)
     local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
     if hover then
         local rightMargin = 70

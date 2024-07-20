@@ -1,6 +1,7 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/gun/gun_enums.lua")
 local GetPlayerXY = Compose(EntityGetTransform, GetPlayer)
+local fastConcatStr = Cpp.ConcatStr
 
 local LastSearch = ""--上一次的搜索记录，用于确认是否改变了搜索内容
 local LastList--上一次的列表，缓存的数据
@@ -219,11 +220,11 @@ local GetPlayerWandID = Compose(GetEntityHeldWand, GetPlayer)
 
 function SpellDepotClickCB(_, right_click, _, _, depot_enable)
 	if right_click then
-		local status = ModSettingGet(ModID.."SpellDepotCloseSpellOnGround")
+		local status = ModSettingGet(fastConcatStr(ModID,"SpellDepotCloseSpellOnGround"))
         if status == nil then
-            ModSettingSet(ModID .. "SpellDepotCloseSpellOnGround", true)
+            ModSettingSet(fastConcatStr(ModID , "SpellDepotCloseSpellOnGround"), true)
         else
-            ModSettingSet(ModID .. "SpellDepotCloseSpellOnGround", not status)
+            ModSettingSet(fastConcatStr(ModID , "SpellDepotCloseSpellOnGround"), not status)
         end
 		GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 	end
@@ -260,11 +261,11 @@ function SpellDepotClickCB(_, right_click, _, _, depot_enable)
 	for i, v in pairs(TypeList) do     --绘制左边选择类型按钮
 		local sprite
 		if v == "AllSpells" then
-			sprite = ModDir .. "files/gui/images/all_spells.png"
+			sprite = fastConcatStr(ModDir , "files/gui/images/all_spells.png")
 		elseif v == "favorite" then
-			sprite = ModDir .. "files/gui/images/favorite_icon.png"
+			sprite = fastConcatStr(ModDir , "files/gui/images/favorite_icon.png")
 		else
-			sprite = ModDir .. "files/gui/images/" .. SpellList[v] .. "_icon.png"
+			sprite = fastConcatStr(ModDir , "files/gui/images/" , SpellList[v] , "_icon.png")
 		end
 
 		local Hover = function()
@@ -500,7 +501,7 @@ end
 ---@param type integer|string
 function DrawSpellContainer(this, spellData, spellTable, type)
     local ZDeepest = this.GetZDeep()
-	local ContainerName = "SpellsScroll"..tostring(type)
+	local ContainerName = fastConcatStr("SpellsScroll",tostring(type))
 	this.ScrollContainer(ContainerName, 30, 64, 178, 180, nil, 0, 1.3)
     for pos, id in pairs(spellTable) do
 		if spellData[id] == nil then
@@ -622,12 +623,12 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 			if not UI.GetPickerStatus("DisableSpellWobble") then
 				GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)--让法术摇摆
 			end
-			UI.MoveImageButton("__SPELL_" .. id, 0, 2, sprite, nil, SpellHover, SpellCilck, true, true)--最后两个参数是不始终调用点击回调和禁止移动
+			UI.MoveImageButton(fastConcatStr("__SPELL_", id), 0, 2, sprite, nil, SpellHover, SpellCilck, true, true)--最后两个参数是不始终调用点击回调和禁止移动
 			--绘制法术背景，深度要控制好
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
-			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_BG"), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
+			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_BG")), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			GuiImage(this.gui, this.NewID("__SPELL_" .. id .. "_SPELLBG"), -22, 0, SpellTypeBG[spellData[id].type], 1, 1)
+			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_SPELLBG")), -22, 0, SpellTypeBG[spellData[id].type], 1, 1)
         end)
 		this.SetZDeep(ZDeepest)
 		::continue::

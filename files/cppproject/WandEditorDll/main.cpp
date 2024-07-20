@@ -48,6 +48,16 @@ namespace lua {
 		lua_pushboolean(L,SetDllDirectoryA(str));
 		return 1;
 	}
+
+	int lua_ConcatStr(lua_State* L) {
+		int size = lua_gettop(L);
+		std::string result;
+		for (int i = 1; i <= size; i++) {
+			result += luaL_checkstring(L, i);
+		}
+		lua_pushstring(L, result.c_str());
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -63,6 +73,7 @@ static luaL_Reg luaLibs[] = {
 
 	{ "UTF8StringSize", lua::lua_UTF8StringSize},
 	{ "UTF8StringSub", lua::lua_UTF8StringSub},
+	{ "ConcatStr", lua::lua_ConcatStr},
 
 	{ "OpenMonitorLoadLuaLib",lua::MonitorNoitaLuaLoad},
 	

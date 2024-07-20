@@ -92,3 +92,8 @@ function Cpp.SetDllDirectory(str) end
 ---@param new_filename string
 ---@return integer
 function Cpp.Rename(old_filename, new_filename)end
+
+---拼接字符串
+---@param ... string
+---@return string
+function Cpp.ConcatStr(...)end

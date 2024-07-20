@@ -111,7 +111,7 @@ local function ShotListener(key, value)
 			return 0
 		else
 			if isAssign then
-                result[CurrentID].true_recoil = "=" .. tostring(value)
+                result[CurrentID].true_recoil = Cpp.ConcatStr("=", tostring(value))
             else
 				result[CurrentID].true_recoil = NumToWithSignStr(value)
 			end

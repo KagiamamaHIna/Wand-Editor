@@ -1,17 +1,18 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/gun/gun_enums.lua")
+local fastConcatStr = Cpp.ConcatStr
 local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, isAlways)
 	local this = UI
 	local BaseName = "Spell"
 	if isAlways then
-		BaseName = BaseName .. "_isAlways"
+		BaseName = fastConcatStr(BaseName, "_isAlways")
 	end
 	local srcDeep = this.GetZDeep()
     local BGAlpha = 1
 	if not isAlways then
-		local BGAlphaKey = id .. "LastWandContHoverAlpha" .. tostring(k)
-		local BGAlphaMaxKey = id .. "LastWandContHoverMax" .. tostring(k)
-		if this.UserData[id .. "LastWandContHover" .. tostring(k)] and v == "nil" and (not isAlways) then --法术为空的时候才渐变
+		local BGAlphaKey = fastConcatStr(id , "LastWandContHoverAlpha" , tostring(k))
+		local BGAlphaMaxKey = fastConcatStr(id , "LastWandContHoverMax" , tostring(k))
+		if this.UserData[fastConcatStr(id , "LastWandContHover" , tostring(k))] and v == "nil" and (not isAlways) then --法术为空的时候才渐变
 			if this.UserData[BGAlphaKey] == nil then                                   --格子渐变实现
 				this.UserData[BGAlphaKey] = 1
 				this.UserData[BGAlphaMaxKey] = 0.6
@@ -32,10 +33,10 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 	GuiZSetForNextWidget(this.gui, this.GetZDeep())
     this.SetZDeep(this.GetZDeep() - 1)
 	
-	GuiImage(this.gui, this.NewID(id .. BaseName.."full_BG" .. tostring(k)), 0, 0,
+	GuiImage(this.gui, this.NewID(fastConcatStr(id , BaseName, "full_BG" , tostring(k))), 0, 0,
         "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
 	local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
-	local CacheKey = id.."HoverCache"
+	local CacheKey = fastConcatStr(id, "HoverCache")
 	if UI.UserData[CacheKey] == nil then
 		local scale = UI.GetScale()
 		local _, my = InputGetMousePosOnScreen()
@@ -58,25 +59,88 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 	end
 
 	local highlight = false
-	if this.UserData["HasShiftClick"][wandEntity] and this.UserData["HasShiftClick"][wandEntity][1] == id and (not isAlways) then --判断是否要高亮
-		local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
-		local min = HasShiftClick[2]
-		local max = HasShiftClick[3] or min
-		if max < min then --计算是否要高亮
-			if k >= max and k <= min then
-				highlight = true
+    if this.UserData["HasShiftClick"][wandEntity] and this.UserData["HasShiftClick"][wandEntity][1] == id and (not isAlways) then --判断是否要高亮
+        local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
+        local min = HasShiftClick[2]
+        local max = HasShiftClick[3] or min
+        if max < min then --计算是否要高亮
+            if k >= max and k <= min then
+                highlight = true
+            end
+        else
+            if k >= min and k <= max then
+                highlight = true
+            end
+        end
+        if highlight then
+            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            this.SetZDeep(this.GetZDeep() - 1)
+            GuiImage(this.gui, this.NewID(fastConcatStr(id, "hgBG", tostring(k))), -22, 0,
+                "mods/wand_editor/files/gui/images/highlight.png", BGAlpha, 1)
+        end
+    end
+	if hover then
+		if isAlways then
+			if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
+				UI.BetterTooltips(function()
+					HoverDarwSpellText(UI, v.id, spellData[v.id],nil, GameTextGet("$wand_editor_always") .. tostring(k))
+				end, UI.GetZDeep()-114514, 8, 26)
+			else
+				GuiTooltip(UI.gui, GameTextGet("$wand_editor_always") .. tostring(k), "")
 			end
 		else
-			if k >= min and k <= max then
-				highlight = true
+			if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
+				UI.BetterTooltips(function()
+					local text
+					if v.uses_remaining ~= -1 then
+						text = GameTextGet("$wand_editor_slot",tostring(k)).." ("..GameTextGet("$inventory_usesremaining").." : "..v.uses_remaining..")"
+					else
+						text = GameTextGet("$wand_editor_slot",tostring(k))
+					end
+					HoverDarwSpellText(UI, v.id, spellData[v.id],v.uses_remaining, text)
+				end,UI.GetZDeep()-114514,8,26)
+			else
+				GuiTooltip(UI.gui,GameTextGet("$wand_editor_slot",tostring(k)),"")
 			end
 		end
-		if highlight then
-			GuiZSetForNextWidget(this.gui, this.GetZDeep())
-			this.SetZDeep(this.GetZDeep() - 1)
-			GuiImage(this.gui, this.NewID(id .. "hgBG" .. tostring(k)), -22, 0,
-				"mods/wand_editor/files/gui/images/highlight.png", BGAlpha, 1)
-		end
+	end
+
+    if v ~= "nil" and spellData[v.id] ~= nil then --绘制法术与背景
+        GuiZSetForNextWidget(this.gui, this.GetZDeep())
+        this.SetZDeep(this.GetZDeep() - 1)
+        GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "BG", v.id, tostring(k))), -22, 0,
+            SpellTypeBG[spellData[v.id].type],
+            1, 1)
+        GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
+        GuiZSetForNextWidget(this.gui, this.GetZDeep())
+        this.SetZDeep(this.GetZDeep() - 1)
+        if not UI.GetPickerStatus("DisableSpellWobble") then
+            GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
+        end
+        GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
+        GuiImageButton(this.gui, this.NewID(fastConcatStr(id, BaseName, v.id, tostring(k))), 0, 2, "",
+            spellData[v.id].sprite)
+        if isAlways then
+            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            this.SetZDeep(this.GetZDeep() - 1)
+            GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "Always", v.id, tostring(k))), 1, 0,
+                "mods/wand_editor/files/gui/images/always_icon.png",
+                1, 1)
+        end
+        if not isAlways and v ~= "nil" and v.uses_remaining ~= -1 then
+            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            this.SetZDeep(this.GetZDeep() - 1)
+            GuiText(UI.gui, 4, 2, tostring(v.uses_remaining), 1, "data/fonts/font_small_numbers.xml")
+        end
+        GuiLayoutEnd(this.gui)
+    end
+	if not isAlways then
+		this.UserData[fastConcatStr(id , "LastWandContHover" , tostring(k))] = hover
+        this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
+	end
+    if not hover then
+		this.SetZDeep(srcDeep) --恢复深度以解决奇怪深度问题
+		return
 	end
     if not isAlways then
         local CurrentWand
@@ -286,36 +350,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
             this.UserData["AlwaysClickFr"] = nil
         end
     end
-	if hover then
-		if isAlways then
-			if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
-				UI.BetterTooltips(function()
-					HoverDarwSpellText(UI, v.id, spellData[v.id],nil, GameTextGet("$wand_editor_always") .. tostring(k))
-				end, UI.GetZDeep()-114514, 8, 26)
-			else
-				GuiTooltip(UI.gui, GameTextGet("$wand_editor_always") .. tostring(k), "")
-			end
-		else
-			if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
-				UI.BetterTooltips(function()
-					local text
-					if v.uses_remaining ~= -1 then
-						text = GameTextGet("$wand_editor_slot",tostring(k)).." ("..GameTextGet("$inventory_usesremaining").." : "..v.uses_remaining..")"
-					else
-						text = GameTextGet("$wand_editor_slot",tostring(k))
-					end
-					HoverDarwSpellText(UI, v.id, spellData[v.id],v.uses_remaining, text)
-				end,UI.GetZDeep()-114514,8,26)
-			else
-				GuiTooltip(UI.gui,GameTextGet("$wand_editor_slot",tostring(k)),"")
-			end
-	
-		end
-	end
-
 	if not isAlways then
-		this.UserData[id .. "LastWandContHover" .. tostring(k)] = hover
-        this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
         if hover and InputIsKeyJustDown(Key_BACKSPACE) and highlight then --按下退格键多选删除法术
 			local HasShiftClick = this.UserData["HasShiftClick"][wandEntity]
 			local min = HasShiftClick[2]
@@ -337,33 +372,6 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 				RefreshHeldWands()
 			end)
 		end
-	end
-    if v ~= "nil" and spellData[v.id] ~= nil then --绘制法术与背景
-		GuiZSetForNextWidget(this.gui, this.GetZDeep())
-		this.SetZDeep(this.GetZDeep() - 1)
-		GuiImage(this.gui, this.NewID(id .. BaseName.. "BG" .. v.id .. tostring(k)), -22, 0, SpellTypeBG[spellData[v.id].type],
-			1, 1)
-		GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
-		GuiZSetForNextWidget(this.gui, this.GetZDeep())
-        this.SetZDeep(this.GetZDeep() - 1)
-		if not UI.GetPickerStatus("DisableSpellWobble") then
-			GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
-		end
-		GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
-        GuiImageButton(this.gui, this.NewID(id .. BaseName.. v.id .. tostring(k)), 0, 2, "", spellData[v.id].sprite)
-        if isAlways then
-            GuiZSetForNextWidget(this.gui, this.GetZDeep())
-            this.SetZDeep(this.GetZDeep() - 1)
-            GuiImage(this.gui, this.NewID(id .. BaseName .. "Always" .. v.id .. tostring(k)), 1, 0,
-                "mods/wand_editor/files/gui/images/always_icon.png",
-                1, 1)
-        end
-		if not isAlways and v ~= "nil" and v.uses_remaining ~= -1 then
-			GuiZSetForNextWidget(this.gui, this.GetZDeep())
-            this.SetZDeep(this.GetZDeep() - 1)
-            GuiText(UI.gui, 4, 2, tostring(v.uses_remaining),1,"data/fonts/font_small_numbers.xml")
-		end
-		GuiLayoutEnd(this.gui)
 	end
 	this.SetZDeep(srcDeep) --恢复深度以解决奇怪深度问题
 end

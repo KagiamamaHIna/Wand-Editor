@@ -1,4 +1,5 @@
 function GUIUpdate()
+	local fastConcatStr = Cpp.ConcatStr
 	if UI == nil then
 		--初始化
 		---@class Gui
@@ -50,7 +51,7 @@ function GUIUpdate()
 							GuiImage(UI.gui, UI.NewID("MoveSpell_BG"), movex - 2, movey - 2,
 								SpellTypeBG[spellData[id].type], 1, 1)                                         --绘制背景
 						end)
-					local LeftClick = (InputIsMouseButtonDown(Mouse_left) and not ModSettingGet(ModID.."SpellDepotCloseSpellOnGround"))
+					local LeftClick = (InputIsMouseButtonDown(Mouse_left) and not ModSettingGet(fastConcatStr(ModID, "SpellDepotCloseSpellOnGround")))
 					if not UI.UserData["WandContainerHasHover"] and LeftClick then
                         UI.UserData["SpellHoverEnable"] = true
                     elseif UI.UserData["WandContainerHasHover"] and LeftClick and not EntityHasTag(GetActiveItem() or 0, "wand") then
@@ -93,10 +94,10 @@ function GUIUpdate()
 			end
             --开启状态
             local spellDepotText = GameTextGet("$wand_editor_spell_depot")
-			if ModSettingGet(ModID.."SpellDepotCloseSpellOnGround") then
-                spellDepotText = spellDepotText .."\n".. GameTextGet("$wand_editor_spell_depot_close_tips")
+			if ModSettingGet(fastConcatStr(ModID,"SpellDepotCloseSpellOnGround")) then
+                spellDepotText = fastConcatStr(spellDepotText ,"\n", GameTextGet("$wand_editor_spell_depot_close_tips"))
             else
-				spellDepotText = spellDepotText .."\n".. GameTextGet("$wand_editor_spell_depot_open_tips")
+				spellDepotText = fastConcatStr(spellDepotText ,"\n", GameTextGet("$wand_editor_spell_depot_open_tips"))
 			end
 			UI.MoveImagePicker("SpellDepotBTN", PickerGap(0), y + 30, 8, 0, spellDepotText,
 				"mods/wand_editor/files/gui/images/spell_depot.png", nil, SpellDepotClickCB, nil, true, nil,
@@ -329,11 +330,11 @@ function GUIUpdate()
             end
 			local t = GetStorageComp(nil,nil,true)
             local _, m, d = GameGetDateAndTimeLocal()
-			if t[m][d] ~= nil and (not ModSettingGet(ModID.."Mama")) then
-				GamePrint("Happy Birthday! "..t[m][d])
-				ModSettingSet(ModID.."Mama", true)
-            elseif t[m][d] == nil and ModSettingGet(ModID.."Mama") then
-				ModSettingSet(ModID.."Mama", false)
+			if t[m][d] ~= nil and (not ModSettingGet(fastConcatStr(ModID,"Mama"))) then
+				GamePrint("Happy Birthday! ", t[m][d])
+				ModSettingSet(fastConcatStr(ModID,"Mama"), true)
+            elseif t[m][d] == nil and ModSettingGet(fastConcatStr(ModID,"Mama")) then
+				ModSettingSet(fastConcatStr(ModID,"Mama"), false)
 			end
 			if UI.GetPickerStatus("UnlimitedSpells") and not GameHasFlagRun("WandEditorUnlimitedSpells") then--无限法术切换
                 local player = GetPlayer()
