@@ -437,6 +437,7 @@ function EntityLoadChild(father, path)
 	return id
 end
 
+local L_EntityHasTag = EntityHasTag
 ---返回一个实体其子实体有对应标签的数组
 ---@param entity integer EntityID
 ---@param tag string
@@ -448,7 +449,7 @@ function EntityGetChildWithTag(entity, tag)
 		result = {}
 		local resultCount = 1
 		for _, v in pairs(child) do
-			if EntityHasTag(v, tag) then
+			if L_EntityHasTag(v, tag) then
 				result[resultCount] = v
 				resultCount = resultCount + 1
 			end
@@ -592,6 +593,9 @@ function RestoreInput()
 	end
 end
 
+local L_pairs = pairs
+local L_EntityGetFirstComponentIncludingDisabled = EntityGetFirstComponentIncludingDisabled
+local L_ComponentGetValue2 = ComponentGetValue2
 ---获取法杖的法术id列表
 ---@param entity integer
 ---@return table
@@ -604,14 +608,14 @@ function GetWandSpellIDs(entity)
 	local AlwaysCount = 0 --统计正确的容量用
 	local IndexZeroCount = 0 --有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
 	if spellEntitys ~= nil then
-		for _, v in pairs(spellEntitys) do
-			local ItemActionComp = EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
-			local ItemComp = EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
-			local isAlways = ComponentGetValue2(ItemComp, "permanently_attached")
-			local index = ComponentGetValue2(ItemComp, "inventory_slot")
-			local spellid = ComponentGetValue2(ItemActionComp, "action_id")
-            local is_frozen = ComponentGetValue2(ItemComp, "is_frozen")
-            local uses_remaining = ComponentGetValue2(ItemComp, "uses_remaining")
+		for _, v in L_pairs(spellEntitys) do
+			local ItemActionComp = L_EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
+			local ItemComp = L_EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
+			local isAlways = L_ComponentGetValue2(ItemComp, "permanently_attached")
+			local index = L_ComponentGetValue2(ItemComp, "inventory_slot")
+			local spellid = L_ComponentGetValue2(ItemActionComp, "action_id")
+            local is_frozen = L_ComponentGetValue2(ItemComp, "is_frozen")
+            local uses_remaining = L_ComponentGetValue2(ItemComp, "uses_remaining")
             if index == 0 and (not isAlways) then --当索引为0的时候
                 if IndexZeroCount > 0 then --判断数量
                     index = IndexZeroCount
@@ -621,7 +625,7 @@ function GetWandSpellIDs(entity)
 			if not isAlways then
 				spellList[index + 1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
             else
-				table.insert(result.always, { isAlways = isAlways, index = 0, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining })
+				result.always[#result.always + 1] = { isAlways = isAlways, index = 0, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
 			end
 			if isAlways then
 				AlwaysCount = AlwaysCount + 1
@@ -632,7 +636,7 @@ function GetWandSpellIDs(entity)
 		result.spells[i] = "nil"
 	end
 	--设置数据
-	for k, v in pairs(spellList) do
+	for k, v in L_pairs(spellList) do
 		result.spells[k] = v
 	end
 	return result

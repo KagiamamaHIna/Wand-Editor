@@ -133,9 +133,12 @@ function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargi
 			if y + yOffset > this.public.ScreenHeight * 0.5 then--自动上下切换
 				yOffset = -yOffset - OffsetH + height + 10
 			end
-			if y + yOffset- 10 < 0 then--上超出
-				yOffset = 0
-				y = 10
+            if y + yOffset - 10 < 0 then --上超出
+                yOffset = 0
+                y = 10
+            end
+			if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
+				y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
 			end
 			if x + OffsetW /2 + 10 + rightMargin > this.public.ScreenWidth then--右超出
 				xOffset = -((x + OffsetW) - this.public.ScreenWidth + rightMargin)
