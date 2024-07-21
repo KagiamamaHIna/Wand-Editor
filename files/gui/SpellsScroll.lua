@@ -311,15 +311,15 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
     local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
     local inf_spells_enable = ComponentGetValue2(comp_worldstate, "perk_infinite_spells")
 	
-	local rightMargin = 70
+	local rightMargin = 72
 	local function NewLine(str1, str2)
 		local text = GameTextGetTranslatedOrNot(str1)
 		local w = GuiGetTextDimensions(this.gui,text)
         GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 2, -1)
         GuiText(this.gui, 0, 0, text)
         GuiRGBAColorSetForNextWidget(this.gui, 255, 222, 173, 255)
-		if w + 10 > rightMargin then
-			GuiText(this.gui, w + 10 - w, 0, str2)
+		if w + 8 > rightMargin then
+			GuiText(this.gui, w + 8 - w, 0, str2)
         else
 			GuiText(this.gui, rightMargin - w, 0, str2)
 		end
@@ -353,6 +353,10 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
 	
 	if idata.draw_actions and idata.draw_actions ~= 0 then
 		NewLine("$wand_editor_draw_many", tostring(idata.draw_actions))
+	end
+
+	if idata.timerLifeTime then
+		NewLine("$wand_editor_timer_life_time", tostring(idata.timerLifeTime))
 	end
 
 	if idata.projComp and idata.projComp.damage ~= "0" then --如果有投射物伤害

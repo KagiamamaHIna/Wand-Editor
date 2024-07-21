@@ -94,6 +94,7 @@ local hasProj = {}
 draw_actions = function(draw)           --设置抽取数，当被调用时
 	result[CurrentID].draw_actions = draw
 end
+local isReaction = false
 
 --监听的数据
 current_reload_time = 0 --充能时间
@@ -105,6 +106,9 @@ ConfigGunShotEffects_Init(shot_effects) --初始化
 shot_effects.recoil_knockback = QuietNaN
 local isAssign = true
 local function ShotListener(key, value)
+	if isReaction then
+		return
+	end
 	if key == "recoil_knockback" then
 		if IsNaN(value) then
             isAssign = false
@@ -119,13 +123,78 @@ local function ShotListener(key, value)
 	end
 end
 
+--以下函数只会在程序从C++层面调用gun.lua的时候加载，其他情况下为nil，需要赋值函数来避免空报错
+RegisterGunAction = function()
+
+end
+
+RegisterGunShotEffects = function ()
+	
+end
+
+BeginTriggerTimer = function (timer)
+	result[CurrentID].timerLifeTime = timer
+end
+
+BeginTriggerHitWorld = function ()
+	
+end
+
+BeginTriggerDeath = function ()
+	
+end
+
+EndTrigger = function ()
+	
+end
+
+BeginProjectile = function ()
+	
+end
+
+EndProjectile = function ()
+	
+end
+
+SetProjectileConfigs = function ()
+	
+end
+
+StartReload = function ()
+	
+end
+
+ActionUsesRemainingChanged = function ()
+	return true
+end
+
+ActionUsed = function ()
+	
+end
+
+LogAction = function ()
+	
+end
+
+OnActionPlayed = function ()
+	
+end
+
+OnNotEnoughManaForAction = function ()
+	
+end
+
+BaabInstruction = function ()
+	
+end
+
 TableListener(shot_effects, ShotListener)
 local posX = 14600
 local posY = -45804
 
 reflecting = true
 Reflection_RegisterProjectile = function(filepath)
-	if not isAssign or filepath == nil then
+	if not isAssign or filepath == nil or isReaction then
 		return
 	end
 	--获取投射物数据，判断是否有缓存
@@ -225,6 +294,8 @@ local TypeToSpellListCount = {}
 local TypeToSpellList = {}
 TypeToSpellList.AllSpells = {}
 for k, v in pairs(actions or {}) do
+    isReaction = false
+	reflecting = true
 	result[v.id] = {}
 	CurrentID = v.id
     result[v.id].type = v.type
@@ -240,7 +311,7 @@ for k, v in pairs(actions or {}) do
 	result[v.id].name = v.name
 	result[v.id].description = v.description
 	result[v.id].sprite = v.sprite
-	result[v.id].mana = v.mana
+	result[v.id].mana = v.mana or ACTION_MANA_DRAIN_DEFAULT
     result[v.id].max_uses = v.max_uses
     result[v.id].spawn_probability = v.spawn_probability
     result[v.id].spawn_level = v.spawn_level
@@ -257,7 +328,12 @@ for k, v in pairs(actions or {}) do
 		result[v.id].shot = {}
 	end
     if not isAssign then
+		reflecting = false
         pcall(v.action)
+    else
+        isReaction = true
+		reflecting = false
+		pcall(v.action)
     end
     for shotkey, shotv in pairs(shot_effects()) do
         result[v.id].shot[shotkey] = shotv
@@ -292,21 +368,90 @@ for k, v in pairs(actions or {}) do
 	current_reload_time = 0
 end
 
-local file = io.open("mods/wand_editor/cache/ModEnable.lua", "w") --将模组启动情况写入文件
-file:write("return {\n" .. SerializeTable(ModIdToEnable, "") .. "}")
-file:close()
+local function SaveFile(effil,_ModIdToEnable,_result,_TypeToSpellList)
+    function SerializeTable(_tbl, indent)
+		tbl = effil.dump(_tbl)
+		indent = indent or ""
+		local parts = {}
+		local partsKey = 1
+		local L_SerializeTable = SerializeTable
+	
+		local format = string.format
+		local _tostr = tostring
+		local _type = type
+		local is_array = #tbl > 0 or tbl[0] ~= nil
+		for k, v in pairs(tbl) do
+			local key
+			if is_array and _type(k) == "number" then
+				key = format("[%s] = ", k)
+			else
+				key = format("[%q] = ", k)
+			end
+	
+			if _type(v) == "table" then
+				parts[partsKey] = format("%s%s{\n", indent, key)
+				parts[partsKey + 1] = L_SerializeTable(v, indent .. "    ")
+				parts[partsKey + 2] = format("%s},\n", indent)
+				partsKey = partsKey + 3
+			elseif _type(v) == "boolean" or _type(v) == "number" then
+				parts[partsKey] = format("%s%s%s,\n", indent, key, _tostr(v))
+				partsKey = partsKey + 1
+			else
+				parts[partsKey] = format("%s%s%q,\n", indent, key, v)
+				partsKey = partsKey + 1
+			end
+		end
+		return table.concat(parts)
+	end
+	local file = io.open("mods/wand_editor/cache/ModEnable.lua", "w") --将模组启动情况写入文件
+	file:write("return {\n" .. SerializeTable(_ModIdToEnable, "") .. "}")
+	file:close()
+	
+	file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓存写入文件
+	file:write("return {\n" .. SerializeTable(_result, "") .. "}")
+	file:close()
+	
+	file = io.open("mods/wand_editor/cache/TypeToSpellList.lua", "w") --法术列表缓存写入文件
+	file:write("return {\n" .. SerializeTable(_TypeToSpellList, "") .. "}")
+	file:close()
+end
+local runner = effil.thread(SaveFile)
+function DeepCopy(original)
+    local copy
+    if type(original) == 'table' then
+        copy = effil.table({})
+        for orig_key, orig_value in next, original, nil do
+            copy[DeepCopy(orig_key)] = DeepCopy(orig_value)
+        end
+    else -- 非表类型直接复制
+        copy = original
+    end
+    return copy
+end
 
-file = io.open("mods/wand_editor/cache/SpellsData.lua", "w") --法术缓存写入文件
-file:write("return {\n" .. SerializeTable(result, "") .. "}")
-file:close()
-
-file = io.open("mods/wand_editor/cache/TypeToSpellList.lua", "w") --法术列表缓存写入文件
-file:write("return {\n" .. SerializeTable(TypeToSpellList, "") .. "}")
-file:close()
+runner(effil,ModIdToEnable,DeepCopy(result),TypeToSpellList)
 
 reflecting = nil--删除变量
 current_reload_time = nil
 Reflection_RegisterProjectile = nil
 EntityAddTag(player, "player_unit") --恢复状态
+draw_actions = nil
+
+RegisterGunAction = nil
+RegisterGunShotEffects = nil
+BeginTriggerTimer = nil
+BeginTriggerHitWorld = nil
+BeginTriggerDeath = nil
+EndTrigger = nil
+BeginProjectile = nil
+EndProjectile = nil
+SetProjectileConfigs = nil
+StartReload = nil
+ActionUsesRemainingChanged = nil
+ActionUsed = nil
+LogAction = nil
+OnActionPlayed = nil
+OnNotEnoughManaForAction = nil
+BaabInstruction = nil
 
 return {result, TypeToSpellList}

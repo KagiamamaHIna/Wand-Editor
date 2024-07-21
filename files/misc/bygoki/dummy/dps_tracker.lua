@@ -99,7 +99,7 @@ function damage_received( damage, message, entity_thats_responsible, is_fatal )
     end
     total_damage = total_damage + damage;
     reset_frame = now + 60;
-    current = total_damage / math.ceil( math.max( now - first_hit_frame, 1 ) / 60 );
+    current = total_damage / math.ceil( math.max( now - first_hit_frame, 1 ) / 59 );
     current_true = total_damage / math.max(now_true - first_hit_time, 1);
 	local old_thousands_separator = thousands_separator
     local thousands_separator = function(num)
