@@ -966,7 +966,7 @@ function InitWand(wandData, wand, x, y)
                 EntityKill(spells[i])
             end
         end
-        for i = #wandData.spells.spells + 1, EntityGetWandCapacity(wand) do --超出的法术需要杀死
+        for i = #wandData.spells.spells + 1, EntityGetWandCapacity(wand) + #wandData.spells.always do --超出的法术需要杀死
             EntityKill(spells[i])
         end
         for i = #wandData.spells.always + 1, #Always do
