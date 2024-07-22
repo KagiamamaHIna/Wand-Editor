@@ -84,6 +84,9 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\rapidfuzz-cpp-3.0.4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

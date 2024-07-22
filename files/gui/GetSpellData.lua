@@ -373,13 +373,12 @@ local function SaveFile(effil, _ModIdToEnable, _result, _TypeToSpellList)
 		return table.concat({...})
 	end
     local function SerializeTable(_tbl, indent)
-		tbl = effil.dump(_tbl)
+		local tbl = effil.dump(_tbl)
 		indent = indent or ""
 		local parts = {}
 		local partsKey = 1
 		local L_SerializeTable = SerializeTable
 	
-		local format = string.format
 		local _tostr = tostring
 		local _type = type
 		local is_array = #tbl > 0 or tbl[0] ~= nil
