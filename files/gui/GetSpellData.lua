@@ -368,8 +368,11 @@ for k, v in pairs(actions or {}) do
 	current_reload_time = 0
 end
 
-local function SaveFile(effil,_ModIdToEnable,_result,_TypeToSpellList)
-    function SerializeTable(_tbl, indent)
+local function SaveFile(effil, _ModIdToEnable, _result, _TypeToSpellList)
+	local function fastConcatStr(...)
+		return table.concat({...})
+	end
+    local function SerializeTable(_tbl, indent)
 		tbl = effil.dump(_tbl)
 		indent = indent or ""
 		local parts = {}
@@ -383,21 +386,21 @@ local function SaveFile(effil,_ModIdToEnable,_result,_TypeToSpellList)
 		for k, v in pairs(tbl) do
 			local key
 			if is_array and _type(k) == "number" then
-				key = format("[%s] = ", k)
+				key = fastConcatStr("[",_tostr(k),"] = ")
 			else
-				key = format("[%q] = ", k)
+				key = fastConcatStr("[\"",_tostr(k),"\"] = ")
 			end
 	
 			if _type(v) == "table" then
-				parts[partsKey] = format("%s%s{\n", indent, key)
+				parts[partsKey] = fastConcatStr(indent,key,"{\n")
 				parts[partsKey + 1] = L_SerializeTable(v, indent .. "    ")
-				parts[partsKey + 2] = format("%s},\n", indent)
+				parts[partsKey + 2] = fastConcatStr(indent, "},\n")
 				partsKey = partsKey + 3
 			elseif _type(v) == "boolean" or _type(v) == "number" then
-				parts[partsKey] = format("%s%s%s,\n", indent, key, _tostr(v))
+				parts[partsKey] = fastConcatStr(indent, key, _tostr(v), ",\n")
 				partsKey = partsKey + 1
 			else
-				parts[partsKey] = format("%s%s%q,\n", indent, key, v)
+				parts[partsKey] = fastConcatStr(indent, key,'"',v,'",\n')
 				partsKey = partsKey + 1
 			end
 		end

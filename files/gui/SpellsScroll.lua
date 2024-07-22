@@ -356,7 +356,7 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
 	end
 
 	if idata.timerLifeTime then
-		NewLine("$wand_editor_timer_life_time", tostring(idata.timerLifeTime))
+		NewLine("$wand_editor_timer_life_time", tostring(idata.timerLifeTime).."f")
 	end
 
 	if idata.projComp and idata.projComp.damage ~= "0" then --如果有投射物伤害

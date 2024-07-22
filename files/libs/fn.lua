@@ -2,8 +2,14 @@ dofile_once("mods/wand_editor/files/libs/fp.lua")
 dofile_once("mods/wand_editor/files/libs/define.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 local noita_print = print
-local fastConcatStr = Cpp.ConcatStr
-
+local fastConcatStr
+if Cpp == nil then
+	fastConcatStr = function (...)
+		return table.concat({...})
+	end
+else
+	fastConcatStr = Cpp.ConcatStr
+end
 ---重新实现来模拟正确的print行为
 ---@param ... any
 print = function(...)
@@ -206,7 +212,7 @@ function SerializeTable(tbl, indent)
             parts[partsKey] = fastConcatStr(indent, key, _tostr(v), ",\n")
 			partsKey = partsKey + 1
         else
-			parts[partsKey] = fastConcatStr(indent, key,'"',v,'",')
+			parts[partsKey] = fastConcatStr(indent, key,'"',v,'",\n')
 			partsKey = partsKey + 1
         end
     end
