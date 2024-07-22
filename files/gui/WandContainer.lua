@@ -1,8 +1,20 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/gun/gun_enums.lua")
 local fastConcatStr = Cpp.ConcatStr
+---@class Gui
+local this = UI
+local L_tostring = tostring
+local L_GuiZSetForNextWidget = GuiZSetForNextWidget
+local L_GuiImage = GuiImage
+local L_GuiGetPreviousWidgetInfo = GuiGetPreviousWidgetInfo
+local L_GuiOptionsAddForNextWidget = GuiOptionsAddForNextWidget
+local L_GuiLayoutBeginHorizontal = GuiLayoutBeginHorizontal
+local L_GuiText = GuiText
+local L_GuiImageButton = GuiImageButton
+local L_GuiLayoutEnd = GuiLayoutEnd
+local L_SpellTypeBG = SpellTypeBG
+
 local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, isAlways)
-	local this = UI
 	local BaseName = "Spell"
 	if isAlways then
 		BaseName = fastConcatStr(BaseName, "_isAlways")
@@ -10,9 +22,9 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 	local srcDeep = this.GetZDeep()
     local BGAlpha = 1
 	if not isAlways then
-		local BGAlphaKey = fastConcatStr(id , "LastWandContHoverAlpha" , tostring(k))
-		local BGAlphaMaxKey = fastConcatStr(id , "LastWandContHoverMax" , tostring(k))
-		if this.UserData[fastConcatStr(id , "LastWandContHover" , tostring(k))] and v == "nil" and (not isAlways) then --法术为空的时候才渐变
+		local BGAlphaKey = fastConcatStr(id , "LastWandContHoverAlpha" , L_tostring(k))
+		local BGAlphaMaxKey = fastConcatStr(id , "LastWandContHoverMax" , L_tostring(k))
+		if this.UserData[fastConcatStr(id , "LastWandContHover" , L_tostring(k))] and v == "nil" and (not isAlways) then --法术为空的时候才渐变
 			if this.UserData[BGAlphaKey] == nil then                                   --格子渐变实现
 				this.UserData[BGAlphaKey] = 1
 				this.UserData[BGAlphaMaxKey] = 0.6
@@ -30,30 +42,30 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 		end
 	end
 
-	GuiZSetForNextWidget(this.gui, this.GetZDeep())
+	L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
     this.SetZDeep(this.GetZDeep() - 1)
 	
-	GuiImage(this.gui, this.NewID(fastConcatStr(id , BaseName, "full_BG" , tostring(k))), 0, 0,
+	L_GuiImage(this.gui, this.NewID(fastConcatStr(id , BaseName, "full_BG" , L_tostring(k))), 0, 0,
         "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
-	local click, _, hover, x, y = GuiGetPreviousWidgetInfo(this.gui)
+	local click, _, hover, x, y = L_GuiGetPreviousWidgetInfo(this.gui)
 	local CacheKey = fastConcatStr(id, "HoverCache")
-	if UI.UserData[CacheKey] == nil then
-		local scale = UI.GetScale()
+	if this.UserData[CacheKey] == nil then
+		local scale = this.GetScale()
 		local _, my = InputGetMousePosOnScreen()
 		my = my / scale
-		local ScrollY = UI.GetScrollY(ScrollID)
-		local ScrollH = UI.GetScrollHeight(ScrollID)
-		local ScrollMarginY = UI.GetScrollMY(ScrollID)
+		local ScrollY = this.GetScrollY(ScrollID)
+		local ScrollH = this.GetScrollHeight(ScrollID)
+		local ScrollMarginY = this.GetScrollMY(ScrollID)
         if ScrollY and ScrollMarginY and (my < ScrollY - ScrollMarginY or my > ScrollY + ScrollH + ScrollMarginY) then
-            UI.UserData[CacheKey] = true
+            this.UserData[CacheKey] = true
         else
-			UI.UserData[CacheKey] = UI.UserData[CacheKey] or false
+			this.UserData[CacheKey] = this.UserData[CacheKey] or false
         end
-		UI.OnceCallOnExecute(function ()
-			UI.UserData[CacheKey] = nil
+		this.OnceCallOnExecute(function ()
+			this.UserData[CacheKey] = nil
 		end)
 	end
-	if UI.UserData[CacheKey] then
+	if this.UserData[CacheKey] then
 		click = false
 		hover = false
 	end
@@ -73,69 +85,69 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
             end
         end
         if highlight then
-            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
             this.SetZDeep(this.GetZDeep() - 1)
-            GuiImage(this.gui, this.NewID(fastConcatStr(id, "hgBG", tostring(k))), -22, 0,
+            L_GuiImage(this.gui, this.NewID(fastConcatStr(id, "hgBG", L_tostring(k))), -22, 0,
                 "mods/wand_editor/files/gui/images/highlight.png", BGAlpha, 1)
         end
     end
 	if hover then
 		if isAlways then
-			if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
-				UI.BetterTooltips(function()
-					HoverDarwSpellText(UI, v.id, spellData[v.id],nil, GameTextGet("$wand_editor_always") .. tostring(k))
-				end, UI.GetZDeep()-114514, 8, 26)
+			if v ~= "nil" and not this.GetPickerStatus("DisableSpellHover") then
+				this.BetterTooltips(function()
+					HoverDarwSpellText(this, v.id, spellData[v.id],nil, GameTextGet("$wand_editor_always") .. L_tostring(k))
+				end, this.GetZDeep()-114514, 8, 26)
 			else
-				GuiTooltip(UI.gui, GameTextGet("$wand_editor_always") .. tostring(k), "")
+				GuiTooltip(this.gui, GameTextGet("$wand_editor_always") .. L_tostring(k), "")
 			end
 		else
-			if v ~= "nil" and not UI.GetPickerStatus("DisableSpellHover") then
-				UI.BetterTooltips(function()
+			if v ~= "nil" and not this.GetPickerStatus("DisableSpellHover") then
+				this.BetterTooltips(function()
 					local text
 					if v.uses_remaining ~= -1 then
-						text = GameTextGet("$wand_editor_slot",tostring(k)).." ("..GameTextGet("$inventory_usesremaining").." : "..v.uses_remaining..")"
+						text = GameTextGet("$wand_editor_slot",L_tostring(k)).." ("..GameTextGet("$inventory_usesremaining").." : "..v.uses_remaining..")"
 					else
-						text = GameTextGet("$wand_editor_slot",tostring(k))
+						text = GameTextGet("$wand_editor_slot",L_tostring(k))
 					end
-					HoverDarwSpellText(UI, v.id, spellData[v.id],v.uses_remaining, text)
-				end,UI.GetZDeep()-114514,8,26)
+					HoverDarwSpellText(this, v.id, spellData[v.id],v.uses_remaining, text)
+				end,this.GetZDeep()-114514,8,26)
 			else
-				GuiTooltip(UI.gui,GameTextGet("$wand_editor_slot",tostring(k)),"")
+				GuiTooltip(this.gui,GameTextGet("$wand_editor_slot",L_tostring(k)),"")
 			end
 		end
 	end
 
     if v ~= "nil" and spellData[v.id] ~= nil then --绘制法术与背景
-        GuiZSetForNextWidget(this.gui, this.GetZDeep())
+        L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
         this.SetZDeep(this.GetZDeep() - 1)
-        GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "BG", v.id, tostring(k))), -22, 0,
-            SpellTypeBG[spellData[v.id].type],
+        L_GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "BG", v.id, L_tostring(k))), -22, 0,
+			L_SpellTypeBG[spellData[v.id].type],
             1, 1)
-        GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
-        GuiZSetForNextWidget(this.gui, this.GetZDeep())
+        L_GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
+        L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
         this.SetZDeep(this.GetZDeep() - 1)
-        if not UI.GetPickerStatus("DisableSpellWobble") then
-            GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
+        if not this.GetPickerStatus("DisableSpellWobble") then
+            L_GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
         end
-        GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
-        GuiImageButton(this.gui, this.NewID(fastConcatStr(id, BaseName, v.id, tostring(k))), 0, 2, "",
+        L_GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
+        L_GuiImageButton(this.gui, this.NewID(fastConcatStr(id, BaseName, v.id, L_tostring(k))), 0, 2, "",
             spellData[v.id].sprite)
         if isAlways then
-            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
             this.SetZDeep(this.GetZDeep() - 1)
-            GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "Always", v.id, tostring(k))), 1, 0,
+            L_GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "Always", v.id, L_tostring(k))), 1, 0,
                 "mods/wand_editor/files/gui/images/always_icon.png",
                 1, 1)
         end
         if not isAlways and v ~= "nil" and v.uses_remaining ~= -1 then
-            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
             this.SetZDeep(this.GetZDeep() - 1)
-            GuiText(UI.gui, 4, 2, tostring(v.uses_remaining), 1, "data/fonts/font_small_numbers.xml")
+            L_GuiText(this.gui, 4, 2, L_tostring(v.uses_remaining), 1, "data/fonts/font_small_numbers.xml")
         end
-        GuiLayoutEnd(this.gui)
+        L_GuiLayoutEnd(this.gui)
     end
 	if not isAlways then
-		this.UserData[fastConcatStr(id , "LastWandContHover" , tostring(k))] = hover
+		this.UserData[fastConcatStr(id , "LastWandContHover" , L_tostring(k))] = hover
         this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
 	end
     if not hover then
@@ -378,9 +390,9 @@ end
 
 local LastWand
 local LastCapacity = 0
-function DrawWandContainer(this, wandEntity, spellData)
-    local srcZDeep = UI.GetZDeep()
-	UI.SetZDeep(srcZDeep + 1000)
+function DrawWandContainer(wandEntity, spellData)
+    local srcZDeep = this.GetZDeep()
+	this.SetZDeep(srcZDeep + 1000)
 	if this.UserData["HasShiftClick"] == nil then
 		this.UserData["HasShiftClick"] = {}
 	else
@@ -394,7 +406,8 @@ function DrawWandContainer(this, wandEntity, spellData)
 	if wandEntity == nil then
 		Skip = true
 	end
-	local wandData = GetWandData(wandEntity)
+    local wandData = GetWandData(wandEntity)
+	
 	local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
 	local FixedWand
 	if this.UserData["FixedWand"] then
@@ -416,15 +429,13 @@ function DrawWandContainer(this, wandEntity, spellData)
         if HScrollWidth == nil or LastWand ~= wandEntity or this.UserData["NextResetHScroll"] then --自动居中
             HScrollX = this.ScreenWidth * 2
             HScrollY = this.ScreenHeight * 2
-			this.UserData["NextResetHScroll"] = false
+            this.UserData["NextResetHScroll"] = false
         elseif HScrollWidth < TrueWidth and HScrollWidth ~= 0 then
             TrueWidth = HScrollWidth
             HScrollX = this.ScreenWidth * 0.5 - HScrollWidth / 2
         end
-        local thisDecks = wandData.deck_capacity
-        if wandData.spells then
-            thisDecks = thisDecks + #wandData.spells.always
-        end
+        local Ability = EntityGetFirstComponentIncludingDisabled(wandEntity, "AbilityComponent")
+		local thisDecks = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity")
         if LastCapacity ~= thisDecks then --如果不一致就刷新数据
 			this.UserData["NextResetHScroll"] = true
 			this.OnceCallOnExecute(function ()
@@ -432,10 +443,7 @@ function DrawWandContainer(this, wandEntity, spellData)
 			end)
         end
 		if wandData then--执行顺序问题，先放这里防止始终数量更改
-			LastCapacity = wandData.deck_capacity
-			if wandData.spells then
-				LastCapacity = LastCapacity + #wandData.spells.always
-			end
+			LastCapacity = thisDecks
 		end
 	end
 
@@ -444,7 +452,7 @@ function DrawWandContainer(this, wandEntity, spellData)
 	this.HorizontalScroll("WandContainer", HScrollX, HScrollY, TrueWidth, 20, false, 0, 0)
 
 	local ViewerHover = function()
-		local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
+		local _, _, hover = L_GuiGetPreviousWidgetInfo(this.gui)
 		local tip = GameTextGet("$wand_editor_wand_spell_viewer_tip_close")
         if this.UserData["FixedWand"] then
             tip = GameTextGet("$wand_editor_wand_spell_viewer_tip_open")
@@ -479,23 +487,23 @@ function DrawWandContainer(this, wandEntity, spellData)
 					end)
 			end
 			if this.UserData["FixedWand"] then
-				this.UserData["FixedWand"][1] = GetWandData(ViewerWandEntity)
+                this.UserData["FixedWand"][1] = GetWandData(ViewerWandEntity)
 			end
-			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			this.DrawScrollContainer("WandSpellViewerContainer", not UI.GetPickerStatus("KeyBoardInput"))
+			L_GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
+			this.DrawScrollContainer("WandSpellViewerContainer", not this.GetPickerStatus("KeyBoardInput"))
 		end
 	end
 	local ViewerClick = function(left_click)
-        if left_click or (InputIsKeyDown(Key_GRAVE) and UI.UserData["ViewerCKeyDown"] == nil) then --点击左键就存储数据
-			UI.UserData["ViewerCKeyDown"] = true
+        if left_click or (InputIsKeyDown(Key_GRAVE) and this.UserData["ViewerCKeyDown"] == nil) then --点击左键就存储数据
+			this.UserData["ViewerCKeyDown"] = true
             if this.UserData["FixedWand"] == nil then
                 this.UserData["FixedWand"] = { wandData, wandEntity }
             else
                 this.UserData["FixedWand"] = nil
             end
-        elseif not InputIsKeyDown(Key_GRAVE) and UI.UserData["ViewerCKeyDown"] then
+        elseif not InputIsKeyDown(Key_GRAVE) and this.UserData["ViewerCKeyDown"] then
 			RestoreInput()
-			UI.UserData["ViewerCKeyDown"] = nil
+			this.UserData["ViewerCKeyDown"] = nil
         end
 		if left_click then
 			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
@@ -503,11 +511,11 @@ function DrawWandContainer(this, wandEntity, spellData)
 	end
 	--为了实现，满足条件下即使玩家也不拿着法杖，也会绘制这些控件
 	if not Skip then
-		GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
+		L_GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
 		this.MoveImageButton("WandSpellViewerBTN", HScrollX + 3, this.ScreenHeight - 53.5,
 			"mods/wand_editor/files/gui/images/wand_spell_viewer.png", nil, ViewerHover, ViewerClick, nil, true)
 	elseif this.UserData["FixedWand"] then
-		GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
+		L_GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
 		this.MoveImageButton("WandSpellViewerBTN", 235, 64, "mods/wand_editor/files/gui/images/wand_spell_viewer.png", nil,
 			ViewerHover, ViewerClick, nil, true)
 	end
@@ -529,5 +537,5 @@ function DrawWandContainer(this, wandEntity, spellData)
         this.DarwHorizontalScroll("WandContainer")
         LastWand = wandEntity
     end
-	UI.SetZDeep(srcZDeep)
+	this.SetZDeep(srcZDeep)
 end

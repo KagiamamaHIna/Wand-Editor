@@ -470,7 +470,7 @@ function GUIUpdate()
                 DrawDamageInfo()
             end
 			if not UI.GetPickerStatus("SpellDepotBTN") and UI.GetPickerStatus("AlwaysDrawWandEditBox") and UI.GetPickerStatus("WandContainerBTN") then
-				DrawWandContainer(UI, Compose(GetEntityHeldWand, GetPlayer)(), spellData)
+				DrawWandContainer(Compose(GetEntityHeldWand, GetPlayer)(), spellData)
 			end
 		end
 	end

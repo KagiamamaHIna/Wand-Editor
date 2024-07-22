@@ -533,7 +533,9 @@ function UI.ScrollContainer(id, x, y, w, h, margin_x, margin_y, scale)
 	if this.private.ScrollData[newid] == nil then--判断是否有数据
         this.private.ScrollData[newid] = { id = id, x = x, y = y, w = w, h = h, margin_x = margin_x, margin_y = margin_y,scale = scale }--初始化数据
         this.private.ScrollData[newid].Item = {}
-		this.private.ScrollData[newid].Any = {}
+        this.private.ScrollData[newid].Any = {}
+		this.private.ScrollData[newid].ItemK = 1
+		this.private.ScrollData[newid].AnyK = 1
 	end
 end
 
@@ -575,7 +577,8 @@ end
 function UI.AddAnywhereItem(id, callback)
 	local newid = ConcatModID(id)
     if this.private.ScrollData[newid] then --判断是否有数据
-		table.insert(this.private.ScrollData[newid].Any, callback)
+		this.private.ScrollData[newid].Any[this.private.ScrollData[newid].AnyK] = callback
+		this.private.ScrollData[newid].AnyK = this.private.ScrollData[newid].AnyK + 1
 	end
 end
 
@@ -586,7 +589,8 @@ end
 function UI.AddScrollImageItem(id, image, callback)
 	local newid = ConcatModID(id)
     if this.private.ScrollData[newid] then --判断是否有数据
-		table.insert(this.private.ScrollData[newid].Item, {CB = callback,image = image})
+		this.private.ScrollData[newid].Item[this.private.ScrollData[newid].ItemK] = {CB = callback,image = image}
+		this.private.ScrollData[newid].ItemK = this.private.ScrollData[newid].ItemK + 1
 	end
 end
 
@@ -596,8 +600,9 @@ end
 ---@param callback? function|nil
 function UI.AddScrollTextItem(id, text, callback)
 	local newid = ConcatModID(id)
-	if this.private.ScrollData[newid] then--判断是否有数据
-		table.insert(this.private.ScrollData[newid].Item, {CB = callback,text = text})
+    if this.private.ScrollData[newid] then --判断是否有数据
+		this.private.ScrollData[newid].Item[this.private.ScrollData[newid].ItemK] = {CB = callback,text = text}
+		this.private.ScrollData[newid].ItemK = this.private.ScrollData[newid].ItemK + 1
 	end
 end
 
@@ -974,6 +979,7 @@ function UI.HorizontalScroll(id, x, y, w, h, DarwContainer, margin_x, margin_y)
     if this.private.HScrollData[newid] == nil then                                                                         --判断是否有数据
         this.private.HScrollData[newid] = { id = id, x = x, y = y, w = w, h = h, margin_x = margin_x, margin_y = margin_y, DarwContainer = DarwContainer } --初始化数据
         this.private.HScrollData[newid].Item = {}
+		this.private.HScrollData[newid].ItemK = 1
     end
 	if this.private.HScrollSlider[newid] == nil then
 		this.private.HScrollSlider[newid] = {}
@@ -986,7 +992,8 @@ end
 function UI.AddHScrollItem(id, callback)
 	local newid = ConcatModID(id)
     if this.private.HScrollData[newid] then --判断是否有数据
-		table.insert(this.private.HScrollData[newid].Item, callback)
+        this.private.HScrollData[newid].Item[this.private.HScrollData[newid].ItemK] = callback
+		this.private.HScrollData[newid].ItemK = this.private.HScrollData[newid].ItemK + 1
 	end
 end
 

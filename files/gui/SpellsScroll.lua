@@ -241,7 +241,7 @@ function SpellDepotClickCB(_, right_click, _, _, depot_enable)
 
 	local function WandContainerClickCB(_, _, _, _, WandContainer_enable)
 		if WandContainer_enable then
-			DrawWandContainer(UI, GetPlayerWandID(), spellData)
+			DrawWandContainer(GetPlayerWandID(), spellData)
 		end
 	end
     local wandEditBoxText = GameTextGet("$wand_editor_wand_edit_box")

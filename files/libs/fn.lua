@@ -2,6 +2,7 @@ dofile_once("mods/wand_editor/files/libs/fp.lua")
 dofile_once("mods/wand_editor/files/libs/define.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 local noita_print = print
+local fastConcatStr = Cpp.ConcatStr
 
 ---重新实现来模拟正确的print行为
 ---@param ... any
@@ -169,10 +170,10 @@ end
 ---@param v any
 ---@return any
 function Default(arg, v)
-	if arg == nil then
-		return v
-	end
-	return arg
+    if arg == nil then
+        return v
+    end
+    return arg
 end
 
 --- 序列化函数，将table转换成lua代码
@@ -185,28 +186,27 @@ function SerializeTable(tbl, indent)
     local partsKey = 1
 	local L_SerializeTable = SerializeTable
 
-    local format = string.format
     local _tostr = tostring
 	local _type = type
     local is_array = #tbl > 0 or tbl[0] ~= nil
     for k, v in pairs(tbl) do
         local key
         if is_array and _type(k) == "number" then
-            key = format("[%s] = ", k)
+			key = fastConcatStr("[",_tostr(k),"] = ")
         else
-            key = format("[%q] = ", k)
+			key = fastConcatStr("[\"",_tostr(k),"\"] = ")
         end
 
         if _type(v) == "table" then
-            parts[partsKey] = format("%s%s{\n", indent, key)
+			parts[partsKey] = fastConcatStr(indent,key,"{\n")
             parts[partsKey + 1] = L_SerializeTable(v, indent .. "    ")
-            parts[partsKey + 2] = format("%s},\n", indent)
+            parts[partsKey + 2] = fastConcatStr(indent, "},\n")
 			partsKey = partsKey + 3
         elseif _type(v) == "boolean" or _type(v) == "number" then
-            parts[partsKey] = format("%s%s%s,\n", indent, key, _tostr(v))
+            parts[partsKey] = fastConcatStr(indent, key, _tostr(v), ",\n")
 			partsKey = partsKey + 1
         else
-			parts[partsKey] = format("%s%s%q,\n", indent, key, v)
+			parts[partsKey] = fastConcatStr(indent, key,'"',v,'",')
 			partsKey = partsKey + 1
         end
     end
