@@ -152,3 +152,8 @@ wand_editor_pin_add_tip,Right click to attach a $0 pin,,,,,,,,按下右键挂上
 wand_editor_pin_del_tip,Right click to remove $0 pin,,,,,,,,按下右键移除$0图钉,,,,,,,
 wand_editor_disable_spell_hover,Disable Edit Box Spell Hover Info,,,,,,,,禁止编辑框中法术悬浮信息,,,,,,,
 wand_editor_wand_builder_slider_tips,"Press +/- or arrow keys left/right +1/-1, hold down for continuous execution.\nHold shift to perform the above operation will multiply by ten.",,,,,,,,按下 +/-或 方向键左/右键 +1/-1，长按会连续执行。\n按住shift执行上述操作将乘以十。,,,,,,,
+wand_editor_reset_btn_pos,Reset all button positions,,,,,,,,重置所有按钮位置,,,,,,,
+wand_editor_reset_btn_pos_tip,Clicking on it will reset all the buttons to their default positions.,,,,,,,,点击将会重新设置所有的按钮位置到默认位置,,,,,,,
+wand_editor_reset_btn_pos_IKnowWhatImDoing,"This action cannot be undone, click again to confirm",,,,,,,,此操作不可撤销，再点击一次确认,,,,,,,
+wand_editor_no_spell_cache,Spell Data Cache,,,,,,,,法术数据缓存,,,,,,,
+wand_editor_no_spell_cache_tip,The generated spell data will no longer be cached after close,,,,,,,,关闭后将不再对生成的法术数据进行缓存操作,,,,,,,

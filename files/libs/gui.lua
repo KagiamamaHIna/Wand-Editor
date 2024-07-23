@@ -35,6 +35,7 @@ local this = {
 		TooltipsData = nil,
 		TooltipsHover = false,
 		ConcatCache = {},
+		ResetAllCanMove = nil,
 
 		RefreshScale = RefreshScaleTime,
 	},
@@ -106,6 +107,55 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
 		GuiLayoutEndLayer(gui)
+	end
+end
+
+---组件悬浮窗提示,应当在一个组件后面使用
+---@param callback function
+---@param z integer?
+---@param xOffset integer?
+---@param yOffset integer?
+function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, rightMargin)
+	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
+        GuiGetPreviousWidgetInfo(this.public.gui)
+    this.private.TooltipsHover = this.private.TooltipsHover or hover
+    if hover then
+		local gui = this.public.gui
+		xOffset = Default(xOffset, 0)
+    	yOffset = Default(yOffset, 0)
+    	leftMargin = Default(leftMargin, 10)
+		rightMargin = Default(rightMargin, 10)
+		z = Default(z, DefaultZDeep)
+		if this.private.TooltipsData then
+			local OffsetW = this.private.TooltipsData[6]
+			local OffsetH = this.private.TooltipsData[7]
+			if x > this.public.ScreenWidth / 2 then
+                xOffset = xOffset - OffsetW - width/2
+            else
+				xOffset = xOffset + width
+			end
+
+            if y + yOffset - 10 < 0 then --上超出
+                yOffset = 0
+                y = 10
+            end
+			if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
+				y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
+			end
+
+		else
+			yOffset = 4000
+		end
+		GuiZSet(gui, z)
+        GuiLayoutBeginLayer(gui)
+        GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
+		GuiBeginAutoBox(gui)
+        callback()
+		GuiZSetForNextWidget(gui, z + 1)
+		GuiEndAutoBoxNinePiece(gui)
+		GuiLayoutEnd(gui)
+        GuiLayoutEndLayer(gui)
+		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
 	end
 end
 
@@ -348,16 +398,18 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, StatusCustomText, 
     local function Hover()
         local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)
 		this.private.CompToPickerHoverBool[newid]= hover
-        UI.tooltips(function()
+        UI.BetterTooltipsNoCenter(function()
             GuiText(this.public.gui, 0, 0, Content)
             if id == "MainButton" then
                 GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
                 GuiText(this.public.gui, 0, 2, ModVersion)
+				GuiLayoutAddVerticalSpacing(this.public.gui, 2)
             end
 			GuiZSet(this.public.gui, this.private.ZDeep)
 			
             if not noMove then
                 local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+				GuiZSetForNextWidget(this.public.gui, DefaultZDeep-114514)
                 if CTRL then
                     GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
                     GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
@@ -366,7 +418,7 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, StatusCustomText, 
                     GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
                 end
             end
-        end, DefaultZDeep-100, mx, my, NoYAutoMove)
+        end, DefaultZDeep-100, mx, my)
     end
     local function Click(left_click, right_click, ix, iy)
         if ClickCallBack ~= nil then
@@ -414,6 +466,10 @@ function UI.GetNoMoveBool()
 	return this.private.NextFrNoClick
 end
 
+function UI.ResetAllCanMove()
+	this.private.ResetAllCanMove = {}
+end
+
 ---一个较为通用的让控件可以移动并设置的函数
 ---@param id string
 ---@param s_x number
@@ -433,7 +489,6 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 	local true_s_x = s_x
 	local true_s_y = s_y
 	local newid = ConcatModID(id)
-	local moveid = "move_" .. id
 	noSetting = Default(noSetting, false)
     AlwaysCBClick = Default(AlwaysCBClick, false)
 	noMove = Default(noMove, false)
@@ -442,17 +497,18 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 	local numID = UI.NewID(id)
 	local Xname = newid .. "x"
 	local Yname = newid .. "y"
-	local CanMoveStr = "on_move_" .. id
+    local CanMoveStr = "on_move_" .. id
+    if this.private.ResetAllCanMove ~= nil and this.private.ResetAllCanMove[newid] == nil then
+		ModSettingRemove(Xname) --恢复默认设置
+		ModSettingRemove(Yname)
+		this.private.ResetAllCanMove[newid] = true
+	end
 	if not ModSettingGet(CanMoveStr) or noMove then --非移动状态
 		if not noSetting and not noMove then
-			if ModSettingGet(Xname) == nil then
-				ModSettingSet(Xname, s_x)
-			else
+			if ModSettingGet(Xname) ~= nil then--没有设置就使用默认坐标
 				s_x = ModSettingGet(Xname)
 			end
-			if ModSettingGet(Yname) == nil then
-				ModSettingSet(Yname, s_y)
-			else
+			if ModSettingGet(Yname) ~= nil then
 				s_y = ModSettingGet(Yname)
 			end
 		end
@@ -466,8 +522,8 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 			ModSettingSet(CanMoveStr, true)
 		elseif (not hasMove) or AlwaysCBClick then --其他按钮没有移动的时候
             if right_click and not noMove then --如果按下右键，且是非移动的
-                ModSettingSet(Xname, true_s_x) --恢复默认设置
-                ModSettingSet(Yname, true_s_y)
+                ModSettingRemove(Xname) --恢复默认设置
+                ModSettingRemove(Yname)
             end
 			if HoverUseCallBack ~= nil then
 				HoverUseCallBack()

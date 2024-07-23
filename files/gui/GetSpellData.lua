@@ -34,21 +34,26 @@ local function GetModEnableList()
 	return ModIdToEnable
 end
 local mustReload = false
-if ModSettingGet(ModID.."VerHash") == nil then--如果为空就尝试进行初始化
-	local hashPath = Cpp.CurrentPath().."/_version_hash.txt"
-    if Cpp.PathExists(hashPath) then
-        ModSettingSet(ModID .. "VerHash", ReadFileAll(hashPath))
-    end
-else
-	local hashPath = Cpp.CurrentPath().."/_version_hash.txt"
-    if Cpp.PathExists(hashPath) then--如果发现有的话就读取
-        local newHash = ReadFileAll(hashPath)
-		if newHash ~= ModSettingGet(ModID.."VerHash") then--不一致就设置新的
-            ModSettingSet(ModID .. "VerHash", ReadFileAll(hashPath))
-			mustReload = true --并且要刷新
-		end
-    end
+if not ModSettingGet("wand_editor.cache_spell_data") then
+    mustReload = true
 end
+if not mustReload then
+	if ModSettingGet(ModID.."VerHash") == nil then--如果为空就尝试进行初始化
+		local hashPath = Cpp.CurrentPath().."/_version_hash.txt"
+		if Cpp.PathExists(hashPath) then
+			ModSettingSet(ModID .. "VerHash", ReadFileAll(hashPath))
+		end
+	else
+		local hashPath = Cpp.CurrentPath().."/_version_hash.txt"
+		if Cpp.PathExists(hashPath) then--如果发现有的话就读取
+			local newHash = ReadFileAll(hashPath)
+			if newHash ~= ModSettingGet(ModID.."VerHash") then--不一致就设置新的
+				ModSettingSet(ModID .. "VerHash", ReadFileAll(hashPath))
+				mustReload = true --并且要刷新
+			end
+		end
+	end
+end 
 
 if ModSettingGet(ModID.."ReloadSpellData") then
     mustReload = true
@@ -417,12 +422,11 @@ local function SaveFile(effil, _ModIdToEnable, _result, _TypeToSpellList)
 	file:write("return {\n" .. SerializeTable(_TypeToSpellList, "") .. "}")
 	file:close()
 end
-local runner = effil.thread(SaveFile)
 function DeepCopy(original)
     local copy
     if type(original) == 'table' then
         copy = effil.table({})
-        for orig_key, orig_value in next, original, nil do
+        for orig_key, orig_value in pairs(original) do
             copy[DeepCopy(orig_key)] = DeepCopy(orig_value)
         end
     else -- 非表类型直接复制
@@ -430,8 +434,10 @@ function DeepCopy(original)
     end
     return copy
 end
-
-runner(effil,ModIdToEnable,DeepCopy(result),TypeToSpellList)
+if ModSettingGet("wand_editor.cache_spell_data") then
+	local runner = effil.thread(SaveFile)
+	runner(effil,ModIdToEnable,DeepCopy(result),TypeToSpellList)
+end
 
 reflecting = nil--删除变量
 current_reload_time = nil

@@ -88,10 +88,11 @@ function GUIUpdate()
 		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN", "ToggleOptionsBTN", "SpwanDummyBTN")
         UI.SetCheckboxEnable("shuffle_builder", false)
 		UI.SetCheckboxEnable("update_image_builder", false)
-		local MainCB = function(left_click, right_click, x, y, enable)
-			if not enable then
-				return
-			end
+		local MainCB = function(left_click, right_click, x, _, enable)
+            if not enable then
+                return
+            end
+			local y = 12
             --开启状态
             local spellDepotText = GameTextGet("$wand_editor_spell_depot")
 			if ModSettingGet(fastConcatStr(ModID,"SpellDepotCloseSpellOnGround")) then
@@ -204,8 +205,12 @@ function GUIUpdate()
 		end
 		---@param this Gui
         UI.TickEventFn["main"] = function(this) --我认为的主事件循环）
-			if CSV == nil then
-				CSV = dofile_once("mods/wand_editor/files/libs/csv.lua")(ModTextFileGetContent("data/translations/common.csv"))
+            if CSV == nil then
+                CSV = dofile_once("mods/wand_editor/files/libs/csv.lua")(ModTextFileGetContent("data/translations/common.csv"))
+            end
+            if ModSettingGet("wand_editor.reset_all_btn") then
+				UI.ResetAllCanMove()
+                ModSettingSet("wand_editor.reset_all_btn", false)
 			end
             if GameIsInventoryOpen() or GetPlayer() == nil then
                 return
@@ -222,7 +227,7 @@ function GUIUpdate()
 			end
 			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
 			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
-				"mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, true)
+				"mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, false)
         end
 		
         UI.TickEventFn["RequestAvatar"] = function()

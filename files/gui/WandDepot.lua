@@ -266,7 +266,7 @@ local function DrawWandSlot(id, k, wand)
             GuiLayoutEnd(UI.gui)
         end
         local SecondWithSign = Compose(NumToWithSignStr, tonumber, FrToSecondStr)
-        UI.tooltips(function()
+        UI.BetterTooltipsNoCenter(function()
             GuiLayoutBeginVertical(UI.gui, 0, 0, true)
             if InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL) then
                 local shuffle

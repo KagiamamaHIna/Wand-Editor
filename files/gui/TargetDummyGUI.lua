@@ -60,7 +60,7 @@ function SpwanDummyCB(_, _, _, _, this_enable)
     if not this_enable then
         return
     end
-	local ContainerH = 203
+	local ContainerH = 210
     UI.ScrollContainer("SpwanDummyOptions", 20, 64, 268, ContainerH, 2, 2)
     UI.AddAnywhereItem("SpwanDummyOptions", function()
         GuiLayoutBeginVertical(UI.gui, 0, 0, true)

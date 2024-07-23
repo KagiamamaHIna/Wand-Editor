@@ -373,12 +373,8 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 	if UI.GetPickerStatus("ReloadSpellData") then
 		reloadText = reloadText .."\n".. GameTextGet("$menu_mods_help_paused")
 	end
-	UI.MoveImagePicker("ReloadSpellData", PickerGap(2), iy + 60, 8, 0, reloadText,
-        "mods/wand_editor/files/gui/images/reload_spell_data.png", nil, nil, nil, true, true, true)
-
-	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, function()
-        local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
+	local ModAboutCB = function ()
+		local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
 		UI.tooltips(function()
 			GuiText(UI.gui, 0, 0, ModVersion)
 			GuiText(UI.gui, 0, 0, ModLink)
@@ -392,5 +388,16 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 				Cpp.SetClipboard(ModLink)
 			end
 		end
-	end, nil, nil, true)
+	end
+	if ModSettingGet("wand_editor.cache_spell_data") then
+		UI.MoveImagePicker("ReloadSpellData", PickerGap(2), iy + 60, 8, 0, reloadText,
+        "mods/wand_editor/files/gui/images/reload_spell_data.png", nil, nil, nil, true, true, true)
+
+		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
+		UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, nil, nil, true)
+	else
+		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
+		UI.MoveImageButton("ModAbout", PickerGap(2), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, nil, nil, true)
+	end
+
 end

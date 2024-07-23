@@ -1,6 +1,6 @@
 {
     "Lua.diagnostics.disable": [
-        "lowercase-global"
+        "lowercase-global",
     ],
     "Lua.runtime.version": "LuaJIT"
 }
