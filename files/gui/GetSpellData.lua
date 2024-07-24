@@ -283,9 +283,10 @@ Reflection_RegisterProjectile = function(filepath)
                 hasProj[filepath].projExplosionRadius = result[CurrentID].projExplosionRadius
             end
         end
-		for _,v in pairs(EntityGetAllComponents(proj))do
-			EntityRemoveComponent(proj,v)
-		end
+        for _, v in pairs(EntityGetAllComponents(proj)) do
+            EntityRemoveComponent(proj, v)
+        end
+		EntityAddComponent2(proj, "LifetimeComponent", { lifetime = 0 })
 		--杀死实体
 		EntityKill(proj)
 	else
