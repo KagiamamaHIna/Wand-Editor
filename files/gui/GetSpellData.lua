@@ -208,35 +208,34 @@ Reflection_RegisterProjectile = function(filepath)
 		if projXML == nil then
 			return
 		end
-		local proj = EntityLoad(filepath, posX, -posY)
+		local proj = EntityLoad(filepath, posX, posY)
 		hasProj[filepath] = {}
 		local projComp = EntityGetFirstComponent(proj, "ProjectileComponent")
         if projComp then
-			for _,v in pairs(projXML.children)do
-				if v.name == "ProjectileComponent" then
+            for _, v in pairs(projXML.children) do
+                if v.name == "ProjectileComponent" then
                     result[CurrentID].lifetime = v.attr.lifetime
                     hasProj[filepath].lifetime = result[CurrentID].lifetime
                 elseif v.name == "LifetimeComponent" then --待完成
                     local lifetimeLimit = tonumber(v.attr.lifetime)
-					if result[CurrentID].lifetimeLimit == nil or (result[CurrentID].lifetimeLimit ~= nil and lifetimeLimit <= result[CurrentID].lifetimeLimit) then
-						result[CurrentID].lifetimeLimit = tonumber(v.attr.lifetime)
-						hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
-						if v.attr["randomize_lifetime.min"] ~= nil then
-							result[CurrentID].lifetimeLimitMin = tonumber(v.attr["randomize_lifetime.min"])
-							hasProj[filepath].lifetimeLimitMin = result[CurrentID].lifetimeLimitMin
-						end
-						if v.attr["randomize_lifetime.max"] ~= nil then
-							result[CurrentID].lifetimeLimitMax = tonumber(v.attr["randomize_lifetime.max"])
-							hasProj[filepath].lifetimeLimitMax = result[CurrentID].lifetimeLimitMax
-						end
-					end
-
-                elseif v.name == "MagicXRayComponent" then--特殊情况
+                    if result[CurrentID].lifetimeLimit == nil or (result[CurrentID].lifetimeLimit ~= nil and lifetimeLimit <= result[CurrentID].lifetimeLimit) then
+                        result[CurrentID].lifetimeLimit = tonumber(v.attr.lifetime)
+                        hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
+                        if v.attr["randomize_lifetime.min"] ~= nil then
+                            result[CurrentID].lifetimeLimitMin = tonumber(v.attr["randomize_lifetime.min"])
+                            hasProj[filepath].lifetimeLimitMin = result[CurrentID].lifetimeLimitMin
+                        end
+                        if v.attr["randomize_lifetime.max"] ~= nil then
+                            result[CurrentID].lifetimeLimitMax = tonumber(v.attr["randomize_lifetime.max"])
+                            hasProj[filepath].lifetimeLimitMax = result[CurrentID].lifetimeLimitMax
+                        end
+                    end
+                elseif v.name == "MagicXRayComponent" then --特殊情况
                     local radius = tonumber(v.attr.radius)
                     local steps_per_frame = tonumber(v.attr.steps_per_frame)
                     local lifetimeLimit = math.ceil(radius / steps_per_frame)
-					if result[CurrentID].lifetimeLimit ~= nil then--判断是否有数据
-                        if lifetimeLimit <= result[CurrentID].lifetimeLimit then--如果有的话就要判断谁小
+                    if result[CurrentID].lifetimeLimit ~= nil then               --判断是否有数据
+                        if lifetimeLimit <= result[CurrentID].lifetimeLimit then --如果有的话就要判断谁小
                             result[CurrentID].lifetimeLimit = lifetimeLimit
                             hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
                             result[CurrentID].lifetimeLimitMin = nil
@@ -248,39 +247,44 @@ Reflection_RegisterProjectile = function(filepath)
                             hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
                         end
                     else
-						result[CurrentID].lifetimeLimit = lifetimeLimit
-						hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
-					end
-				end
-			end
-			result[CurrentID].projComp = {}
-			for k, v in pairs(ComponentGetMembers(projComp)) do --批量加载数据
-				result[CurrentID].projComp[k] = v
-			end
+                        result[CurrentID].lifetimeLimit = lifetimeLimit
+                        hasProj[filepath].lifetimeLimit = result[CurrentID].lifetimeLimit
+                    end
+                end
+            end
+            result[CurrentID].projComp = {}
+            for k, v in pairs(ComponentGetMembers(projComp)) do --批量加载数据
+                result[CurrentID].projComp[k] = v
+            end
             hasProj[filepath].projComp = result[CurrentID].projComp
-			
-			ComponentSetValue2(projComp, "on_death_explode", false)
-			ComponentSetValue2(projComp, "on_lifetime_out_explode", false)
-			ComponentSetValue2(projComp, "collide_with_entities", false)
-			ComponentSetValue2(projComp, "collide_with_world", false)
 
-			--接下来要从object中手动获得值
-			local damage_by_type = ComponentObjectGetMembers(projComp, "damage_by_type")
-			if damage_by_type ~= nil then
-				result[CurrentID].projDmg = {}
-				for k, v in pairs(damage_by_type) do
-					result[CurrentID].projDmg[k] = tonumber(v)
-				end
+            ComponentSetValue2(projComp, "on_death_explode", false)
+            ComponentSetValue2(projComp, "on_lifetime_out_explode", false)
+            ComponentSetValue2(projComp, "collide_with_entities", false)
+            ComponentSetValue2(projComp, "collide_with_world", false)
 
-				hasProj[filepath].projDmg = result[CurrentID].projDmg
-			end
-			local config_explosion = ComponentObjectGetMembers(projComp, "config_explosion")
-			if config_explosion ~= nil then
-				result[CurrentID].projExplosion = tonumber(ComponentObjectGetValue2(projComp, "config_explosion", "damage"))
+            --接下来要从object中手动获得值
+            local damage_by_type = ComponentObjectGetMembers(projComp, "damage_by_type")
+            if damage_by_type ~= nil then
+                result[CurrentID].projDmg = {}
+                for k, v in pairs(damage_by_type) do
+                    result[CurrentID].projDmg[k] = tonumber(v)
+                end
+
+                hasProj[filepath].projDmg = result[CurrentID].projDmg
+            end
+            local config_explosion = ComponentObjectGetMembers(projComp, "config_explosion")
+            if config_explosion ~= nil then
+                result[CurrentID].projExplosion = tonumber(ComponentObjectGetValue2(projComp, "config_explosion",
+                    "damage"))
                 hasProj[filepath].projExplosion = result[CurrentID].projExplosion
-				result[CurrentID].projExplosionRadius = tonumber(ComponentObjectGetValue2(projComp, "config_explosion", "explosion_radius"))
-				hasProj[filepath].projExplosionRadius = result[CurrentID].projExplosionRadius
-			end
+                result[CurrentID].projExplosionRadius = tonumber(ComponentObjectGetValue2(projComp, "config_explosion",
+                    "explosion_radius"))
+                hasProj[filepath].projExplosionRadius = result[CurrentID].projExplosionRadius
+            end
+        end
+		for _,v in pairs(EntityGetAllComponents(proj))do
+			EntityRemoveComponent(proj,v)
 		end
 		--杀死实体
 		EntityKill(proj)

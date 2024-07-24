@@ -12,10 +12,10 @@
 namespace lua {
 	int lua_UTF8StringSub(lua_State* L) {
 		pinyin::Utf8String s1 = pinyin::Utf8String(luaL_checkstring(L, 1));
-		int pos1 = luaL_checkinteger(L, 2)-1;
-		int pos2 = luaL_checkinteger(L, 3)-1;
-		if (pos1-1 > pos2) {
-			lua_pushstring(L, luaL_checkstring(L,1));
+		int pos1 = luaL_checkinteger(L, 2) - 1;
+		int pos2 = luaL_checkinteger(L, 3) - 1;
+		if (pos1 - 1 > pos2) {
+			lua_pushstring(L, luaL_checkstring(L, 1));
 			return 1;
 		}
 		std::string result = "";
@@ -45,7 +45,7 @@ namespace lua {
 
 	int lua_SetDllDirectory(lua_State* L) {
 		const char* str = luaL_checkstring(L, 1);
-		lua_pushboolean(L,SetDllDirectoryA(str));
+		lua_pushboolean(L, SetDllDirectoryA(str));
 		return 1;
 	}
 
@@ -76,7 +76,7 @@ static luaL_Reg luaLibs[] = {
 	{ "ConcatStr", lua::lua_ConcatStr},
 
 	{ "OpenMonitorLoadLuaLib",lua::MonitorNoitaLuaLoad},
-	
+
 	{ "Ratio", lua::lua_Ratio},
 	{ "PartialRatio", lua::lua_PartialRatio},
 	{ "PinyinRatio", lua::lua_PinyinRatio},
@@ -90,7 +90,7 @@ static luaL_Reg luaLibs[] = {
 };
 
 extern "C" __declspec(dllexport)
-int luaopen_WandEditorDll(lua_State * L) {
+int luaopen_WandEditorDll(lua_State* L) {
 	//创建元表
 	luaL_newmetatable(L, "lua_break_point");
 	lua_pushvalue(L, -1);//备份副本到栈顶中
