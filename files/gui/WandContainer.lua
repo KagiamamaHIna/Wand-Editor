@@ -98,7 +98,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 					HoverDarwSpellText(this, v.id, spellData[v.id],nil, GameTextGet("$wand_editor_always") .. L_tostring(k))
 				end, this.GetZDeep()-114514, 8, 26)
 			else
-				GuiTooltip(this.gui, GameTextGet("$wand_editor_always") .. L_tostring(k), "")
+				OldGuiTooltip(this.gui, GameTextGet("$wand_editor_always") .. L_tostring(k), "")
 			end
 		else
 			if v ~= "nil" and not this.GetPickerStatus("DisableSpellHover") then
@@ -112,7 +112,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 					HoverDarwSpellText(this, v.id, spellData[v.id],v.uses_remaining, text)
 				end,this.GetZDeep()-114514,8,26)
 			else
-				GuiTooltip(this.gui,GameTextGet("$wand_editor_slot",L_tostring(k)),"")
+				OldGuiTooltip(this.gui,GameTextGet("$wand_editor_slot",L_tostring(k)),"")
 			end
 		end
 	end

@@ -78,6 +78,23 @@ function UI.SetZDeep(z)
 	this.private.ZDeep = z
 end
 
+local tooltipID = 0
+local HasTooltipHover = false
+local SetFlag = false
+
+this.private.FirstEventFn["ResetTooltipHover"] = function()
+	if not SetFlag and not HasTooltipHover then
+        SetFlag = true
+		print(tooltipID)
+		if tooltipID < 1023 then
+			tooltipID = tooltipID + 1
+        else
+			tooltipID = 0
+		end
+	end
+	HasTooltipHover = false
+end
+
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
 ---@param z integer?
@@ -87,7 +104,9 @@ end
 function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
         GuiGetPreviousWidgetInfo(this.public.gui)
-	if hover then
+    HasTooltipHover = HasTooltipHover or hover
+    if hover then
+		SetFlag = false
 		local gui = this.public.gui
 		xOffset = Default(xOffset, 0)
 		yOffset = Default(yOffset, 0)
@@ -97,12 +116,14 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 		if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
 			yOffset = yOffset - height + YMoreOffset
 		end
-	
+		
         GuiZSet(gui, z)
 		
+		GuiIdPushString(gui,"TooltipsAlpha")
 		GuiAnimateBegin(gui)
-        GuiAnimateAlphaFadeIn(gui, UI.NewID("TooltipsAlpha"),0.08, 0.1, false)
-		GuiAnimateScaleIn(gui,UI.NewID("TooltipsScale"),0.08, false)		
+        GuiAnimateAlphaFadeIn(gui, tooltipID,0.08, 0.1, false)
+		GuiAnimateScaleIn(gui, tooltipID,0.08, false)
+		GuiIdPop(gui)
 
 		GuiLayoutBeginLayer(gui)
 		GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
@@ -117,6 +138,7 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 	end
 end
 
+local BetterTooltipsNoCenterID = 0
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
 ---@param z integer?
@@ -151,13 +173,20 @@ function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, ri
 			end
 
 		else
-			yOffset = 4000
+            yOffset = 4000
+			if BetterTooltipsNoCenterID < 1023 then
+				BetterTooltipsNoCenterID = BetterTooltipsNoCenterID + 1
+            else
+				BetterTooltipsNoCenterID = 0
+			end
 		end
         GuiZSet(gui, z)
 		
-		GuiAnimateBegin(gui)
-        GuiAnimateAlphaFadeIn(gui, UI.NewID("BetterTooltipsNoCenterAlpha"),0.08, 0.1, false)
-		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsNoCenterScale"),0.08, false)		
+        GuiAnimateBegin(gui)
+		GuiIdPushString(gui,"BetterTooltipsNoCenterAlpha")
+        GuiAnimateAlphaFadeIn(gui, BetterTooltipsNoCenterID,0.08, 0.1, false)
+        GuiAnimateScaleIn(gui, BetterTooltipsNoCenterID, 0.08, false)
+		GuiIdPop(gui)
 
         GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
@@ -213,7 +242,7 @@ local function BetterTooltipsMenu(callback, z, xOffset, yOffset, leftMargin, rig
 		
 		GuiAnimateBegin(gui)
         GuiAnimateAlphaFadeIn(gui, UI.NewID("BetterTooltipsNoCenterMenuAlpha"),0.08, 0.1, false)
-		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsNoCenterMenuScale"),0.08, false)		
+		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsNoCenterMenuScale"),0.08, false)
 
         GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
@@ -228,7 +257,7 @@ local function BetterTooltipsMenu(callback, z, xOffset, yOffset, leftMargin, rig
 		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
 	end
 end
-
+OldGuiTooltip = GuiTooltip
 --覆盖掉原版的函数
 GuiTooltip = function (gui, text, description)
 	UI.BetterTooltipsNoCenter(function ()
@@ -239,6 +268,8 @@ GuiTooltip = function (gui, text, description)
 	end,nil,10)
 end
 
+
+local BetterTooltipsID = 0
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
 ---@param z integer?
@@ -278,13 +309,21 @@ function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargi
 				xOffset = 0
 			end
 		else
-			yOffset = 4000
+            yOffset = 4000
+			if BetterTooltipsID < 1023 then
+				BetterTooltipsID = BetterTooltipsID + 1
+            else
+				BetterTooltipsID = 0
+			end
 		end
         GuiZSet(gui, z)
 
-		GuiAnimateBegin(gui)
-        GuiAnimateAlphaFadeIn(gui, UI.NewID("BetterTooltipsAlpha"),0.08, 0.1, false)
-		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsScale"),0.08, false)		
+        GuiAnimateBegin(gui)
+
+		GuiIdPushString(gui,"BetterTooltipsAlpha")
+        GuiAnimateAlphaFadeIn(gui, BetterTooltipsID,0.08, 0.1, false)
+		GuiAnimateScaleIn(gui, BetterTooltipsID,0.08, false)
+		GuiIdPop(gui)
 
         GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
