@@ -104,6 +104,13 @@ mod_settings =
 		value_default = true,
         scope = MOD_SETTING_SCOPE_RUNTIME,
     }),
+	Setting({
+        id = "locked_target_pos",
+		ui_name = "wand_editor_locked_target_pos",
+		ui_description = "wand_editor_locked_target_pos_tip",
+		value_default = true,
+        scope = MOD_SETTING_SCOPE_RUNTIME,
+    }),
     Setting({
         id = "reset_all_btn_in_setting",
 		ui_name = "",

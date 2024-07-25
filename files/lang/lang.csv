@@ -157,3 +157,6 @@ wand_editor_reset_btn_pos_tip,Clicking on it will reset all the buttons to their
 wand_editor_reset_btn_pos_IKnowWhatImDoing,"This action cannot be undone, click again to confirm",,,,,,,,此操作不可撤销，再点击一次确认,,,,,,,
 wand_editor_no_spell_cache,Spell Data Cache,,,,,,,,法术数据缓存,,,,,,,
 wand_editor_no_spell_cache_tip,The generated spell data will no longer be cached after close,,,,,,,,关闭后将不再对生成的法术数据进行缓存操作,,,,,,,
+wand_editor_no_spell_cache,Spell Data Cache,,,,,,,,法术数据缓存,,,,,,,
+wand_editor_locked_target_pos,Fix Target Dummy position,,,,,,,,锁定假人位置,,,,,,,
+wand_editor_locked_target_pos_tip,Will fix the dummy to its spawn point to avoid accidental movement,,,,,,,,会把假人固定到其出生点，避免意外移动,,,,,,,

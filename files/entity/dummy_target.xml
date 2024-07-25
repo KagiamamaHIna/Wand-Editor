@@ -1,5 +1,7 @@
 <Entity tags="prop,hittable,mortal,homing_target,enemy,touchmagic_immunity,teleportable_NOT,polymorphable_NOT" name="wand_editor_dummy_target">
 	<VelocityComponent gravity_y="0"/>
+	<LuaComponent execute_every_n_frame="1" script_source_file="mods/wand_editor/files/misc/self/FixedTarget.lua" ></LuaComponent>
+
     <SimplePhysicsComponent/>
 	<SpriteComponent 
 		z_index="1"
