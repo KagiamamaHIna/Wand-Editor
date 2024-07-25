@@ -98,7 +98,12 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 			yOffset = yOffset - height + YMoreOffset
 		end
 	
-		GuiZSet(gui, z)
+        GuiZSet(gui, z)
+		
+		GuiAnimateBegin(gui)
+        GuiAnimateAlphaFadeIn(gui, UI.NewID("TooltipsAlpha"),0.08, 0.1, false)
+		GuiAnimateScaleIn(gui,UI.NewID("TooltipsScale"),0.08, false)		
+
 		GuiLayoutBeginLayer(gui)
 		GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
@@ -106,7 +111,9 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
 		GuiZSetForNextWidget(gui, z + 1)
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
-		GuiLayoutEndLayer(gui)
+        GuiLayoutEndLayer(gui)
+		
+		GuiAnimateEnd(gui)
 	end
 end
 
@@ -116,6 +123,62 @@ end
 ---@param xOffset integer?
 ---@param yOffset integer?
 function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, rightMargin)
+	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
+        GuiGetPreviousWidgetInfo(this.public.gui)
+    this.private.TooltipsHover = this.private.TooltipsHover or hover
+    if hover then
+		local gui = this.public.gui
+		xOffset = Default(xOffset, 0)
+    	yOffset = Default(yOffset, 0)
+    	leftMargin = Default(leftMargin, 10)
+		rightMargin = Default(rightMargin, 10)
+		z = Default(z, DefaultZDeep)
+		if this.private.TooltipsData then
+			local OffsetW = this.private.TooltipsData[6]
+			local OffsetH = this.private.TooltipsData[7]
+			if x > this.public.ScreenWidth / 2 then
+                xOffset = xOffset - OffsetW - width
+            else
+				xOffset = xOffset + width
+			end
+
+            if y + yOffset - 10 < 0 then --上超出
+                yOffset = 0
+                y = 10
+            end
+			if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
+				y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
+			end
+
+		else
+			yOffset = 4000
+		end
+        GuiZSet(gui, z)
+		
+		GuiAnimateBegin(gui)
+        GuiAnimateAlphaFadeIn(gui, UI.NewID("BetterTooltipsNoCenterAlpha"),0.08, 0.1, false)
+		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsNoCenterScale"),0.08, false)		
+
+        GuiLayoutBeginLayer(gui)
+        GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
+		GuiBeginAutoBox(gui)
+        callback()
+		GuiZSetForNextWidget(gui, z + 1)
+		GuiEndAutoBoxNinePiece(gui)
+		GuiLayoutEnd(gui)
+        GuiLayoutEndLayer(gui)
+
+		GuiAnimateEnd(gui)
+		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
+	end
+end
+
+---组件悬浮窗提示，专为主按钮而写，为了美观（
+---@param callback function
+---@param z integer?
+---@param xOffset integer?
+---@param yOffset integer?
+local function BetterTooltipsMenu(callback, z, xOffset, yOffset, leftMargin, rightMargin)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
         GuiGetPreviousWidgetInfo(this.public.gui)
     this.private.TooltipsHover = this.private.TooltipsHover or hover
@@ -146,7 +209,12 @@ function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, ri
 		else
 			yOffset = 4000
 		end
-		GuiZSet(gui, z)
+        GuiZSet(gui, z)
+		
+		GuiAnimateBegin(gui)
+        GuiAnimateAlphaFadeIn(gui, UI.NewID("BetterTooltipsNoCenterMenuAlpha"),0.08, 0.1, false)
+		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsNoCenterMenuScale"),0.08, false)		
+
         GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
@@ -155,8 +223,20 @@ function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, ri
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
         GuiLayoutEndLayer(gui)
+
+		GuiAnimateEnd(gui)
 		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
 	end
+end
+
+--覆盖掉原版的函数
+GuiTooltip = function (gui, text, description)
+	UI.BetterTooltipsNoCenter(function ()
+        GuiText(this.public.gui, 0, 0, text)
+		if description ~= nil and description ~= "" then
+			GuiText(this.public.gui, 0, 0, description)
+		end
+	end,nil,10)
 end
 
 ---组件悬浮窗提示,应当在一个组件后面使用
@@ -200,7 +280,12 @@ function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargi
 		else
 			yOffset = 4000
 		end
-		GuiZSet(gui, z)
+        GuiZSet(gui, z)
+
+		GuiAnimateBegin(gui)
+        GuiAnimateAlphaFadeIn(gui, UI.NewID("BetterTooltipsAlpha"),0.08, 0.1, false)
+		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsScale"),0.08, false)		
+
         GuiLayoutBeginLayer(gui)
         GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
 		GuiBeginAutoBox(gui)
@@ -209,6 +294,9 @@ function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargi
 		GuiEndAutoBoxNinePiece(gui)
 		GuiLayoutEnd(gui)
         GuiLayoutEndLayer(gui)
+
+		GuiAnimateEnd(gui)
+
 		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
 	end
 end
@@ -398,27 +486,44 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, StatusCustomText, 
     local function Hover()
         local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)
 		this.private.CompToPickerHoverBool[newid]= hover
-        UI.BetterTooltipsNoCenter(function()
-            GuiText(this.public.gui, 0, 0, Content)
-            if id == "MainButton" then
-                GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                GuiText(this.public.gui, 0, 2, ModVersion)
+
+		if id == "MainButton" then
+			BetterTooltipsMenu(function()
+				GuiText(this.public.gui, 0, 0, Content)
+				GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+				GuiText(this.public.gui, 0, 2, ModVersion)
 				GuiLayoutAddVerticalSpacing(this.public.gui, 2)
-            end
-			GuiZSet(this.public.gui, this.private.ZDeep)
-			
-            if not noMove then
-                local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
-				GuiZSetForNextWidget(this.public.gui, DefaultZDeep-114514)
-                if CTRL then
-                    GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                    GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
-                else
-                    GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                    GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
-                end
-            end
-        end, DefaultZDeep-100, mx, my)
+				GuiZSet(this.public.gui, this.private.ZDeep)
+				
+				if not noMove then
+					local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+					GuiZSetForNextWidget(this.public.gui, DefaultZDeep-114514)
+					if CTRL then
+						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
+					else
+						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
+					end
+				end
+			end, DefaultZDeep-100, mx, my)
+		else
+			UI.BetterTooltipsNoCenter(function()
+				GuiText(this.public.gui, 0, 0, Content)
+				if not noMove then
+					local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+					GuiZSetForNextWidget(this.public.gui, DefaultZDeep-114514)
+					if CTRL then
+						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
+					else
+						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
+					end
+				end
+			end, DefaultZDeep-100, mx, my)
+		end
+
     end
     local function Click(left_click, right_click, ix, iy)
         if ClickCallBack ~= nil then
