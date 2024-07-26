@@ -105,8 +105,9 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	GuiZSetForNextWidget(this.gui, this.GetZDeep()+1000)--不要再覆盖啦！
     local Search = this.TextInput("input", 63, 249, 123, 26)
 	local _,_, hover = GuiGetPreviousWidgetInfo(this.gui)
-    if hover and InputIsMouseButtonDown(Mouse_right) then
+    if hover and InputIsMouseButtonJustDown(Mouse_right) then
         this.TextInputRestore("input")
+		GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
     end
 	this.tooltips(function ()
 		GuiText(this.gui,0,0,GameTextGetTranslatedOrNot("$wand_editor_search_info"))

@@ -32,8 +32,6 @@ local this = {
         HScrollData = {},
         HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
         HScrollItemData = {}, --元素数据，用于判断位置是否上下溢出
-		TooltipsData = nil,
-		TooltipsHover = false,
 		ConcatCache = {},
 		ResetAllCanMove = nil,
 
@@ -79,22 +77,8 @@ function UI.SetZDeep(z)
 end
 
 local tooltipID = 0
-local HasTooltipHover = false
-local SetFlag = false
 
-this.private.FirstEventFn["ResetTooltipHover"] = function()
-	if not SetFlag and not HasTooltipHover then
-        SetFlag = true
-		print(tooltipID)
-		if tooltipID < 1023 then
-			tooltipID = tooltipID + 1
-        else
-			tooltipID = 0
-		end
-	end
-	HasTooltipHover = false
-end
-
+local TooltipsCache = {}
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
 ---@param z integer?
@@ -102,43 +86,52 @@ end
 ---@param yOffset integer?
 ---@param NoYAutoMove boolean?
 function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
-	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
+    local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
         GuiGetPreviousWidgetInfo(this.public.gui)
-    HasTooltipHover = HasTooltipHover or hover
     if hover then
-		SetFlag = false
-		local gui = this.public.gui
-		xOffset = Default(xOffset, 0)
-		yOffset = Default(yOffset, 0)
-		YMoreOffset = Default(YMoreOffset,0)
-		NoYAutoMove = Default(NoYAutoMove, false)
-		z = Default(z, DefaultZDeep)
-		if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
-			yOffset = yOffset - height + YMoreOffset
-		end
-		
-        GuiZSet(gui, z)
-		
-		GuiIdPushString(gui,"TooltipsAlpha")
-		GuiAnimateBegin(gui)
-        GuiAnimateAlphaFadeIn(gui, tooltipID,0.08, 0.1, false)
-		GuiAnimateScaleIn(gui, tooltipID,0.08, false)
-		GuiIdPop(gui)
+        local gui = this.public.gui
+        if TooltipsCache[1] and TooltipsCache[2] then
+            if TooltipsCache[1] ~= math.floor(x) or TooltipsCache[2] ~= math.floor(y) then
+                if tooltipID < 1023 then
+                    tooltipID = tooltipID + 1
+                else
+                    tooltipID = 0
+                end
+            end
+        end
+        TooltipsCache[1] = math.floor(x)
+        TooltipsCache[2] = math.floor(y)
+        xOffset = Default(xOffset, 0)
+        yOffset = Default(yOffset, 0)
+        YMoreOffset = Default(YMoreOffset, 0)
+        NoYAutoMove = Default(NoYAutoMove, false)
+        z = Default(z, DefaultZDeep)
+        if not NoYAutoMove and (draw_y > this.public.ScreenHeight * 0.5) then
+            yOffset = yOffset - height + YMoreOffset
+        end
 
-		GuiLayoutBeginLayer(gui)
-		GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
-		GuiBeginAutoBox(gui)
-		callback()
-		GuiZSetForNextWidget(gui, z + 1)
-		GuiEndAutoBoxNinePiece(gui)
-		GuiLayoutEnd(gui)
+        GuiZSet(gui, z)
+
+        GuiIdPushString(gui, "TooltipsAlpha")
+        GuiAnimateBegin(gui)
+        GuiAnimateAlphaFadeIn(gui, tooltipID, 0.08, 0.1, false)
+        GuiAnimateScaleIn(gui, tooltipID, 0.08, false)
+        GuiIdPop(gui)
+
+        GuiLayoutBeginLayer(gui)
+        GuiLayoutBeginVertical(gui, (x + xOffset + width), (y + yOffset), true)
+        GuiBeginAutoBox(gui)
+        callback()
+        GuiZSetForNextWidget(gui, z + 1)
+        GuiEndAutoBoxNinePiece(gui)
+        GuiLayoutEnd(gui)
         GuiLayoutEndLayer(gui)
-		
-		GuiAnimateEnd(gui)
-	end
+
+        GuiAnimateEnd(gui)
+    end
 end
 
-local BetterTooltipsNoCenterID = 0
+local BTooltipsNC = {}
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
 ---@param z integer?
@@ -147,45 +140,60 @@ local BetterTooltipsNoCenterID = 0
 function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, rightMargin)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
         GuiGetPreviousWidgetInfo(this.public.gui)
-    this.private.TooltipsHover = this.private.TooltipsHover or hover
     if hover then
-		local gui = this.public.gui
+        local gui = this.public.gui
 		xOffset = Default(xOffset, 0)
     	yOffset = Default(yOffset, 0)
     	leftMargin = Default(leftMargin, 10)
 		rightMargin = Default(rightMargin, 10)
-		z = Default(z, DefaultZDeep)
-		if this.private.TooltipsData then
-			local OffsetW = this.private.TooltipsData[6]
-			local OffsetH = this.private.TooltipsData[7]
-			if x > this.public.ScreenWidth / 2 then
-                xOffset = xOffset - OffsetW - width
-            else
-				xOffset = xOffset + width
-			end
+        z = Default(z, DefaultZDeep)
+		
+        GuiAnimateBegin(gui)
+		GuiAnimateAlphaFadeIn(gui, UI.NewID("Alpha你肯定看不见我对吧"), 0, 0, false)
+        GuiLayoutBeginLayer(gui)
+        GuiLayoutBeginVertical(gui, (x + xOffset + width), y + yOffset, true)
+		GuiBeginAutoBox(gui)
+        callback()
+		GuiZSetForNextWidget(gui, z + 1)
+		GuiEndAutoBoxNinePiece(gui)
+		GuiLayoutEnd(gui)
+		GuiLayoutEndLayer(gui)
+        GuiAnimateEnd(gui)
+		
+        local _,_,_,_,_,OffsetW,OffsetH = GuiGetPreviousWidgetInfo(gui)
 
-            if y + yOffset - 10 < 0 then --上超出
-                yOffset = 0
-                y = 10
-            end
-			if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
-				y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
-			end
-
-		else
-            yOffset = 4000
-			if BetterTooltipsNoCenterID < 1023 then
-				BetterTooltipsNoCenterID = BetterTooltipsNoCenterID + 1
-            else
-				BetterTooltipsNoCenterID = 0
+		if BTooltipsNC[1] and BTooltipsNC[2] then
+			if BTooltipsNC[1] ~= math.floor(x) or BTooltipsNC[2] ~= math.floor(y) then
+				if tooltipID < 1023 then
+                    tooltipID = tooltipID + 1
+                else
+					tooltipID = 0
+				end
 			end
 		end
+
+		BTooltipsNC[1] = math.floor(x)
+		BTooltipsNC[2] = math.floor(y)
+		if x > this.public.ScreenWidth / 2 then
+        	xOffset = -(OffsetW - 10 + xOffset)
+        else
+			xOffset = xOffset + width
+		end
+
+        if y + yOffset - 10 < 0 then --上超出
+            yOffset = 0
+        	y = 10
+        end
+		if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
+			y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
+		end
+
         GuiZSet(gui, z)
 		
         GuiAnimateBegin(gui)
 		GuiIdPushString(gui,"BetterTooltipsNoCenterAlpha")
-        GuiAnimateAlphaFadeIn(gui, BetterTooltipsNoCenterID,0.08, 0.1, false)
-        GuiAnimateScaleIn(gui, BetterTooltipsNoCenterID, 0.08, false)
+        GuiAnimateAlphaFadeIn(gui, tooltipID,0.08, 0.1, false)
+        GuiAnimateScaleIn(gui, tooltipID, 0.08, false)
 		GuiIdPop(gui)
 
         GuiLayoutBeginLayer(gui)
@@ -198,65 +206,9 @@ function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, ri
         GuiLayoutEndLayer(gui)
 
 		GuiAnimateEnd(gui)
-		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
 	end
 end
 
----组件悬浮窗提示，专为主按钮而写，为了美观（
----@param callback function
----@param z integer?
----@param xOffset integer?
----@param yOffset integer?
-local function BetterTooltipsMenu(callback, z, xOffset, yOffset, leftMargin, rightMargin)
-	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
-        GuiGetPreviousWidgetInfo(this.public.gui)
-    this.private.TooltipsHover = this.private.TooltipsHover or hover
-    if hover then
-		local gui = this.public.gui
-		xOffset = Default(xOffset, 0)
-    	yOffset = Default(yOffset, 0)
-    	leftMargin = Default(leftMargin, 10)
-		rightMargin = Default(rightMargin, 10)
-		z = Default(z, DefaultZDeep)
-		if this.private.TooltipsData then
-			local OffsetW = this.private.TooltipsData[6]
-			local OffsetH = this.private.TooltipsData[7]
-			if x > this.public.ScreenWidth / 2 then
-                xOffset = xOffset - OffsetW - width/2
-            else
-				xOffset = xOffset + width
-			end
-
-            if y + yOffset - 10 < 0 then --上超出
-                yOffset = 0
-                y = 10
-            end
-			if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
-				y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
-			end
-
-		else
-			yOffset = 4000
-		end
-        GuiZSet(gui, z)
-		
-		GuiAnimateBegin(gui)
-        GuiAnimateAlphaFadeIn(gui, UI.NewID("BetterTooltipsNoCenterMenuAlpha"),0.08, 0.1, false)
-		GuiAnimateScaleIn(gui,UI.NewID("BetterTooltipsNoCenterMenuScale"),0.08, false)
-
-        GuiLayoutBeginLayer(gui)
-        GuiLayoutBeginVertical(gui, (x + xOffset), (y + yOffset), true)
-		GuiBeginAutoBox(gui)
-        callback()
-		GuiZSetForNextWidget(gui, z + 1)
-		GuiEndAutoBoxNinePiece(gui)
-		GuiLayoutEnd(gui)
-        GuiLayoutEndLayer(gui)
-
-		GuiAnimateEnd(gui)
-		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
-	end
-end
 OldGuiTooltip = GuiTooltip
 --覆盖掉原版的函数
 GuiTooltip = function (gui, text, description)
@@ -268,8 +220,7 @@ GuiTooltip = function (gui, text, description)
 	end,nil,10)
 end
 
-
-local BetterTooltipsID = 0
+local BTooltipCache = {}
 ---组件悬浮窗提示,应当在一个组件后面使用
 ---@param callback function
 ---@param z integer?
@@ -278,51 +229,64 @@ local BetterTooltipsID = 0
 function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargin)
 	local left_click, right_click, hover, x, y, width, height, draw_x, draw_y, draw_width, draw_height =
         GuiGetPreviousWidgetInfo(this.public.gui)
-    this.private.TooltipsHover = this.private.TooltipsHover or hover
     if hover then
 		local gui = this.public.gui
 		xOffset = Default(xOffset, 0)
     	yOffset = Default(yOffset, 0)
     	leftMargin = Default(leftMargin, 10)
 		rightMargin = Default(rightMargin, 10)
-		z = Default(z, DefaultZDeep)
-		if this.private.TooltipsData then
-			local OffsetW = this.private.TooltipsData[6]
-			local OffsetH = this.private.TooltipsData[7]
-	
-			xOffset = xOffset - OffsetW / 2 --居中
-			if y + yOffset > this.public.ScreenHeight * 0.5 then--自动上下切换
-				yOffset = -yOffset - OffsetH + height + 10
+        z = Default(z, DefaultZDeep)
+
+        GuiAnimateBegin(gui)
+		GuiAnimateAlphaFadeIn(gui, UI.NewID("Alpha你肯定看不见我对吧"), 0, 0, false)
+		GuiLayoutBeginLayer(gui)
+        GuiLayoutBeginVertical(gui, x + xOffset, y + yOffset, true)
+		GuiBeginAutoBox(gui)
+        callback()
+		GuiZSetForNextWidget(gui, z + 1)
+		GuiEndAutoBoxNinePiece(gui)
+		GuiLayoutEnd(gui)
+		GuiLayoutEndLayer(gui)
+        GuiAnimateEnd(gui)
+		
+        local _,_,_,_,_,OffsetW,OffsetH = GuiGetPreviousWidgetInfo(gui)
+		if BTooltipCache[1] and BTooltipCache[2] then
+			if BTooltipCache[1] ~= math.floor(x) or BTooltipCache[2] ~= math.floor(y) then
+				if tooltipID < 1023 then
+                    tooltipID = tooltipID + 1
+                else
+					tooltipID = 0
+				end
 			end
-            if y + yOffset - 10 < 0 then --上超出
-                yOffset = 0
-                y = 10
-            end
-			if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
-				y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
-			end
-			if x + OffsetW /2 + 10 + rightMargin > this.public.ScreenWidth then--右超出
-				xOffset = -((x + OffsetW) - this.public.ScreenWidth + rightMargin)
-			end
-			if x + xOffset - leftMargin < 0 then--左超出
-				x = leftMargin + 5
-				xOffset = 0
-			end
-		else
-            yOffset = 4000
-			if BetterTooltipsID < 1023 then
-				BetterTooltipsID = BetterTooltipsID + 1
-            else
-				BetterTooltipsID = 0
-			end
+		end
+		BTooltipCache[1] = math.floor(x)
+		BTooltipCache[2] = math.floor(y)
+
+		xOffset = xOffset - OffsetW / 2 --居中
+		if y + yOffset > this.public.ScreenHeight * 0.5 then--自动上下切换
+			yOffset = -yOffset - OffsetH + height + 10
+		end
+        if y + yOffset - 10 < 0 then --上超出
+    	    yOffset = 0
+            y = 10
+        end
+		if y + yOffset + OffsetH + 5 > this.public.ScreenHeight then
+			y = y + (this.public.ScreenHeight - (y + yOffset + OffsetH))
+		end
+		if x + OffsetW /2 + 10 + rightMargin > this.public.ScreenWidth then--右超出
+			xOffset = -((x + OffsetW) - this.public.ScreenWidth + rightMargin)
+		end
+		if x + xOffset - leftMargin < 0 then--左超出
+			x = leftMargin + 5
+			xOffset = 0
 		end
         GuiZSet(gui, z)
 
         GuiAnimateBegin(gui)
 
 		GuiIdPushString(gui,"BetterTooltipsAlpha")
-        GuiAnimateAlphaFadeIn(gui, BetterTooltipsID,0.08, 0.1, false)
-		GuiAnimateScaleIn(gui, BetterTooltipsID,0.08, false)
+        GuiAnimateAlphaFadeIn(gui, tooltipID,0.08, 0.1, false)
+		GuiAnimateScaleIn(gui, tooltipID,0.08, false)
 		GuiIdPop(gui)
 
         GuiLayoutBeginLayer(gui)
@@ -336,7 +300,6 @@ function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargi
 
 		GuiAnimateEnd(gui)
 
-		this.private.TooltipsData = {GuiGetPreviousWidgetInfo(gui)}
 	end
 end
 
@@ -524,45 +487,27 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, StatusCustomText, 
 
     local function Hover()
         local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)
-		this.private.CompToPickerHoverBool[newid]= hover
-
-		if id == "MainButton" then
-			BetterTooltipsMenu(function()
-				GuiText(this.public.gui, 0, 0, Content)
-				GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-				GuiText(this.public.gui, 0, 2, ModVersion)
-				GuiLayoutAddVerticalSpacing(this.public.gui, 2)
-				GuiZSet(this.public.gui, this.private.ZDeep)
-				
-				if not noMove then
-					local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
-					GuiZSetForNextWidget(this.public.gui, DefaultZDeep-114514)
-					if CTRL then
-						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
-					else
-						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
-					end
-				end
-			end, DefaultZDeep-100, mx, my)
-		else
-			UI.BetterTooltipsNoCenter(function()
-				GuiText(this.public.gui, 0, 0, Content)
-				if not noMove then
-					local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
-					GuiZSetForNextWidget(this.public.gui, DefaultZDeep-114514)
-					if CTRL then
-						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
-					else
-						GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-						GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
-					end
-				end
-			end, DefaultZDeep-100, mx, my)
-		end
-
+        this.private.CompToPickerHoverBool[newid] = hover
+        UI.BetterTooltipsNoCenter(function()
+            GuiText(this.public.gui, 0, 0, Content)
+            if id == "MainButton" then
+                GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+                GuiText(this.public.gui, 0, 2, ModVersion)
+                GuiLayoutAddVerticalSpacing(this.public.gui, 2)
+                GuiZSet(this.public.gui, this.private.ZDeep)
+            end
+            if not noMove then
+                local CTRL = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
+                GuiZSetForNextWidget(this.public.gui, DefaultZDeep - 114514)
+                if CTRL then
+                    GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+                    GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_desc"))
+                else
+                    GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
+                    GuiText(this.public.gui, 0, 0, GameTextGetTranslatedOrNot("$wand_editor_picker_more"))
+                end
+            end
+        end, DefaultZDeep - 100, mx, my)
     end
     local function Click(left_click, right_click, ix, iy)
         if ClickCallBack ~= nil then
@@ -1409,10 +1354,6 @@ function UI.DispatchMessage()
         this.private.HScrollData = {}   --清空数据		
     end
     this.private.ZDeep = DefaultZDeep
-	if not this.private.TooltipsHover then
-		this.private.TooltipsData = nil
-	end
-	this.private.TooltipsHover = false
 end
 
 return UI

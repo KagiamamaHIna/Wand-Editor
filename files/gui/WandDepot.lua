@@ -445,7 +445,8 @@ local function SetHisroryData(t)
 end
 
 function WandDepotCB(_, _right, _, _, this_enable)
-	if _right then
+    if _right then
+		ClickSound()
 		UI.UserData["WandDepotHistoryEnable"] = not UI.UserData["WandDepotHistoryEnable"]
 	end
     if not this_enable then
@@ -543,11 +544,11 @@ function WandDepotCB(_, _right, _, _, this_enable)
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)
 		local delete_click = GuiButton(UI.gui, UI.NewID("WandDepotDeleteTable"), 11, 0, "[x]") --删除页面按钮
 		local deleteTextKey = "$wand_editor_wand_depot_deletepage"
-		if UI.UserData["wand_depot_IKnowWhatImDoing"] then
-			deleteTextKey = "$wand_editor_wand_depot_deletepage_IKnowWhatImDoing"
-		end
-		GuiTooltip(UI.gui, GameTextGet(deleteTextKey), "")
+        if UI.UserData["wand_depot_IKnowWhatImDoing"] then
+            deleteTextKey = "$wand_editor_wand_depot_deletepage_IKnowWhatImDoing"
+        end
 		local _, _, delete_hover = GuiGetPreviousWidgetInfo(UI.gui)
+		GuiTooltip(UI.gui, GameTextGet(deleteTextKey), "")
         if UI.UserData["wand_depot_IKnowWhatImDoing"] and delete_hover and delete_click then
             UI.UserData["wand_depot_IKnowWhatImDoing"] = false
             if CurrentIndex > GetWandDepotSize() - 1 and CurrentIndex - 1 ~= 0 then --防止越界

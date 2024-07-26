@@ -183,6 +183,7 @@ function WandBuilderCB(_, _, _, _, this_enable)
 		end)
 		NewLine("$inventory_capacity", UI.GetInputText("capacity_builder"), function(ShowW)
             UI.TextInput("capacity_builder", ShowW + 2, 0, 120, 9, "26", "1234567890")
+            local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
 			GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
 
             local str = UI.GetInputText("capacity_builder")
@@ -192,9 +193,9 @@ function WandBuilderCB(_, _, _, _, this_enable)
 					UI.SetInputText("capacity_builder", "500")
 				end
 			end
-            local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
-			if not hover and UI.GetInputText("capacity_builder") == "" or (hover and InputIsMouseButtonDown(Mouse_right)) then
-				UI.TextInputRestore("capacity_builder")
+			if not hover and UI.GetInputText("capacity_builder") == "" or (hover and InputIsMouseButtonJustDown(Mouse_right)) then
+                UI.TextInputRestore("capacity_builder")
+				GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 			end
 		end)
 		NewLine("$inventory_spread", GetValueStr("spread_builder")..GameTextGet("$wand_editor_deg"), function(ShowW)

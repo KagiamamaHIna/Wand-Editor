@@ -168,7 +168,7 @@ function IsINF(num)
 	if IsNaN(num) then
 		return false
 	end
-    return IsNaN(num * 0)
+    return num == math.huge
 end
 
 ---如果为空则返回v（默认值），不为空返回本身的函数

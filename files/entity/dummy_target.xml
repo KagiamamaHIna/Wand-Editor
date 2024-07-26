@@ -83,7 +83,7 @@
     <SpriteAnimatorComponent/>
 	<StatusEffectDataComponent/>
 	<Entity>
-		<InheritTransformComponent only_position="1"/>
+		<InheritTransformComponent only_position="1"></InheritTransformComponent>
 		<SpriteComponent 
 			_tags="enabled_in_world,gkbrkn_custom_damage_number,ui,no_hitbox"
 			image_file="mods/wand_editor/files/misc/bygoki/font/font_small_numbers_damage.xml"
@@ -101,9 +101,6 @@
 			never_ragdollify_on_death="1"
 		/>
 		<LuaComponent execute_every_n_frame="1" script_source_file="mods/wand_editor/files/misc/bygoki/dummy/custom_damage_numbers_text.lua" />
-	</Entity>
-	<Entity>
-		<InheritTransformComponent only_position="1"></InheritTransformComponent>
 		<SpriteComponent 
 			_tags="enabled_in_world,gkbrkn_dps_tracker"
 			image_file="mods/wand_editor/files/misc/bygoki/font/font_small_numbers.xml"

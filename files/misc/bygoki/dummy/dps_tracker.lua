@@ -86,8 +86,7 @@ function damage_received( damage, message, entity_thats_responsible, is_fatal )
     --if did_hit then
     --    EntityApplyTransform( entity, x, y - 5 );
     --end
-    if entity_thats_responsible == 0 or damage < 0 then return; end
-    
+
     -- reset tracker after 10 frames of dps
     if now >= reset_frame or (now - first_hit_frame) > 600 then
         total_damage = 0;
@@ -95,7 +94,7 @@ function damage_received( damage, message, entity_thats_responsible, is_fatal )
         current = 0;
         first_hit_frame = now;
         first_hit_time = now_true;
-        EntitySetVariableNumber( entity, "gkbrkn_dps_tracker_highest", 0 );
+        EntitySetVariableNumber( entity, "gkbrkn_dps_tracker_highest", -math.huge );
     end
     total_damage = total_damage + damage;
     reset_frame = now + 60;
@@ -103,25 +102,31 @@ function damage_received( damage, message, entity_thats_responsible, is_fatal )
     current_true = total_damage / math.max(now_true - first_hit_time, 1);
 	local old_thousands_separator = thousands_separator
     local thousands_separator = function(num)
-        if num > 1e15 then
+        if num > 1e15 or -num > 1e15 then
             return string.lower(tostring(num))
         else
             return old_thousands_separator(string.format("%.2f", num));
         end
     end
 	
-    local highest_current = EntityGetVariableNumber( entity, "gkbrkn_dps_tracker_highest", 0 );
+    local highest_current = EntityGetVariableNumber( entity, "gkbrkn_dps_tracker_highest", -math.huge );
     local damage_text
 	if IsINF(current * 25) then--thousands_separator
         damage_text = "inf"
+	elseif current * 25 == - math.huge then
+		damage_text = "-inf"
     else
 		damage_text = thousands_separator(current * 25 );
 	end
     local damage_text_true = thousands_separator(current_true * 25 );
     EntitySetVariableString( entity, "gkbrkn_dps_tracker_text", damage_text );
     EntitySetVariableString(entity, "gkbrkn_dps_tracker_text_true", damage_text_true);
-	GlobalsSetValue(ModID .."total_damage", thousands_separator(total_damage * 25))
-    if current > highest_current then
+    GlobalsSetValue(ModID .. "total_damage", thousands_separator(total_damage * 25))
+	local flag = false
+	if current < 0 and highest_current < 0 and current < highest_current then
+		flag = true
+	end
+	if current > highest_current or flag then
         EntitySetVariableNumber( entity, "gkbrkn_dps_tracker_highest", current );
         EntitySetVariableString(entity, "gkbrkn_dps_tracker_text_highest", thousands_separator(current * 25));
 		GlobalsSetValue(ModID .. "highest_dps", damage_text);

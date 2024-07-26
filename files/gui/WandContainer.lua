@@ -112,7 +112,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 					HoverDarwSpellText(this, v.id, spellData[v.id],v.uses_remaining, text)
 				end,this.GetZDeep()-114514,8,26)
 			else
-				OldGuiTooltip(this.gui,GameTextGet("$wand_editor_slot",L_tostring(k)),"")
+                OldGuiTooltip(this.gui, GameTextGet("$wand_editor_slot", L_tostring(k)), "")
 			end
 		end
 	end

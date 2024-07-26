@@ -4,7 +4,7 @@ dofile_once( "mods/wand_editor/files/misc/bygoki/lib/variables.lua" );
 local last_damage_frame = {};
 local old_thousands_separator = thousands_separator
 thousands_separator = function(num)
-    if num > 1e15 then
+    if num > 1e15 or -num > 1e15 then
         return string.lower(tostring(num))
     else
         return old_thousands_separator(string.format("%.2f", num));
@@ -14,7 +14,6 @@ end
 function damage_received( damage, message, entity_thats_responsible, is_fatal )
     local entity = GetUpdatedEntityID();
     if EntityHasNamedVariable(entity, "gkbrkn_always_show_damage_numbers") or is_fatal == false then
-		if entity_thats_responsible == 0 or damage < 0 then return; end
         local now = GameGetFrameNum();
         if now - ( last_damage_frame[entity] or 0 ) > 180 then
             EntitySetVariableNumber( entity, "gkbrkn_total_damage", 0 );

@@ -1,5 +1,16 @@
 function GUIUpdate()
-	local fastConcatStr = Cpp.ConcatStr
+    local fastConcatStr = Cpp.ConcatStr
+	
+	local function AddNullEntityToPlayer(name)
+        local id = EntityLoadChild(GetPlayer(), "mods/wand_editor/files/entity/NullEntity.xml")
+        EntitySetName(id, name)
+		return id
+	end
+
+	local function RemoveNullEntityWithName(name)
+		EntityKill(EntityGetWithName(name))
+	end
+
 	if UI == nil then
 		--初始化
 		---@class Gui
@@ -341,7 +352,7 @@ function GUIUpdate()
             elseif t[m][d] == nil and ModSettingGet(fastConcatStr(ModID,"Mama")) then
 				ModSettingSet(fastConcatStr(ModID,"Mama"), false)
 			end
-			if UI.GetPickerStatus("UnlimitedSpells") and not GameHasFlagRun("WandEditorUnlimitedSpells") then--无限法术切换
+			if UI.GetPickerStatus("UnlimitedSpells") and EntityGetWithName("WandEditorUnlimitedSpells") == 0 then--无限法术切换
                 local player = GetPlayer()
                 local world_entity_id = GameGetWorldStateEntity()
                 if world_entity_id ~= nil then
@@ -354,8 +365,8 @@ function GUIUpdate()
                 UI.OnceCallOnExecute(function()
                     RefreshHeldWands()
                 end)
-                GameAddFlagRun("WandEditorUnlimitedSpells")
-            elseif not UI.GetPickerStatus("UnlimitedSpells") and GameHasFlagRun("WandEditorUnlimitedSpells") then
+                AddNullEntityToPlayer("WandEditorUnlimitedSpells")
+            elseif not UI.GetPickerStatus("UnlimitedSpells") and EntityGetWithName("WandEditorUnlimitedSpells") ~= 0 then
 				local world_entity_id = GameGetWorldStateEntity()
                 if world_entity_id ~= nil then
                     local comp_worldstate = EntityGetFirstComponent(world_entity_id, "WorldStateComponent")
@@ -366,21 +377,21 @@ function GUIUpdate()
 				UI.OnceCallOnExecute(function()
                     RefreshHeldWands()
                 end)
-				GameRemoveFlagRun("WandEditorUnlimitedSpells")
+				RemoveNullEntityWithName("WandEditorUnlimitedSpells")
 			end
-			if UI.GetPickerStatus("InfFly") and not GameHasFlagRun("WandEditorInfFly") then
+			if UI.GetPickerStatus("InfFly") and EntityGetWithName("WandEditorInfFly") == 0 then
                 local player = GetPlayer()
                 local CharacterComp = EntityGetFirstComponent(player, "CharacterDataComponent")
 				if CharacterComp then
                     ComponentSetValue2(CharacterComp, "flying_needs_recharge", false)
-					GameAddFlagRun("WandEditorInfFly")
+					AddNullEntityToPlayer("WandEditorInfFly")
 				end
-            elseif not UI.GetPickerStatus("InfFly") and GameHasFlagRun("WandEditorInfFly") then
+            elseif not UI.GetPickerStatus("InfFly") and EntityGetWithName("WandEditorInfFly") ~= 0 then
 				local player = GetPlayer()
                 local CharacterComp = EntityGetFirstComponent(player, "CharacterDataComponent")
 				if CharacterComp then
                     ComponentSetValue2(CharacterComp, "flying_needs_recharge", true)
-					GameRemoveFlagRun("WandEditorInfFly")
+					RemoveNullEntityWithName("WandEditorInfFly")
 				end
 			end
             if UI.GetPickerStatus("LockHP") then--血量锁定实现
@@ -434,7 +445,7 @@ function GUIUpdate()
                     UI.UserData["QuickTPFr"] = nil
                 end
             end
-			if UI.GetPickerStatus("DisablePlayerGravity") and not GameHasFlagRun("wand_editor_disable_player_gravity") then
+			if UI.GetPickerStatus("DisablePlayerGravity") and EntityGetWithName("wand_editor_disable_player_gravity") == 0 then
                 local player = GetPlayer()
                 local comp = EntityGetFirstComponentIncludingDisabled(player, "CharacterPlatformingComponent")
                 if comp ~= nil then
@@ -451,8 +462,8 @@ function GUIUpdate()
 					ComponentSetValue2(comp, "velocity_min_y", 0)
 					ComponentSetValue2(comp, "velocity_max_y", 0)
 				end
-                GameAddFlagRun("wand_editor_disable_player_gravity")
-            elseif not UI.GetPickerStatus("DisablePlayerGravity") and GameHasFlagRun("wand_editor_disable_player_gravity") then
+                AddNullEntityToPlayer("wand_editor_disable_player_gravity")
+            elseif not UI.GetPickerStatus("DisablePlayerGravity") and EntityGetWithName("wand_editor_disable_player_gravity") ~= 0 then
 				local player = GetPlayer()
                 local comp = EntityGetFirstComponentIncludingDisabled(player, "CharacterPlatformingComponent")
 				if comp ~= nil then
@@ -465,7 +476,7 @@ function GUIUpdate()
 					ComponentSetValue2(comp, "velocity_min_y", y_min)
 					ComponentSetValue2(comp, "velocity_max_y", y_max)
 				end
-				GameRemoveFlagRun("wand_editor_disable_player_gravity")
+				RemoveNullEntityWithName("wand_editor_disable_player_gravity")
 			end
             if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then --主按钮关闭时禁止下一步
                 return

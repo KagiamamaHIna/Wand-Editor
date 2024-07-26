@@ -17,7 +17,8 @@ local function NumInput(id, x, y, w, l, str)
     end
     GuiTooltip(UI.gui, GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"), "")
 	if right_click then
-		UI.TextInputRestore(id)
+        UI.TextInputRestore(id)
+		GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 	end
 end
 
@@ -87,27 +88,46 @@ function SpwanDummyCB(_, _, _, _, this_enable)
         GuiTooltip(UI.gui, GameTextGet("$wand_editor_options_spwan_dummy_tips"), "")
 
 		if spwan_left_click then
-            local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
-            local px, py = Compose(EntityGetTransform, GetPlayer)()
-			local dummy = EntityLoad("mods/wand_editor/files/entity/dummy_target.xml", px, py)
-            if not shift then
-                local dmgModel = EntityGetFirstComponentIncludingDisabled(dummy, "DamageModelComponent")
-                local SetDmgMult = Curry(ComponentObjectSetValue2, 4)(dmgModel, "damage_multipliers")
-                SetDmgMult("projectile", GetDmgNum("DummyDmgProj"))
-                SetDmgMult("explosion", GetDmgNum("DummyDmgExpl"))
-                SetDmgMult("electricity", GetDmgNum("DummyDmgElectric"))
-                SetDmgMult("slice", GetDmgNum("DummyDmgSlice"))
-				SetDmgMult("drill",GetDmgNum("DummyDmgDrill"))
-				SetDmgMult("fire",GetDmgNum("DummyDmgFire"))
-				SetDmgMult("ice",GetDmgNum("DummyDmgIce"))
-                SetDmgMult("melee", GetDmgNum("DummyDmgMelee"))
-				SetDmgMult("holy",GetDmgNum("DummyDmgHoly"))
-                SetDmgMult("healing", GetDmgNum("DummyDmgHeal"))
-                SetDmgMult("physics_hit", GetDmgNum("DummyDmgPhysicsHit"))
-                SetDmgMult("curse", GetDmgNum("DummyDmgCurse"))
-				SetDmgMult("radioactive", GetDmgNum("DummyDmgToxic"))
-				SetDmgMult("poison", GetDmgNum("DummyDmgPoison"))
-			end
+            UI.TickEventFn["MoveDummyFn"] = function()
+                local click = InputIsMouseButtonDown(Mouse_right)
+                if click or GameIsInventoryOpen() then --右键取消，或打开物品栏取消
+                    UI.TickEventFn["MoveDummyFn"] = nil
+                    UI.OnMoveImage("MoveDummy", 0, 0, "mods/wand_editor/files/entity/dummy/dummy_target.png", true, 1.5)
+                    return
+                end
+                UI.OnMoveImage("MoveDummy", 0, 0, "mods/wand_editor/files/entity/dummy/dummy_target.png", false, 1.5,UI.GetZDeep() - 114514)
+                local LeftClick = InputIsMouseButtonDown(Mouse_left)
+                if LeftClick then
+					local px, py = DEBUG_GetMouseWorld()
+                    local dummy = EntityLoad("mods/wand_editor/files/entity/dummy_target.xml", px, py)
+					local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
+                    if not shift then
+                        local dmgModel = EntityGetFirstComponentIncludingDisabled(dummy, "DamageModelComponent")
+                        local SetDmgMult = Curry(ComponentObjectSetValue2, 4)(dmgModel, "damage_multipliers")
+                        SetDmgMult("projectile", GetDmgNum("DummyDmgProj"))
+                        SetDmgMult("explosion", GetDmgNum("DummyDmgExpl"))
+                        SetDmgMult("electricity", GetDmgNum("DummyDmgElectric"))
+                        SetDmgMult("slice", GetDmgNum("DummyDmgSlice"))
+                        SetDmgMult("drill", GetDmgNum("DummyDmgDrill"))
+                        SetDmgMult("fire", GetDmgNum("DummyDmgFire"))
+                        SetDmgMult("ice", GetDmgNum("DummyDmgIce"))
+                        SetDmgMult("melee", GetDmgNum("DummyDmgMelee"))
+                        SetDmgMult("holy", GetDmgNum("DummyDmgHoly"))
+                        SetDmgMult("healing", GetDmgNum("DummyDmgHeal"))
+                        SetDmgMult("physics_hit", GetDmgNum("DummyDmgPhysicsHit"))
+                        SetDmgMult("curse", GetDmgNum("DummyDmgCurse"))
+                        SetDmgMult("radioactive", GetDmgNum("DummyDmgToxic"))
+                        SetDmgMult("poison", GetDmgNum("DummyDmgPoison"))
+                        GamePrint(GameTextGet("$wand_editor_options_spwan_dummy_done_tips"))
+                    else
+						GamePrint(GameTextGet("$wand_editor_options_spwan_dummy_done_tips_default"))
+                    end
+                    UI.OnMoveImage("MoveDummy", 0, 0, "mods/wand_editor/files/entity/dummy/dummy_target.png", true, 1.5)
+					UI.TickEventFn["MoveDummyFn"] = nil
+					return
+                end
+            end
+			
 		end
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
