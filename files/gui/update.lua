@@ -340,7 +340,7 @@ function GUIUpdate()
 			
             if UI.GetPickerStatus("EditWandsEverywhere") and EntityGetWithName("WandEditorEditWandsEverywhereEntity") == 0 then --随编给予
                 local player = GetPlayer()
-                LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/edit_wands_everywhere.xml")
+                EntityLoadChild(player, "mods/wand_editor/files/entity/edit_wands_everywhere.xml")
             elseif (not UI.GetPickerStatus("EditWandsEverywhere")) and EntityGetWithName("WandEditorEditWandsEverywhereEntity") ~= 0 then
                 EntityKill(EntityGetWithName("WandEditorEditWandsEverywhereEntity"))
             end

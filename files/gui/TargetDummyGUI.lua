@@ -61,8 +61,7 @@ function SpwanDummyCB(_, _, _, _, this_enable)
     if not this_enable then
         return
     end
-	local ContainerH = 210
-    UI.ScrollContainer("SpwanDummyOptions", 20, 64, 268, ContainerH, 2, 2)
+    UI.ScrollContainer("SpwanDummyOptions", 20, 64, 268, 210, 2, 2)
     UI.AddAnywhereItem("SpwanDummyOptions", function()
         GuiLayoutBeginVertical(UI.gui, 0, 0, true)
         NewDamageSettingLine("$wand_editor_dmg_proj", "DummyDmgProj")
@@ -78,10 +77,10 @@ function SpwanDummyCB(_, _, _, _, this_enable)
         NewDamageSettingLine("$wand_editor_dmg_physics_hit", "DummyDmgPhysicsHit")
         NewDamageSettingLine("$wand_editor_dmg_curse", "DummyDmgCurse")
         NewDamageSettingLine("$wand_editor_dmg_toxic", "DummyDmgToxic")
-		NewDamageSettingLine("$wand_editor_dmg_poison", "DummyDmgPoison")
-        GuiLayoutEnd(UI.gui)
-
-        GuiLayoutBeginHorizontal(UI.gui, 0, ContainerH - 12, true, 4, 2)
+        NewDamageSettingLine("$wand_editor_dmg_poison", "DummyDmgPoison")
+		
+		GuiLayoutAddVerticalSpacing(UI.gui, 18)
+        GuiLayoutBeginHorizontal(UI.gui, 0, 0, true, 4, 2)
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
 		local spwan_left_click = GuiButton(UI.gui,UI.NewID("SettingDummySpwan"),3,0,GameTextGet("$wand_editor_options_spwan_dummy"))
@@ -160,8 +159,10 @@ function SpwanDummyCB(_, _, _, _, this_enable)
 			UI.TextInputRestore("DummyDmgToxic")
 			UI.TextInputRestore("DummyDmgPoison")
 		end
-		GuiLayoutEnd(UI.gui)
+        GuiLayoutEnd(UI.gui)
+        GuiLayoutEnd(UI.gui)
     end)
-	
-	UI.DrawScrollContainer("SpwanDummyOptions", false)
+	if not UI.TickEventFn["MoveDummyFn"] then
+		UI.DrawScrollContainer("SpwanDummyOptions", false)
+	end
 end

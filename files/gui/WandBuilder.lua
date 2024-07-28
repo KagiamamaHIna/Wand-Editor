@@ -116,8 +116,7 @@ function WandBuilderCB(_, _, _, _, this_enable)
 	if not this_enable then
 		return
 	end
-	local BuilderH = 160
-	UI.ScrollContainer("WandBuilder", 20, 64, 268, BuilderH, 2, 2)
+	UI.ScrollContainer("WandBuilder", 20, 64, 268, 160, 2, 2)
 	UI.AddAnywhereItem("WandBuilder", function()
 		local function GetValueStr(id, format)
 			local num = UI.GetSliderValue(id)
@@ -214,8 +213,9 @@ function WandBuilderCB(_, _, _, _, this_enable)
 		NewLine("$wand_editor_update_wand_image", UpdateImage, function(ShowW)
 			UI.checkbox("update_image_builder", ShowW+2, 1, "", nil, nil, nil, nil)
 		end)
-        GuiLayoutEnd(this.gui)
-        GuiLayoutBeginHorizontal(this.gui, 0, BuilderH-12, true, 4, 2)
+		
+		GuiLayoutAddVerticalSpacing(this.gui, 18)
+        GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 4, 2)
         GuiZSetForNextWidget(this.gui, this.GetZDeep()-1)
         if GuiButton(this.gui, this.NewID("wand_builder_botton"), 4, 0, GameTextGet("$wand_editor_wand_builder_botton")) then
 			InitWand(GetWand(),nil,Compose(EntityGetTransform, GetPlayer)())
@@ -266,7 +266,8 @@ function WandBuilderCB(_, _, _, _, this_enable)
 				end)
 			end
 		end
-		GuiLayoutEnd(this.gui)
+        GuiLayoutEnd(this.gui)
+        GuiLayoutEnd(this.gui)
 	end)
 	UI.DrawScrollContainer("WandBuilder", false)
 end
