@@ -325,7 +325,8 @@ for k, v in pairs(actions or {}) do
     result[v.id].max_uses = v.max_uses
     result[v.id].spawn_probability = v.spawn_probability
     result[v.id].spawn_level = v.spawn_level
-	result[v.id].never_unlimited = v.never_unlimited
+    result[v.id].never_unlimited = v.never_unlimited
+	result[v.id].custom_xml_file = v.custom_xml_file
 	pcall(v.action) --执行
 	result[v.id].reload_time = current_reload_time
 	if result[v.id].c == nil then

@@ -871,6 +871,12 @@ function UpdateWand(wandData, wand)
 		return InitWand(SWandData, wand)
 	end
 end
+local _spellData
+if _ToFnSpellData == nil then
+    _spellData = {}
+else
+    _spellData = _ToFnSpellData
+end
 
 ---通过法杖数据初始化一根法杖并返回其实体id...好大啊！
 ---@param wandData Wand 由GetWandData函数自动生成
@@ -936,9 +942,31 @@ function InitWand(wandData, wand, x, y)
             local spell = wandData.spells.always[i]
             if Always[i] then
                 local ItemActionComp = EntityGetFirstComponentIncludingDisabled(Always[i], "ItemActionComponent")
-				local actionItem = EntityGetFirstComponentIncludingDisabled(Always[i], "ItemComponent")
-				ComponentSetValue2(actionItem, "inventory_slot", 0, i)
-                ComponentSetValue2(ItemActionComp, "action_id", spell.id)
+                local actionItem = EntityGetFirstComponentIncludingDisabled(Always[i], "ItemComponent")
+                local spellid = L_ComponentGetValue2(ItemActionComp, "action_id")
+				local action = Always[i]
+                if _spellData == nil or _spellData[spellid] and (_spellData[spellid].custom_xml_file or _spellData[spell.id].custom_xml_file) then
+                    EntityKill(action)
+                    action = CreateItemActionEntity(spell.id)
+                    EntityAddChild(wand, action)
+					actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")--重设置
+                else
+                    ComponentSetValue2(ItemActionComp, "action_id", spell.id)       --设置id
+                    --如果不需要杀死
+                    local Sprites = EntityGetComponentIncludingDisabled(action, "SpriteComponent")
+					for _,v in pairs(Sprites or {})do
+                        local image = ComponentGetValue2(v, "image_file")
+						if _spellData[spellid].sprite == image then
+                            ComponentSetValue2(v, "image_file", _spellData[spell.id].sprite)
+						elseif SpellTypeBG[_spellData[spellid].type] == image then
+							ComponentSetValue2(v, "image_file", SpellTypeBG[_spellData[spell.id].type])
+						end
+					end
+                end
+				ComponentSetValue2(actionItem, "permanently_attached", true)
+                ComponentSetValue2(actionItem, "is_frozen", spell.is_frozen)
+                ComponentSetValue2(actionItem, "inventory_slot", 0, i)
+				EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
             else
                 local action = CreateItemActionEntity(spell.id)
                 local actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
@@ -955,7 +983,25 @@ function InitWand(wandData, wand, x, y)
                 if spells[i] then
                     action = spells[i]
                     local ItemActionComp = EntityGetFirstComponentIncludingDisabled(action, "ItemActionComponent")
-                    ComponentSetValue2(ItemActionComp, "action_id", spell.id) --设置id
+                    local spellid = L_ComponentGetValue2(ItemActionComp, "action_id")
+                    if _spellData == nil or _spellData[spellid] and (_spellData[spellid].custom_xml_file or _spellData[spell.id].custom_xml_file) then
+						EntityKill(action)
+                        action = CreateItemActionEntity(spell.id)
+						EntityAddChild(wand, action)
+                    else
+                        ComponentSetValue2(ItemActionComp, "action_id", spell.id) --设置id
+						--如果不需要杀死
+						local Sprites = EntityGetComponentIncludingDisabled(action, "SpriteComponent")
+                        for _, v in pairs(Sprites or {}) do--重新设置贴图
+                            local image = ComponentGetValue2(v, "image_file")
+                            if _spellData[spellid].sprite == image then
+                                ComponentSetValue2(v, "image_file", _spellData[spell.id].sprite)
+							elseif SpellTypeBG[_spellData[spellid].type] == image then
+								ComponentSetValue2(v, "image_file", SpellTypeBG[_spellData[spell.id].type])
+							end
+                        end
+						
+					end
                 else
                     action = CreateItemActionEntity(spell.id)
                 end

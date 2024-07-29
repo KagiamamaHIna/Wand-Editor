@@ -16,7 +16,6 @@ function GUIUpdate()
 		---@class Gui
         UI = dofile_once("mods/wand_editor/files/libs/gui.lua")
 		
-		dofile_once("mods/wand_editor/files/libs/fn.lua")
 		dofile_once("data/scripts/lib/utilities.lua")
 		dofile_once("mods/wand_editor/files/gui/SpellsScroll.lua")
         dofile_once("mods/wand_editor/files/gui/WandContainer.lua")
@@ -27,7 +26,9 @@ function GUIUpdate()
 		UI.UserData["HasSpellMove"] = false
 		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取法术数据
 		local spellData = data[1]
-		local TypeToSpellList = data[2]
+        local TypeToSpellList = data[2]
+		_ToFnSpellData = spellData
+		dofile("mods/wand_editor/files/libs/fn.lua")
 		local ZDeepest = UI.GetZDeep()
 		---绘制一个悬浮法术
 		---@param x number
