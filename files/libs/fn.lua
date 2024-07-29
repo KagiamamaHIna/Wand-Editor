@@ -532,7 +532,6 @@ function SetActiveItem(id)
     if inventory2 ~= nil then
 		ComponentSetValue2(inventory2, "mForceRefresh", true)
         ComponentSetValue2(inventory2, "mActiveItem", id)
-        ComponentSetValue2(inventory2, "mActualActiveItem", id)
 	end
 end
 
