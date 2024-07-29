@@ -1,10 +1,22 @@
 dofile_once("data/scripts/gun/procedural/gun_procedural.lua")
 local this = UI
 local function GetValue(id, isDecimal)
-    local num = UI.GetSliderValue(id)
+    local num = tonumber(UI.GetInputText(id))
     if num == nil then
         return ""
     end
+    if isDecimal then
+        return num
+    end
+    return math.floor(num)
+end
+
+local function GetValueSToF(id, isDecimal)
+	local num = tonumber(UI.GetInputText(id) or "")
+    if num == nil then
+        return ""
+    end
+	num = math.floor(num*60 + 0.5)
     if isDecimal then
         return num
     end
@@ -25,10 +37,10 @@ local function GetWand()
 		item_name = nil,
 		mana_charge_speed = GetValue("manachargespeed_builder"),      					--回蓝速度
 		mana_max = GetValue("manamax_builder"),               							--蓝上限
-		fire_rate_wait = GetValue("castdelay_builder"),         						--施放延迟
-		reload_time = GetValue("rechargetime_builder"),            						--充能延迟
+		fire_rate_wait = GetValueSToF("castdelay_builder"),         						--施放延迟
+		reload_time = GetValueSToF("rechargetime_builder"),            						--充能延迟
 		deck_capacity = Compose(tonumber,UI.GetInputText)("capacity_builder"),          --容量
-		spread_degrees = GetValue("spread_builder"),         							--散射
+		spread_degrees = GetValue("spread_builder",true),         							--散射
 		shuffle_deck_when_empty = IsShuffle, 											--是否乱序
 		speed_multiplier = GetValue("speed_multiplier_builder", true),       			--初速度加成
 		mana = GetValue("manamax_builder"),                   							--蓝
@@ -112,47 +124,80 @@ local function NewSlider(id,x,y,text,value_min, value_max, value_default, value_
 	end
 end
 
+local function NumInput(id, x, y, w, l, str, allow)
+	allow = Default(allow, "1234567890.-")
+    UI.TextInput(id, x, y, w, l, str, allow)
+    local _,right_click, hover,_,_,wdith = GuiGetPreviousWidgetInfo(UI.gui)
+    if not hover then --文本检查
+        local srcText = UI.GetInputText(id)
+        local text = tonumber(srcText)
+        if text == nil then
+            UI.TextInputRestore(id)
+        elseif text ~= nil then
+            local Format = tostring(text)
+            if Format ~= srcText then
+                UI.SetInputText(id, Format)
+            end
+        end
+    end
+    GuiTooltip(UI.gui, GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"), "")
+    if right_click then
+        UI.TextInputRestore(id)
+        GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+    end
+	return wdith
+end
+
 function WandBuilderCB(_, _, _, _, this_enable)
 	if not this_enable then
 		return
 	end
 	UI.ScrollContainer("WandBuilder", 20, 64, 268, 160, 2, 2)
 	UI.AddAnywhereItem("WandBuilder", function()
-		local function GetValueStr(id, format)
-			local num = UI.GetSliderValue(id)
+        local function GetValueStr(id, format)
+            local num = UI.GetInputText(id)
+            if num == nil or tonumber(num) == nil or num == "" then
+                return ""
+            end
+            if format then
+                return string.format(format, tonumber(num))
+            end
+            return Compose(tostring, math.floor)(num)
+        end
+		local function GetValueStrSToF(id, format)
+			local num = tonumber(UI.GetInputText(id) or "")
             if num == nil then
                 return ""
             end
+			num = math.floor(num*60 + 0.5)
 			if format then
-                return string.format(format, tonumber(num))
+                return string.format(format, num)
 			end
 			return Compose(tostring, math.floor)(num)
 		end
 		local leftMargin = 65
-		local ColTwoMargin = 68
+		local ColTwoMargin = 73
 		local function NewLine(str, ShowText, fn, ShowFrTran)
 			str = GameTextGetTranslatedOrNot(str)
 			GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 0, 2)
 			local w = GuiGetTextDimensions(this.gui, str)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
-			GuiText(this.gui, leftMargin - w, 0, str)
-			if ShowFrTran then
+            GuiText(this.gui, leftMargin - w, 0, str)
+			if ShowText == "" or ShowText == nil then
+                ShowText = " "
+			elseif ShowFrTran then
 				local num = tonumber(ShowText)
 				local SecondWithSign = Compose(NumToWithSignStr, tonumber, FrToSecondStr)
 				if num then
 					ShowText = SecondWithSign(num) .. "s(" .. ShowText .. "f)"
 				end
 			end
-			if ShowText == "" or ShowText == nil then
-				ShowText = " "
-			end
-			local ShowW = GuiGetTextDimensions(this.gui, ShowText)
-			ShowW = GuiGetTextDimensions(this.gui, ShowText)
-			GuiRGBAColorSetForNextWidget(this.gui, 255,222,173, 255)
+
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
-			GuiText(this.gui, 5, 0, ShowText)
+            local wdith = fn(3)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
-            fn(ColTwoMargin - ShowW)
+            GuiRGBAColorSetForNextWidget(this.gui, 255, 222, 173, 255)
+			GuiText(this.gui, ColTwoMargin-wdith, 0, ShowText)
 			GuiLayoutEnd(this.gui)
 		end
         GuiLayoutBeginVertical(this.gui, 0, 0, true)
@@ -163,46 +208,41 @@ function WandBuilderCB(_, _, _, _, this_enable)
 			shuffle = GameTextGet("$menu_no")
 		end
 		NewLine("$inventory_shuffle", shuffle, function(ShowW)
-			UI.checkbox("shuffle_builder", ShowW+2, 1, "", nil, nil, nil, nil)
+            UI.checkbox("shuffle_builder", ShowW + 2, 1, "", nil, nil, nil, nil)
+			return 24.5
 		end)
 		NewLine("$inventory_actionspercast", GetValueStr("cast_builder"), function(ShowW)
-			NewSlider("cast_builder", ShowW, 1, "", 1, 50, 1, 1," ",120)
+            --NewSlider("cast_builder", ShowW, 1, "", 1, 50, 1, 1, " ", 120)
+			return NumInput("cast_builder", ShowW + 2, 1, 70, 9, "1", "1234567890")
 		end)
-		NewLine("$inventory_castdelay", GetValueStr("castdelay_builder"), function(ShowW)
-			NewSlider("castdelay_builder", ShowW, 1, "", -21, 240, 10, 1," ",120)
+		NewLine("$inventory_castdelay", GetValueStrSToF("castdelay_builder"), function(ShowW)
+            --NewSlider("castdelay_builder", ShowW, 1, "", -21, 240, 10, 1, " ", 120)
+			return NumInput("castdelay_builder", ShowW + 2, 1, 70, 7, "0.33", "1234567890.-")
 		end, true)
-		NewLine("$inventory_rechargetime", GetValueStr("rechargetime_builder"), function(ShowW)
-			NewSlider("rechargetime_builder", ShowW, 1, "", -21, 240, 20, 1," ",120)
+		NewLine("$inventory_rechargetime", GetValueStrSToF("rechargetime_builder"), function(ShowW)
+            --NewSlider("rechargetime_builder", ShowW, 1, "", -21, 240, 20, 1, " ", 120)
+            return NumInput("rechargetime_builder", ShowW + 2, 1, 70, 7, "0.17", "1234567890.-")
 		end, true)
 		NewLine("$inventory_manamax", GetValueStr("manamax_builder"), function(ShowW)
-			NewSlider("manamax_builder", ShowW, 1, "", 0, 20000, 2000, 1," ",120)
+            --NewSlider("manamax_builder", ShowW, 1, "", 0, 20000, 2000, 1, " ", 120)
+			return NumInput("manamax_builder",ShowW + 2, 1, 70,9,"2000","1234567890")
 		end)
 		NewLine("$inventory_manachargespeed", GetValueStr("manachargespeed_builder"), function(ShowW)
-			NewSlider("manachargespeed_builder", ShowW, 1, "", 0, 20000, 500, 1," ",120)
+            --NewSlider("manachargespeed_builder", ShowW, 1, "", 0, 20000, 500, 1, " ", 120)
+			return NumInput("manachargespeed_builder",ShowW + 2, 1, 70,9,"500","1234567890")
 		end)
-		NewLine("$inventory_capacity", UI.GetInputText("capacity_builder"), function(ShowW)
-            UI.TextInput("capacity_builder", ShowW + 2, 0, 120, 9, "26", "1234567890")
-            local _, _, hover = GuiGetPreviousWidgetInfo(this.gui)
-			GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
+		NewLine("$inventory_capacity", GetValueStr("capacity_builder"), function(ShowW)
+			return  NumInput("capacity_builder", ShowW + 2, 0, 70, 9, "26", "1234567890")
 
-            local str = UI.GetInputText("capacity_builder")
-			if str ~= "" then
-                local num = tonumber(str)
-				if num > 500 then
-					UI.SetInputText("capacity_builder", "500")
-				end
-			end
-			if not hover and UI.GetInputText("capacity_builder") == "" or (hover and InputIsMouseButtonJustDown(Mouse_right)) then
-                UI.TextInputRestore("capacity_builder")
-				GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
-			end
 		end)
 		NewLine("$inventory_spread", GetValueStr("spread_builder")..GameTextGet("$wand_editor_deg"), function(ShowW)
-			NewSlider("spread_builder", ShowW, 1, "", -30, 30, 0, 1," ",120)
+			return NumInput("spread_builder", ShowW + 2, 0, 70, 9, "0", "1234567890.-")
+			--NewSlider("spread_builder", ShowW, 1, "", -30, 30, 0, 1," ",120)
         end)
-		NewLine("$wand_editor_speed_multiplier", "x"..GetValueStr("speed_multiplier_builder", "%.4f"), function(ShowW)
-            UI.Slider("speed_multiplier_builder", ShowW, 1, "", 0, 2, 1, 0.0001, " ", 120)
-			GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
+		NewLine("$wand_editor_speed_multiplier", "x"..GetValueStr("speed_multiplier_builder", "%.8f"), function(ShowW)
+			return NumInput("speed_multiplier_builder", ShowW + 2, 0, 70, 9, "1", "1234567890.-")
+            --UI.Slider("speed_multiplier_builder", ShowW, 1, "", 0, 2, 1, 0.0001, " ", 120)
+			--GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
         end)
 		local UpdateImage
 		if UI.GetCheckboxEnable("update_image_builder") then
@@ -211,7 +251,8 @@ function WandBuilderCB(_, _, _, _, this_enable)
 			UpdateImage = GameTextGet("$menu_no")
 		end
 		NewLine("$wand_editor_update_wand_image", UpdateImage, function(ShowW)
-			UI.checkbox("update_image_builder", ShowW+2, 1, "", nil, nil, nil, nil)
+            UI.checkbox("update_image_builder", ShowW + 2, 1, "", nil, nil, nil, nil)
+			return 24.5
 		end)
 		
 		GuiLayoutAddVerticalSpacing(this.gui, 18)
@@ -229,14 +270,14 @@ function WandBuilderCB(_, _, _, _, this_enable)
                 local wandData = GetWandData(wand)
 				if InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT) then
 					this.SetCheckboxEnable("shuffle_builder", wandData.shuffle_deck_when_empty)
-					this.SetSliderValue("cast_builder", wandData.actions_per_round)
-					this.SetSliderValue("castdelay_builder", wandData.fire_rate_wait)
-					this.SetSliderValue("rechargetime_builder", wandData.reload_time)
-					this.SetSliderValue("manamax_builder", wandData.mana_max)
-					this.SetSliderValue("manachargespeed_builder", wandData.mana_charge_speed)
+					this.SetInputText("cast_builder", wandData.actions_per_round)
+					this.SetInputText("castdelay_builder", FrToSecondStr(wandData.fire_rate_wait))
+					this.SetInputText("rechargetime_builder", FrToSecondStr(wandData.reload_time))
+					this.SetInputText("manamax_builder", wandData.mana_max)
+					this.SetInputText("manachargespeed_builder", wandData.mana_charge_speed)
 					this.SetInputText("capacity_builder", tostring(wandData.deck_capacity))
-					this.SetSliderValue("spread_builder", wandData.spread_degrees)
-                    this.SetSliderValue("speed_multiplier_builder", wandData.speed_multiplier)
+					this.SetInputText("spread_builder", wandData.spread_degrees)
+                    this.SetInputText("speed_multiplier_builder", wandData.speed_multiplier)
                 else
 					InitWand(wandData,nil,Compose(EntityGetTransform, GetPlayer)())
 				end
