@@ -506,7 +506,8 @@ function RefreshHeldWands()
 	local inventory2 = EntityGetFirstComponent(player, "Inventory2Component")
 	if inventory2 ~= nil then
 		ComponentSetValue2(inventory2, "mForceRefresh", true)
-		ComponentSetValue2(inventory2, "mActualActiveItem", 0)
+        ComponentSetValue2(inventory2, "mActualActiveItem", 0)
+		ComponentSetValue2(inventory2, "mDontLogNextItemEquip", true)
 	end
 end
 
@@ -530,7 +531,8 @@ function SetActiveItem(id)
     local inventory2 = EntityGetFirstComponent(player, "Inventory2Component")
     if inventory2 ~= nil then
 		ComponentSetValue2(inventory2, "mForceRefresh", true)
-		ComponentSetValue2(inventory2, "mActiveItem", id)
+        ComponentSetValue2(inventory2, "mActiveItem", id)
+        ComponentSetValue2(inventory2, "mActualActiveItem", id)
 	end
 end
 

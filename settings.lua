@@ -111,6 +111,13 @@ mod_settings =
 		value_default = true,
         scope = MOD_SETTING_SCOPE_RUNTIME,
     }),
+	Setting({
+        id = "remove_fog_of_war",
+		ui_name = "wand_editor_remove_fog_of_war",
+		ui_description = "wand_editor_remove_fog_of_war_tip",
+		value_default = false,
+        scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+    }),
     Setting({
         id = "reset_all_btn_in_setting",
 		ui_name = "",

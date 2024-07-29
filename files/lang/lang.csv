@@ -162,3 +162,5 @@ wand_editor_no_spell_cache_tip,The generated spell data will no longer be cached
 wand_editor_no_spell_cache,Spell Data Cache,,,,,,,,法术数据缓存,,,,,,,
 wand_editor_locked_target_pos,Fix Target Dummy position,,,,,,,,锁定假人位置,,,,,,,
 wand_editor_locked_target_pos_tip,Will fix the dummy to its spawn point to avoid accidental movement,,,,,,,,会把假人固定到其出生点，避免意外移动,,,,,,,
+wand_editor_remove_fog_of_war,Remove fog of war,,,,,,,,移除战争迷雾,,,,,,,
+wand_editor_remove_fog_of_war_tip,Turn on this setting and there will be no more fog of war underground.,,,,,,,,开启此选项，地下将不再会有战争迷雾,,,,,,,
