@@ -471,9 +471,7 @@ function DrawWandContainer(wandEntity, spellData)
 			end
 			this.ScrollContainer("WandSpellViewerContainer", 250, 64, this.ScreenWidth - 250 - 40,
 				this.ScreenHeight - 60 - 70, nil, 0, 1.14)
-            if this.UserData["WandContainerHasHover"] == nil or this.UserData["WandContainerHasHover"] then
-                this.UserData["WandContainerHasHover"] = false
-            end
+
 			for k, v in pairs(ViewerWandData.spells.always) do
 				this.AddScrollImageItem("WandSpellViewerContainer", "data/ui_gfx/inventory/full_inventory_box.png",
 					function()

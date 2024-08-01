@@ -40,7 +40,12 @@ function GUIUpdate()
 			if not hasMove and not UI.GetNoMoveBool() then
 				UI.UserData["FloatSpellID"] = id
 				UI.UserData["HasSpellMove"] = true
-				UI.TickEventFn["MoveSpellFn"] = function()          --分离出一个事件，用于表示法术点击后的效果
+                UI.TickEventFn["MoveSpellFn"] = function() --分离出一个事件，用于表示法术点击后的效果
+                    UI.OnceCallOnExecute(function()
+						if UI.UserData["WandContainerHasHover"] == nil or UI.UserData["WandContainerHasHover"] then
+							UI.UserData["WandContainerHasHover"] = false
+						end
+					end)
 					local click = InputIsMouseButtonDown(Mouse_right)
 					if click or GameIsInventoryOpen() then          --右键取消，或打开物品栏取消
 						if GameIsInventoryOpen() and UI.UserData["UpSpellIndex"] then --如果是点击之前的法术并且打开了物品栏，恢复法术
@@ -66,13 +71,10 @@ function GUIUpdate()
 					local LeftClick = (InputIsMouseButtonDown(Mouse_left) and not ModSettingGet(fastConcatStr(ModID, "SpellDepotCloseSpellOnGround")))
 					if not UI.UserData["WandContainerHasHover"] and LeftClick then
                         UI.UserData["SpellHoverEnable"] = true
-                    elseif UI.UserData["WandContainerHasHover"] and LeftClick and not EntityHasTag(GetActiveItem() or 0, "wand") then
-                        UI.UserData["SpellHoverEnable"] = true
-						UI.UserData["CreateItemActionEntityEnable"] = true
 					end
 					if not status then
 						UI.TickEventFn["MoveSpellFn"] = nil
-						if not UI.UserData["WandContainerHasHover"] or UI.UserData["CreateItemActionEntityEnable"] then
+						if (not UI.UserData["WandContainerHasHover"]) or UI.UserData["CreateItemActionEntityEnable"] then
 							local worldx, worldy = DEBUG_GetMouseWorld()
 							local spell = CreateItemActionEntity(id, worldx, worldy + 5)
 							if UI.UserData["UpSpellIndex"] and UI.UserData["UpSpellIndex"][4] ~= nil then
@@ -347,10 +349,10 @@ function GUIUpdate()
             end
 			local t = GetStorageComp(nil,nil,true)
             local _, m, d = GameGetDateAndTimeLocal()
-			if t and t[m] and t[m] and t[m][d] ~= nil and (not ModSettingGet(fastConcatStr(ModID,"Mama"))) then
+			if t and t[m] and t[m][d] ~= nil and (not ModSettingGet(fastConcatStr(ModID,"Mama"))) then
 				GamePrint("Happy Birthday! ", t[m][d])
 				ModSettingSet(fastConcatStr(ModID,"Mama"), true)
-            elseif t and t[m] and t[m] and t[m][d] == nil and ModSettingGet(fastConcatStr(ModID,"Mama")) then
+            elseif t and t[m] and t[m][d] == nil and ModSettingGet(fastConcatStr(ModID,"Mama")) then
 				ModSettingSet(fastConcatStr(ModID,"Mama"), false)
 			end
 			if UI.GetPickerStatus("UnlimitedSpells") and EntityGetWithName("WandEditorUnlimitedSpells") == 0 then--无限法术切换
