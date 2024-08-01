@@ -448,7 +448,6 @@ function DrawWandContainer(wandEntity, spellData)
 	end
 
 
-	local HasViewerHover = false
 	this.HorizontalScroll("WandContainer", HScrollX, HScrollY, TrueWidth, 20, false, 0, 0)
 
 	local ViewerHover = function()
@@ -459,7 +458,6 @@ function DrawWandContainer(wandEntity, spellData)
         end
 		GuiTooltip(this.gui, tip, "")
 		if hover or this.UserData["FixedWand"] then
-			HasViewerHover = true
 			local ViewerWandData = wandData
 			local ViewerWandEntity = wandEntity
 			if this.UserData["FixedWand"] then
@@ -518,9 +516,6 @@ function DrawWandContainer(wandEntity, spellData)
 			ViewerHover, ViewerClick, nil, true)
 	end
     if not Skip then --绘制法术编辑栏
-        if this.UserData["WandContainerHasHover"] == nil or (not HasViewerHover) then
-            this.UserData["WandContainerHasHover"] = false
-        end
         for k, v in pairs(wandData.spells.always) do
             this.AddHScrollItem("WandContainer", function()
                 SpellPicker("WandContainer", "WandContainer", wandEntity, wandData, spellData, k, v, true)
