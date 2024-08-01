@@ -347,10 +347,10 @@ function GUIUpdate()
             end
 			local t = GetStorageComp(nil,nil,true)
             local _, m, d = GameGetDateAndTimeLocal()
-			if t[m][d] ~= nil and (not ModSettingGet(fastConcatStr(ModID,"Mama"))) then
+			if t and t[m] and t[m] and t[m][d] ~= nil and (not ModSettingGet(fastConcatStr(ModID,"Mama"))) then
 				GamePrint("Happy Birthday! ", t[m][d])
 				ModSettingSet(fastConcatStr(ModID,"Mama"), true)
-            elseif t[m][d] == nil and ModSettingGet(fastConcatStr(ModID,"Mama")) then
+            elseif t and t[m] and t[m] and t[m][d] == nil and ModSettingGet(fastConcatStr(ModID,"Mama")) then
 				ModSettingSet(fastConcatStr(ModID,"Mama"), false)
 			end
 			if UI.GetPickerStatus("UnlimitedSpells") and EntityGetWithName("WandEditorUnlimitedSpells") == 0 then--无限法术切换
