@@ -1,7 +1,9 @@
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 local player = GetPlayer()
 local entity = GetUpdatedEntityID()
-
+if player == 0 or not EntityGetIsAlive(player) then
+	return
+end
 --通过计算来动态删增需要的随编buff
 local NoEditCount = GameGetGameEffectCount(player, "NO_WAND_EDITING")
 local EditCount = GameGetGameEffectCount(player, "EDIT_WANDS_EVERYWHERE")
