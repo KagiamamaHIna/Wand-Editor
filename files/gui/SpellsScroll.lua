@@ -122,6 +122,9 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	end
 	--当搜索内容不为空且上一次搜索内容不等于现在的输入内容，或类型变化时搜索，或匹配分数变化时搜索，或搜索方式函数变化时搜索，或id搜索模式变化时搜索
     if (Search ~= "" and LastSearch ~= Search) or LastType ~= SpellDrawType or LastFn ~= UesSearchRatio or LastRatioMinScore ~= RatioMinScore or LastIDSearchMode ~= IDSearchMode then
+		if Search == "" then
+			return DrawSpellList,SpellDrawType
+		end
 		LastSearch = Search
         LastType = SpellDrawType
 		SpellDrawType = "HasSearch"

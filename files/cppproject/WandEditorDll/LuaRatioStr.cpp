@@ -18,12 +18,30 @@ namespace lua {
 		return 1;
 	}
 
+	std::unordered_map<std::string, std::vector<std::string>> PinyinCache;
+
 	int lua_AbsPartialPinyinRatio(lua_State* L) {
 		std::string s1 = luaL_checkstring(L, 1);
 		std::string s2 = luaL_checkstring(L, 2);
 		double score = 0;
 		if (s1.find(s2) != -1) {//如果s2是s1的子串就进行初步匹配，将s2视为主串，检测s1，可知匹配程度
 			score = rapidfuzz::fuzz::ratio(s1, s2);
+		}
+		if (PinyinCache.count(s1)) {
+			for (const auto& str : PinyinCache[s1]) {
+				double NewScore = 0;
+				if (str.find(s2) != -1) {//如果s2是排列出来的字符串的子串就进行匹配，操作同上
+					NewScore = rapidfuzz::fuzz::ratio(str, s2);
+				}
+				if (NewScore > score) {
+					score = NewScore;
+				}
+			}
+			lua_pushnumber(L, score);
+			return 1;
+		}
+		else {
+			PinyinCache[s1] = std::vector<std::string>();
 		}
 		std::string temp;
 		std::vector<std::vector<std::string>> pinyinBuf;
@@ -35,11 +53,16 @@ namespace lua {
 					temp.clear();
 				}
 				std::vector<std::string> tempVec = pinyinData.GetPinyin(utf8s1[i]);
+				std::unordered_map<char, bool> map;
 				for (auto& v : pinyinData.GetPinyin(utf8s1[i])) {
-					tempVec.push_back(v.substr(0, 1));
-					std::string temp = v.substr(0, 2);
-					if (temp == "zh" || temp == "ch" || temp == "sh") {
-						tempVec.push_back(temp);
+					if (!map.count(v[0])) {
+						tempVec.push_back(v.substr(0, 1));
+						map[v[0]] = true;
+						if ((v[0] == 'z' || v[0] == 'c' || v[0] == 's') && v[1]) {//避免多余的字符串构造
+							if (v[1] == 'h') {
+								tempVec.push_back(v.substr(0, 2));
+							}
+						}
 					}
 				}
 				pinyinBuf.push_back(tempVec);
@@ -50,12 +73,12 @@ namespace lua {
 		}
 		std::stack<std::pair<int, std::string>> stk;//用栈模拟递归函数行为
 		stk.push({ 0, "" }); //初始索引为0，初始字符串为空
-
+		size_t bufSize = pinyinBuf.size();
 		while (!stk.empty()) {
 			auto [index, current] = stk.top();//结构化绑定赋值
 			stk.pop();
 			//如果索引等于data的大小，表示一个组合已经完成
-			if (index == pinyinBuf.size()) {
+			if (index == bufSize) {
 				double NewScore = 0;
 				if (current.find(s2) != -1) {//如果s2是排列出来的字符串的子串就进行匹配，操作同上
 					NewScore = rapidfuzz::fuzz::ratio(current, s2);
@@ -63,6 +86,7 @@ namespace lua {
 				if (NewScore > score) {
 					score = NewScore;
 				}
+				PinyinCache[s1].push_back(current);
 				continue;
 			}
 			//将下一个索引的所有字符串加入栈中
