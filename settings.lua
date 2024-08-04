@@ -25,7 +25,10 @@ for v,_ in pairs(gameLang.rowHeads) do--构建一个关联表用来查询键值
 		CurrentMap[tempKey] = v
 	end
 end
-local function GetText(key)--获取文本
+local function GetText(key) --获取文本
+	if key == "" then
+		return key
+	end
 	local GameKey
     local GameTextLangGet = GameTextGet("$current_language")
 	GameKey = CurrentMap[GameTextLangGet]
@@ -33,8 +36,9 @@ local function GetText(key)--获取文本
         GameKey = "en"
     end
     local result = currentLang.get(key, GameKey)
+	result = string.gsub(result, [[\n]], "\n")
 	if result == nil or result == "" then
-		result = currentLang.get(key,"en")
+        result = currentLang.get(key, "en")
 	end
 	return result
 end
@@ -143,6 +147,53 @@ mod_settings =
 			GuiIdPop(gui)
 		end
     }),
+	--[[
+	Setting({
+        category_id = "load_other_wand_box_btns",
+		ui_name = "wand_editor_load_other_wand_box",
+        ui_description = "",
+		foldable = true,
+		settings = {
+			Setting({
+				id = "load_spell_lab",
+				ui_name = "",
+				ui_description = "",
+				ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+					GuiIdPushString(gui,"wand_editor")
+                    local click = GuiButton(gui, 2, 0, 0, GetTextOrKey("wand_editor_load_spell_lab_wand_box"))
+					GuiTooltip(gui,GetTextOrKey("wand_editor_load_spell_lab_wand_box_tip"),"")
+			
+					GuiIdPop(gui)
+				end,
+            }),
+			Setting({
+				id = "load_wands_conn",
+				ui_name = "",
+				ui_description = "",
+				ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+                    GuiIdPushString(gui, "wand_editor")
+					local click = GuiButton(gui, 3, 0, 0, GetTextOrKey("wand_editor_load_wands_conn_wand_box"))
+                    GuiTooltip(gui, GetTextOrKey("wand_editor_load_wands_conn_wand_box_tip"), "")
+			
+					GuiIdPop(gui)
+				end,
+            }),
+			Setting({
+				id = "load_spell_lab_shug",
+				ui_name = "",
+				ui_description = "",
+				ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+					GuiIdPushString(gui,"wand_editor")
+					local click = GuiButton(gui, 4, 0, 0, GetTextOrKey("wand_editor_load_spell_lab_shug_wand_box"))
+                    GuiTooltip(gui, GetTextOrKey("wand_editor_load_spell_lab_shug_wand_box_tip"), "")
+					if click then
+						
+					end
+					GuiIdPop(gui)
+				end,
+			})
+		}
+    }),]]
 }
 
 function ModSettingsUpdate( init_scope )

@@ -211,13 +211,14 @@ end
 
 OldGuiTooltip = GuiTooltip
 --覆盖掉原版的函数
-GuiTooltip = function (gui, text, description)
+GuiTooltip = function(gui, text, description, xOffset)
+	xOffset = Default(xOffset, 0)
 	UI.BetterTooltipsNoCenter(function ()
         GuiText(this.public.gui, 0, 0, text)
 		if description ~= nil and description ~= "" then
 			GuiText(this.public.gui, 0, 0, description)
 		end
-	end,nil,10)
+	end,nil,10 + xOffset)
 end
 
 local BTooltipCache = {}

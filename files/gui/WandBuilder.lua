@@ -140,12 +140,12 @@ local function NumInput(id, x, y, w, l, str, allow)
             end
         end
     end
-    GuiTooltip(UI.gui, GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"), "")
+    GuiTooltip(UI.gui, GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"), "",UI.UserData["WandBuilderXOffset"])
     if right_click then
         UI.TextInputRestore(id)
         GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
     end
-	return wdith
+	return wdith,hover
 end
 
 function WandBuilderCB(_, _, _, _, this_enable)
@@ -194,9 +194,13 @@ function WandBuilderCB(_, _, _, _, this_enable)
 			end
 
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
-            local wdith = fn(3)
+            local wdith,hover = fn(3)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
             GuiRGBAColorSetForNextWidget(this.gui, 255, 222, 173, 255)
+			if hover then
+				local textW = GuiGetTextDimensions(this.gui,ShowText)
+				UI.UserData["WandBuilderXOffset"] = textW
+			end
 			GuiText(this.gui, ColTwoMargin-wdith, 0, ShowText)
 			GuiLayoutEnd(this.gui)
 		end
@@ -209,7 +213,7 @@ function WandBuilderCB(_, _, _, _, this_enable)
 		end
 		NewLine("$inventory_shuffle", shuffle, function(ShowW)
             UI.checkbox("shuffle_builder", ShowW + 2, 1, "", nil, nil, nil, nil)
-			return 24.5
+			return 24.5,false
 		end)
 		NewLine("$inventory_actionspercast", GetValueStr("cast_builder"), function(ShowW)
             --NewSlider("cast_builder", ShowW, 1, "", 1, 50, 1, 1, " ", 120)
@@ -252,7 +256,7 @@ function WandBuilderCB(_, _, _, _, this_enable)
 		end
 		NewLine("$wand_editor_update_wand_image", UpdateImage, function(ShowW)
             UI.checkbox("update_image_builder", ShowW + 2, 1, "", nil, nil, nil, nil)
-			return 24.5
+			return 24.5,false
 		end)
 		
 		GuiLayoutAddVerticalSpacing(this.gui, 18)
