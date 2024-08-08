@@ -769,3 +769,128 @@ function WandDepotCB(_, _right, _, _, this_enable)
 		end
 	end
 end
+
+UI.TickEventFn["LoadWandBox"] = function ()
+	if ModSettingGet(ModID .. "LoadSpellLab") then
+		local flag = ModDoesFileExist("mods/spell_lab/files/lib/wands.lua")
+		flag = flag or ModDoesFileExist("mods/spell_lab/files/lib/smallfolk.lua")
+		if not flag then
+			GamePrint(GameTextGet("$wand_editor_spell_lab_load_import_wand_box_error"))
+			GamePrint(GameTextGet("$wand_editor_load_spell_lab_wand_box_error"))
+		else
+			local posX = 14600
+			local posY = -45804
+			local smallfolk = dofile("mods/spell_lab/files/lib/smallfolk.lua")
+			local WANDS = dofile_once("mods/spell_lab/files/lib/wands.lua")
+			local saved_wand_data = ModSettingGet("spell_lab_saved_wands")
+			if saved_wand_data ~= nil then
+                local loaded_wands = smallfolk.loads(saved_wand_data)
+                local AllTable = {}
+				local Current = {}
+                for k, v in pairs(loaded_wands) do
+                    local wand = EntityLoad("data/entities/items/wand_level_03.xml", posX, posY)
+                    WANDS.initialize_wand(wand, v)
+                    local t = GetWandData(wand)
+                    if #Current >= TableMax then
+                        AllTable[#AllTable + 1] = Current
+                        Current = {}
+                    end
+                    Current[#Current + 1] = t
+                    EntityKill(wand)
+                end
+				AllTable[#AllTable + 1] = Current
+				for _,v in pairs(AllTable)do
+					if #v ~= 0 then
+						NewWandDepot(v)
+					end
+				end
+			end
+			
+			GamePrint(GameTextGet("$wand_editor_load_import_wand_box_done"))
+		end
+		ModSettingSet(ModID .. "LoadSpellLab", false)
+	end
+	if ModSettingGet(ModID .. "LoadECSSpellLab") then
+		local flag = ModDoesFileExist("mods/_EcsGui/files/lib/wands.lua")
+		flag = flag or ModDoesFileExist("mods/_EcsGui/files/lib/smallfolk.lua")
+		if not flag then
+			GamePrint(GameTextGet("$wand_editor_wands_conn_load_import_wand_box_error"))
+			GamePrint(GameTextGet("$wand_editor_load_wands_conn_wand_box_error"))
+		else
+			local posX = 14600
+			local posY = -45804
+			local smallfolk = dofile("mods/_EcsGui/files/lib/smallfolk.lua")
+			local WANDS = dofile_once("mods/_EcsGui/files/lib/wands.lua")
+			local saved_wand_data = ModSettingGet("WandsConn_saved_wands")
+			if saved_wand_data ~= nil then
+                local loaded_wands = smallfolk.loads(saved_wand_data)
+                local AllTable = {}
+				local Current = {}
+                for k, v in pairs(loaded_wands) do
+                    local wand = EntityLoad("data/entities/items/wand_level_03.xml", posX, posY)
+                    WANDS.initialize_wand(wand, v)
+                    local t = GetWandData(wand)
+                    if #Current >= TableMax then
+                        AllTable[#AllTable + 1] = Current
+                        Current = {}
+                    end
+                    Current[#Current + 1] = t
+                    EntityKill(wand)
+                end
+				AllTable[#AllTable + 1] = Current
+				for _,v in pairs(AllTable)do
+					if #v ~= 0 then
+						NewWandDepot(v)
+					end
+				end
+			end
+			GamePrint(GameTextGet("$wand_editor_load_import_wand_box_done"))
+		end
+		ModSettingSet(ModID .. "LoadECSSpellLab", false)
+	end
+	if ModSettingGet(ModID .. "LoadSpellLabShug") then
+		local flag = ModDoesFileExist("mods/spell_lab_shugged/files/lib/wands.lua")
+		flag = flag or ModDoesFileExist("mods/spell_lab_shugged/files/lib/smallfolk.lua")
+		if not flag then
+			GamePrint(GameTextGet("$wand_editor_spell_lab_shugged_load_import_wand_box_error"))
+			GamePrint(GameTextGet("$wand_editor_load_spell_lab_shug_wand_box_error"))
+		else
+            local MaxIndex = ModSettingGet("spell_lab_shugged.wand_box_page_max_index")
+			if MaxIndex ~= nil or MaxIndex ~= 0 then
+				local smallfolk = dofile("mods/spell_lab_shugged/files/lib/smallfolk.lua")
+                local WANDS = dofile_once("mods/spell_lab_shugged/files/lib/wands.lua")
+				local AllTable = {}
+                local Current = {}
+				local posX = 14600
+				local posY = -45804
+                for i = 1, MaxIndex do
+                    local saved_wand_data = ModSettingGet("spell_lab_shugged.wand_box_page_" .. tostring(i))
+                    if saved_wand_data ~= nil then
+                        local loaded_wands = smallfolk.loads(saved_wand_data)
+                        for k, v in pairs(loaded_wands) do
+                            local wand = EntityLoad("data/entities/items/wand_level_03.xml", posX, posY)
+                            WANDS.initialize_wand(wand, v)
+                            local t = GetWandData(wand)
+                            if #Current >= TableMax then
+                                AllTable[#AllTable + 1] = Current
+                                Current = {}
+                            end
+                            Current[#Current + 1] = t
+                            EntityKill(wand)
+                        end
+						AllTable[#AllTable + 1] = Current
+						Current = {}
+                    end
+                end
+				AllTable[#AllTable + 1] = Current
+                for _, v in pairs(AllTable) do
+					if #v ~= 0 then
+						NewWandDepot(v)
+					end
+				end
+			end
+			GamePrint(GameTextGet("$wand_editor_load_import_wand_box_done"))
+		end
+		ModSettingSet(ModID .. "LoadSpellLabShug", false)
+	end
+end

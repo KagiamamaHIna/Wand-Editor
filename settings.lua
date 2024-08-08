@@ -35,7 +35,7 @@ local function GetText(key) --获取文本
     if GameKey == nil then
         GameKey = "en"
     end
-    local result = currentLang.get(key, GameKey)
+    local result = currentLang.get(key, GameKey) or ""
 	result = string.gsub(result, [[\n]], "\n")
 	if result == nil or result == "" then
         result = currentLang.get(key, "en")
@@ -98,6 +98,7 @@ end
 local IKnowWhatImDoing_wand_editor_reset_btn_pos = false
 
 local mod_id = "wand_editor"
+local ModID = mod_id
 mod_settings_version = 1
 mod_settings = 
 {
@@ -119,6 +120,13 @@ mod_settings =
         id = "remove_fog_of_war",
 		ui_name = "wand_editor_remove_fog_of_war",
 		ui_description = "wand_editor_remove_fog_of_war_tip",
+		value_default = false,
+        scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+    }),
+	Setting({
+        id = "remove_lighting",
+		ui_name = "wand_editor_remove_lighting",
+		ui_description = "wand_editor_remove_lighting_tip",
 		value_default = false,
         scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
     }),
@@ -147,7 +155,6 @@ mod_settings =
 			GuiIdPop(gui)
 		end
     }),
-	--[[
 	Setting({
         category_id = "load_other_wand_box_btns",
 		ui_name = "wand_editor_load_other_wand_box",
@@ -162,7 +169,9 @@ mod_settings =
 					GuiIdPushString(gui,"wand_editor")
                     local click = GuiButton(gui, 2, 0, 0, GetTextOrKey("wand_editor_load_spell_lab_wand_box"))
 					GuiTooltip(gui,GetTextOrKey("wand_editor_load_spell_lab_wand_box_tip"),"")
-			
+					if click then
+						ModSettingSet(ModID.."LoadSpellLab", true)
+					end
 					GuiIdPop(gui)
 				end,
             }),
@@ -174,7 +183,9 @@ mod_settings =
                     GuiIdPushString(gui, "wand_editor")
 					local click = GuiButton(gui, 3, 0, 0, GetTextOrKey("wand_editor_load_wands_conn_wand_box"))
                     GuiTooltip(gui, GetTextOrKey("wand_editor_load_wands_conn_wand_box_tip"), "")
-			
+					if click then
+						ModSettingSet(ModID.."LoadECSSpellLab", true)
+					end
 					GuiIdPop(gui)
 				end,
             }),
@@ -187,13 +198,13 @@ mod_settings =
 					local click = GuiButton(gui, 4, 0, 0, GetTextOrKey("wand_editor_load_spell_lab_shug_wand_box"))
                     GuiTooltip(gui, GetTextOrKey("wand_editor_load_spell_lab_shug_wand_box_tip"), "")
 					if click then
-						
+						ModSettingSet(ModID.."LoadSpellLabShug", true)
 					end
 					GuiIdPop(gui)
 				end,
 			})
 		}
-    }),]]
+    }),
 }
 
 function ModSettingsUpdate( init_scope )

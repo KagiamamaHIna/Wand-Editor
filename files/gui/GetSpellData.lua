@@ -208,7 +208,9 @@ Reflection_RegisterProjectile = function(filepath)
 		if projXML == nil then
 			return
 		end
-		local proj = EntityLoad(filepath, posX, posY)
+        local proj = EntityCreateNew()
+        EntitySetTransform(proj, posX, posY)
+        EntityLoadToEntity(filepath, proj)
 		hasProj[filepath] = {}
 		local projComp = EntityGetFirstComponent(proj, "ProjectileComponent")
         if projComp then

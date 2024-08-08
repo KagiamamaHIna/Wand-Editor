@@ -19,7 +19,10 @@ if ModSettingGet(ModID..".remove_fog_of_war") then
     local src = ModTextFileGetContent("data/shaders/post_final.vert")
 	ModTextFileSetContent("data/shaders/post_final.vert", string.gsub(src,"const float FOG_PIXEL_SIZE = 32.0;","const float FOG_PIXEL_SIZE = 0.0;"))
 end
-
+if ModSettingGet(ModID..".remove_lighting") then
+    local src = ModTextFileGetContent("data/shaders/post_final.frag")
+	ModTextFileSetContent("data/shaders/post_final.frag", string.gsub(src,"const bool ENABLE_LIGHTING	    		= 1>0;","const bool ENABLE_LIGHTING	    		= 1>2;"))
+end
 local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache"
 if not Cpp.PathExists(cachePath) then
     Cpp.CreateDir(cachePath)

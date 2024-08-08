@@ -733,32 +733,58 @@ end
 ---@param uses_remaining integer|nil uses_remaining = -1
 ---@param isAlways boolean?
 function SetTableSpells(input, id, index, uses_remaining, isAlways)
-	uses_remaining = Default(uses_remaining, -1)
-	if isAlways then --判断是不是始终释放
+    uses_remaining = Default(uses_remaining, -1)
+    if isAlways then --判断是不是始终释放
         --是
-		if index > #input.spells.always then
+        if index > #input.spells.always then
             table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = 0 })
         else
-			input.spells.always[index] = { id = id, isAlways = true, is_frozen = false, index = 0 }
-		end
-	else                                               --不是
-		if index > #input.spells.spells then
-			for i = 1, index - #input.spells.spells do --如果索引超过的情况下，加额外数据
-				input.deck_capacity = input.deck_capacity + 1
-				input.spells.spells[#input.spells.spells + 1] = "nil"
-			end
-		end
-		if id == "nil" then
-			input.spells.spells[index] = id
-		elseif input.spells.spells[index] == nil or input.spells.spells[index] == "nil" then
-			input.spells.spells[index] = { id = id, index = index - 1, is_frozen = false, isAlways = false, uses_remaining = uses_remaining }
-		else
+            input.spells.always[index] = { id = id, isAlways = true, is_frozen = false, index = 0 }
+        end
+    else                                      --不是
+        if index > #input.spells.spells then
+            for i = 1, index - #input.spells.spells do --如果索引超过的情况下，加额外数据
+                input.deck_capacity = input.deck_capacity + 1
+                input.spells.spells[#input.spells.spells + 1] = "nil"
+            end
+        end
+        if id == "nil" then
+            input.spells.spells[index] = id
+        elseif input.spells.spells[index] == nil or input.spells.spells[index] == "nil" then
+            input.spells.spells[index] = { id = id, index = index - 1, is_frozen = false, isAlways = false, uses_remaining =
+            uses_remaining }
+        else
             input.spells.spells[index].id = id
             input.spells.spells[index].uses_remaining = uses_remaining
+        end
+    end
+end
+--[[
+---插入表中的一个法术，越界了就增加大小
+---@param input Wand GetWandData函数的返回值
+---@param id string
+---@param index integer
+---@param uses_remaining integer|nil uses_remaining = -1
+function InsertTableSpells(input, id, index, uses_remaining)
+    uses_remaining = Default(uses_remaining, -1)
+    if index > #input.spells.spells-1 then
+        for i = 1, index - #input.spells.spells-1 do --如果索引超过的情况下，加额外数据
+            input.deck_capacity = input.deck_capacity + 1
+            input.spells.spells[#input.spells.spells + 1] = "nil"
+        end
+    end
+    if id == "nil" then
+        table.insert(input.spells.spells, index, id)
+    else
+        table.insert(input.spells.spells, index, { id = id, index = index - 1, is_frozen = false, isAlways = false, uses_remaining = uses_remaining })
+    end
+    for i = index, #input.spells.spells do
+		if input.spells.spells[i] ~= "nil" then
+			input.spells.spells[i].index = input.spells.spells[i].index + 1
 		end
 	end
 end
-
+]]
 ---获取一个法杖中法术指定位置索引的id
 ---@param input Wand
 ---@param index integer

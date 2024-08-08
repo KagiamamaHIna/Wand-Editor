@@ -14,6 +14,27 @@ local L_GuiImageButton = GuiImageButton
 local L_GuiLayoutEnd = GuiLayoutEnd
 local L_SpellTypeBG = SpellTypeBG
 
+local CopiedData = false
+
+local CheckSpells = function(str)
+    if HasEnds(str) then
+        return false
+    end
+    local CheckFn = loadstring(str)
+    if type(CheckFn) ~= "function" then
+        return false
+    end
+    local fn = setfenv(CheckFn, {}) --设置环境 防止注入攻击
+    local flag, result = pcall(fn)
+    if not flag then
+        return false
+    end
+    if type(result) ~= "table" then
+        return false
+    end
+	return true,result
+end
+
 local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, isAlways)
 	local BaseName = "Spell"
 	if isAlways then
@@ -151,9 +172,10 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
         this.UserData["WandContainerHasHover"] = this.UserData["WandContainerHasHover"] or hover
 	end
     if not hover then
-		this.SetZDeep(srcDeep) --恢复深度以解决奇怪深度问题
-		return
-	end
+        this.SetZDeep(srcDeep) --恢复深度以解决奇怪深度问题
+        return
+    end
+	
     if not isAlways then
         local CurrentWand
         if this.UserData["FixedWand"] and this.UserData["HasShiftClick"][this.UserData["FixedWand"][2]] then --固定的法杖必须是有选框才能判定
@@ -332,6 +354,56 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                     RefreshHeldWands()
                 end)
             end
+		--[[
+        elseif (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and (InputIsKeyDown(Key_c) or InputIsKeyDown(Key_x)) and this.UserData["HasShiftClick"][CurrentWand] then
+            if not CopiedData then
+                local CurrentData = GetWandData(CurrentWand)
+                local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
+                local min = HasShiftClick[2]
+                local max = HasShiftClick[3] or min
+                min = math.min(min, max)
+                max = math.max(HasShiftClick[2], max)
+                local DownX = InputIsKeyDown(Key_x)
+                local T = {}
+                for i = min, max do
+                    T[#T + 1] = GetSpellID(CurrentData, i)
+                    if DownX then
+                        RemoveTableSpells(CurrentData, i)
+                    end
+                end
+                if DownX then
+                    InitWand(CurrentData, CurrentWand)
+					this.OnceCallOnExecute(function()
+						RefreshHeldWands()
+					end)
+                end
+                Cpp.SetClipboard(Cpp.ConcatStr("return {\n", SerializeTable(T), "}"))
+                CopiedData = true
+            end
+		elseif (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and InputIsKeyDown(Key_v) and this.UserData["HasShiftClick"][CurrentWand] then
+            local ClipboardData = Cpp.GetClipboard()
+            local flag, t = CheckSpells(ClipboardData)
+            if flag then
+                local CurrentData = GetWandData(CurrentWand)
+				local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
+				local min = HasShiftClick[2]
+                local max = HasShiftClick[3] or min
+                min = math.min(min, max)
+                max = math.max(HasShiftClick[2], max)
+                local all = max - min
+				local indexCount = 0
+                for i = #t, 1, -1 do
+                    InsertTableSpells(CurrentData, t[i].id, min + indexCount)
+					indexCount = indexCount + 1
+                end
+                InitWand(CurrentData, CurrentWand)
+				this.OnceCallOnExecute(function()
+					RefreshHeldWands()
+				end)
+            end
+			this.UserData["HasShiftClick"][CurrentWand] = nil
+        else
+			CopiedData = false]]
         end
     else --是始终施放法术的操作
         if hover and InputIsKeyDown(Key_BACKSPACE) then

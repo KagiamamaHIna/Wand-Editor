@@ -241,7 +241,7 @@ function GUIUpdate()
 			end
 			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
 			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
-				"mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, false)
+                "mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, false)
         end
 		
         UI.TickEventFn["RequestAvatar"] = function()
@@ -493,6 +493,5 @@ function GUIUpdate()
 			end
 		end
 	end
-
 	UI.DispatchMessage()
 end
