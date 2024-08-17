@@ -10,7 +10,7 @@ namespace bplib {
 	typedef void(*BreakPointCallBack) (PCONTEXT);
 	class BreakPoint {
 	public:
-		BreakPoint(DWORD pid) :TargetProgram{pid} {
+		BreakPoint(DWORD pid) :TargetProgram{ pid } {
 			if (!InitExceptionFilter) {
 				SetUnhandledExceptionFilter(ExceptionFilter);
 				InitExceptionFilter = true;
@@ -25,6 +25,9 @@ namespace bplib {
 			AllBreakPoint.erase(this);//删除自身
 		}
 		void SetPoint(LPVOID Address);//设置断点
+		bool HasPoint(LPVOID Address) {
+			return static_cast<bool>(OriginalCommand.count(Address));
+		}
 		bool AddPointCB(LPVOID Address, BreakPointCallBack);//返回代表这次添加回调是否成功
 		bool RemovePoint(LPVOID Address);
 
@@ -43,29 +46,38 @@ namespace bplib {
 			//检查是否为INT3断点异常
 			if (pExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
 				PVOID address = pExceptionInfo->ExceptionRecord->ExceptionAddress;
-				
+				bool has = false;
 				for (auto& v : AllBreakPoint) {
 					if (v.first->OriginalCommand.count(address)) {
+						has = true;
 						v.first->RestoreCommand(address);//恢复指令
 						for (auto& v : v.first->AddressCB[address]) {//调用回调函数
 							v(pExceptionInfo->ContextRecord);
 						}
 						v.first->UpAddress = address;
-						//设置单步执行
-						pExceptionInfo->ContextRecord->EFlags |= 0x100;
 					}
 				}
-				return EXCEPTION_CONTINUE_EXECUTION; //继续执行程序
+				if (has) {//有就代表是我要处理的
+					//设置单步执行
+					pExceptionInfo->ContextRecord->EFlags |= 0x100;
+					return EXCEPTION_CONTINUE_EXECUTION;
+				}
+				return EXCEPTION_CONTINUE_SEARCH; //其他异常继续搜索处理程序
 			}
 			//检查是否为单步执行异常
 			else if (pExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_SINGLE_STEP) {
+				bool has = false;
 				for (auto& v : AllBreakPoint) {
 					if (v.first->UpAddress) {//如果存有则代表有
 						v.first->SetPoint(v.first->UpAddress);//重新设置0xCC异常
 						v.first->UpAddress = 0;
+						has = true;
 					}
 				}
-				return EXCEPTION_CONTINUE_EXECUTION;
+				if (has) {//有就代表是我要处理的
+					return EXCEPTION_CONTINUE_EXECUTION;
+				}
+				return EXCEPTION_CONTINUE_SEARCH; //其他异常继续搜索处理程序
 			}
 			return EXCEPTION_CONTINUE_SEARCH; //其他异常继续搜索处理程序
 		}

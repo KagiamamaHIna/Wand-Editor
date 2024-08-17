@@ -102,6 +102,19 @@ namespace lua {
 		std::string s1 = luaL_checkstring(L, 1);
 		std::string s2 = luaL_checkstring(L, 2);
 		double score = rapidfuzz::fuzz::ratio(s1, s2);//进行初步匹配
+		if (PinyinCache.count(s1)) {
+			for (const auto& str : PinyinCache[s1]) {
+				double NewScore = rapidfuzz::fuzz::ratio(str, s2);
+				if (NewScore > score) {
+					score = NewScore;
+				}
+			}
+			lua_pushnumber(L, score);
+			return 1;
+		}
+		else {
+			PinyinCache[s1] = std::vector<std::string>();
+		}
 		std::string temp;
 		std::vector<std::vector<std::string>> pinyinBuf;
 		pinyin::Utf8String utf8s1 = pinyin::Utf8String(s1);
@@ -111,7 +124,20 @@ namespace lua {
 					pinyinBuf.push_back(std::vector<std::string>{temp});
 					temp.clear();
 				}
-				pinyinBuf.push_back(pinyinData.GetPinyin(utf8s1[i]));
+				std::vector<std::string> tempVec = pinyinData.GetPinyin(utf8s1[i]);
+				std::unordered_map<char, bool> map;
+				for (auto& v : pinyinData.GetPinyin(utf8s1[i])) {
+					if (!map.count(v[0])) {
+						tempVec.push_back(v.substr(0, 1));
+						map[v[0]] = true;
+						if ((v[0] == 'z' || v[0] == 'c' || v[0] == 's') && v[1]) {//避免多余的字符串构造
+							if (v[1] == 'h') {
+								tempVec.push_back(v.substr(0, 2));
+							}
+						}
+					}
+				}
+				pinyinBuf.push_back(tempVec);
 			}
 			else {//如果不是带有拼音的字符就把他们拼接起来处理
 				temp += utf8s1[i];
@@ -129,6 +155,7 @@ namespace lua {
 				if (NewScore > score) {
 					score = NewScore;
 				}
+				PinyinCache[s1].push_back(current);
 				continue;
 			}
 			//将下一个索引的所有字符串加入栈中

@@ -33,6 +33,9 @@
     <ClCompile Include="LuaRatioStr.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="LuaStandardLoad.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -47,7 +50,7 @@
     <ClInclude Include="breakpoint.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LoadAllLuaLib.h">
+    <ClInclude Include="LuaStandardLoad.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="pinyin.h">

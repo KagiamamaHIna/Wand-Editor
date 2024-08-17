@@ -133,11 +133,11 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
         local ScoreList = {}
 		local ScoreListCount = 1
         local HasScore = {}
-        for _, v in pairs(DrawSpellList) do --循环计算匹配程度
+		local lowerSearch = string.lower(Search)
+		for _, v in pairs(DrawSpellList) do --循环计算匹配程度
             if spellData[v] == nil then
                 goto continue
             end
-			local lowerSearch = string.lower(Search)
             local score = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), lowerSearch) --大小写不敏感
             local IDScore = 0
             if IDSearchMode then

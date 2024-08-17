@@ -5,7 +5,7 @@
 #include <filesystem>
 
 #include "LuaFilesApi.h"
-#include "LoadAllLuaLib.h"
+#include "LuaStandardLoad.h"
 #include "LuaRatioStr.h"
 #include "lua.hpp"
 
@@ -75,7 +75,7 @@ static luaL_Reg luaLibs[] = {
 	{ "UTF8StringSub", lua::lua_UTF8StringSub},
 	{ "ConcatStr", lua::lua_ConcatStr},
 
-	{ "OpenMonitorLoadLuaLib",lua::MonitorNoitaLuaLoad},
+	{ "LoadStandardForAllLua",lua::LoadStandardForAllLua},
 
 	{ "Ratio", lua::lua_Ratio},
 	{ "PartialRatio", lua::lua_PartialRatio},
@@ -91,14 +91,6 @@ static luaL_Reg luaLibs[] = {
 
 extern "C" __declspec(dllexport)
 int luaopen_WandEditorDll(lua_State* L) {
-	//创建元表
-	luaL_newmetatable(L, "lua_break_point");
-	lua_pushvalue(L, -1);//备份副本到栈顶中
-
-	//将元表的__index字段指向自身，然后注册函数，以实现类似调用类方法的形式
-	lua_setfield(L, -2, "__index");//会执行弹出操作
-	luaL_register(L, NULL, lua::Monitor);
-
 	luaL_register(L, "WandEditorDll", luaLibs);  //注册函数，参数2是模块名
 	return 1;
 }

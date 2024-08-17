@@ -33,9 +33,8 @@ function Cpp.CreateDir(path)end
 ---@return string
 function Cpp.GetAbsPath(path)end
 
----不知道该怎么描述
----@param address integer
-function Cpp.OpenMonitorLoadLuaLib(address)end
+---加载Lua标准库至所有lua栈
+function Cpp.LoadStandardForAllLua()end
 
 ---计算两个字符串的相似程度。区间[0,100]
 ---@param s1 string

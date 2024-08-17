@@ -229,6 +229,11 @@ function GUIUpdate()
             if GameIsInventoryOpen() or GetPlayer() == nil then
                 return
             end
+            if EntityGetWithName("WandEditorRestoreEntity") == 0 then--如果没有人外部手贱删除这个实体，那么应该是玩家重生之类的导致消失了
+				local player = GetPlayer()
+				EntityLoadChild(player, "mods/wand_editor/files/entity/Restore.xml")
+				EntityAddComponent2(player, "LuaComponent", { script_shot = "mods/wand_editor/files/misc/self/player_shot.lua" })
+			end
 			if InputIsKeyDown(Key_BACKSPACE) then
                 local worldx, worldy = DEBUG_GetMouseWorld()
                 local entitys = EntityGetInRadiusWithTag(worldx, worldy, 12, "polymorphable_NOT")
