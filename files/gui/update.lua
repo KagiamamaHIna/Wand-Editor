@@ -402,9 +402,9 @@ function GUIUpdate()
 					RemoveNullEntityWithName("WandEditorInfFly")
 				end
 			end
-            if UI.GetPickerStatus("LockHP") then--血量锁定实现
+            if UI.GetPickerStatus("LockHP") then --血量锁定实现
                 local player = GetPlayer()
-				local damage_model = EntityGetFirstComponent( player, "DamageModelComponent" )
+                local damage_model = EntityGetFirstComponent(player, "DamageModelComponent")
                 if UI.UserData["LockHPValue"] == nil and damage_model then
                     local hp = ComponentGetValue2(damage_model, "hp")
                     UI.UserData["LockHPValue"] = hp
@@ -412,8 +412,15 @@ function GUIUpdate()
                     ComponentSetValue2(damage_model, "hp", UI.UserData["LockHPValue"])
                 end
             else
-				UI.UserData["LockHPValue"] = nil
-			end
+                UI.UserData["LockHPValue"] = nil
+            end
+            if UI.GetPickerStatus("LockHP") and EntityGetWithName("WandEditorSavingGrace") == 0 then --死里逃生给予
+                local player = GetPlayer()
+                LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/saving_grace.xml")
+            elseif (not UI.GetPickerStatus("LockHP")) and EntityGetWithName("WandEditorSavingGrace") ~= 0 then
+                EntityKill(EntityGetWithName("WandEditorSavingGrace"))
+            end
+			
 			if GameIsInventoryOpen() then--开启物品栏时禁止执行下一步
 				return
 			end

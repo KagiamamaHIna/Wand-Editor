@@ -1,0 +1,8 @@
+<Entity name="WandEditorSavingGrace">
+	<InheritTransformComponent>
+	</InheritTransformComponent>
+    <GameEffectComponent 
+        effect="SAVING_GRACE"
+        frames="-1"
+    />
+</Entity>

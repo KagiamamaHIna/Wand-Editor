@@ -78,7 +78,7 @@ wand_editor_clear_wait,Clear Cast Delay / Recharge Time,,,,,,,,将延迟/充能 
 wand_editor_protection_all,Protection from all,,,,,,,,无敌,,,,,,,,,,,,,,,
 wand_editor_protection_poly,Polymorph Immunity,,,,,,,,变形免疫,,,,,,,,,,,,,,,
 wand_editor_no_recoil,No Recoil,,,,,,,,无后坐力,,,,,,,,,,,,,,,
-wand_editor_lock_hp,Locked HP,,,,,,,,锁定血量,,,,,,,,,,,,,,,
+wand_editor_lock_hp,Locked HP\nAlso adds the Saving Grace effect,,,,,,,,锁定血量\n同时给予死里逃生效果,,,,,,,,,,,,,,,
 wand_editor_no_particles,No Spell Particles,,,,,,,,禁用法术粒子,,,,,,,,,,,,,,,
 wand_editor_no_proj,No Cast,,,,,,,,禁用施法,,,,,,,,,,,,,,,
 wand_editor_refresh_uses,Refresh Uses Remaining,,,,,,,,刷新使用次数,,,,,,,,,,,,,,,
