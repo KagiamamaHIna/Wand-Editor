@@ -430,7 +430,7 @@ local function SaveFile(effil, _ModIdToEnable, _result, _TypeToSpellList)
 	file:write("return {\n" .. SerializeTable(_TypeToSpellList, "") .. "}")
 	file:close()
 end
-function DeepCopy(original)
+local function DeepCopy(original)
     local copy
     if type(original) == 'table' then
         copy = effil.table({})
