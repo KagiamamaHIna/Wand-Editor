@@ -477,7 +477,7 @@ function GUIUpdate()
 					ComponentSetValue2(comp, "velocity_min_y", 0)
 					ComponentSetValue2(comp, "velocity_max_y", 0)
 				end
-                AddNullEntityToPlayer("wand_editor_disable_player_gravity")
+                LoadGameEffectEntityTo(player, "mods/wand_editor/files/entity/no_knockback.xml")
             elseif not UI.GetPickerStatus("DisablePlayerGravity") and EntityGetWithName("wand_editor_disable_player_gravity") ~= 0 then
 				local player = GetPlayer()
                 local comp = EntityGetFirstComponentIncludingDisabled(player, "CharacterPlatformingComponent")
@@ -491,7 +491,7 @@ function GUIUpdate()
 					ComponentSetValue2(comp, "velocity_min_y", y_min)
 					ComponentSetValue2(comp, "velocity_max_y", y_max)
 				end
-				RemoveNullEntityWithName("wand_editor_disable_player_gravity")
+				EntityKill(EntityGetWithName("wand_editor_disable_player_gravity"))
 			end
             if GameIsInventoryOpen() or (not UI.GetPickerStatus("MainButton")) then --主按钮关闭时禁止下一步
                 return

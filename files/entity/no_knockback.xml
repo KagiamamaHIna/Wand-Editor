@@ -1,0 +1,8 @@
+<Entity name="wand_editor_disable_player_gravity">
+	<InheritTransformComponent>
+	</InheritTransformComponent>
+    <GameEffectComponent 
+        effect="KNOCKBACK_IMMUNITY"
+        frames="-1"
+    />
+</Entity>
