@@ -303,7 +303,8 @@ function GUIUpdate()
 						UI.UserData["LastYukimiImgKey"] = key
                         UI.UserData["YukimiCurrentText"] = t[key]
                     end
-					if YukimiLeftClick or RefreshAll then
+                    if YukimiLeftClick or RefreshAll then
+						UI.UserData["YukimiTimeCount"] = 0
                         local count = UI.UserData["YukimiClickCount"] or 0
                         local key = UI.UserData["LastYukimiTextKey"]
 						if UI.UserData["LastYukimiTextKey"] == nil then
@@ -410,13 +411,13 @@ function GUIUpdate()
 			end
 		end
 
-        UI.TickEventFn["RequestYukimi"] = function()
+        UI.TickEventFn["RequestYukimiAAA"] = function()--你问我AAA是什么？我不知道
             local flag1 = Cpp.PathExists("mods/wand_editor/cache/yukimi/1.png") or UI.UserData["YKThisRunError1"]
             local flag2 = Cpp.PathExists("mods/wand_editor/cache/yukimi/2.png") or UI.UserData["YKThisRunError2"]
 			local flag3 = Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png") or UI.UserData["YKThisRunError3"]
 			local flag4 = Cpp.PathExists("mods/wand_editor/cache/yukimi/4.png") or UI.UserData["YKThisRunError4"]
             if flag1 and flag2 and flag3 and flag4 then
-                UI.TickEventFn["RequestYukimi"] = nil
+                UI.TickEventFn["RequestYukimiAAA"] = nil
                 return
             end
 			--没有图片
@@ -694,7 +695,7 @@ function GUIUpdate()
             if UI.GetPickerStatus("DamageInfo") then
                 DrawDamageInfo()
             end
-			if not UI.GetPickerStatus("SpellDepotBTN") and not ModSettingGet(ModID .. "hasButtonMove") and UI.GetPickerStatus("AlwaysDrawWandEditBox") and UI.GetPickerStatus("WandContainerBTN") then
+			if not UI.GetPickerStatus("SpellDepotBTN") and UI.GetPickerStatus("AlwaysDrawWandEditBox") and UI.GetPickerStatus("WandContainerBTN") then
 				DrawWandContainer(Compose(GetEntityHeldWand, GetPlayer)(), spellData)
 			end
 		end
