@@ -695,7 +695,8 @@ function GetWandData(entity)
 			shoot_pos = { x = 0, y = 0 }, --发射位置
 			sprite_file = nil,            --贴图
             sprite_pos = { x = 0, y = 0 }, --精灵图偏移
-			rect_animation = nil
+			rect_animation = nil,
+			always_use_item_name_in_ui = nil,
 		}
 		local Ability = EntityGetFirstComponentIncludingDisabled(entity, "AbilityComponent")
 		local CompGetValue = Curry(ComponentGetValue2, 2)(Ability)
@@ -709,6 +710,7 @@ function GetWandData(entity)
 		wand.rect_animation = ComponentGetValue2(sprite, "rect_animation")
 		wand.shoot_pos.x, wand.shoot_pos.y = ComponentGetValue2(hotspot, "offset") --发射偏移量
 		wand.item_name = ComponentGetValue2(item, "item_name")
+		wand.always_use_item_name_in_ui = ComponentGetValue2(item, "always_use_item_name_in_ui")
 
 		wand.mana_max = CompGetValue("mana_max")
 		wand.mana_charge_speed = CompGetValue("mana_charge_speed")
@@ -759,6 +761,7 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
         end
     end
 end
+
 --[[
 ---插入表中的一个法术，越界了就增加大小
 ---@param input Wand GetWandData函数的返回值
@@ -767,24 +770,18 @@ end
 ---@param uses_remaining integer|nil uses_remaining = -1
 function InsertTableSpells(input, id, index, uses_remaining)
     uses_remaining = Default(uses_remaining, -1)
-    if index > #input.spells.spells-1 then
-        for i = 1, index - #input.spells.spells-1 do --如果索引超过的情况下，加额外数据
-            input.deck_capacity = input.deck_capacity + 1
-            input.spells.spells[#input.spells.spells + 1] = "nil"
-        end
-    end
     if id == "nil" then
         table.insert(input.spells.spells, index, id)
     else
         table.insert(input.spells.spells, index, { id = id, index = index - 1, is_frozen = false, isAlways = false, uses_remaining = uses_remaining })
     end
     for i = index, #input.spells.spells do
-		if input.spells.spells[i] ~= "nil" then
-			input.spells.spells[i].index = input.spells.spells[i].index + 1
-		end
-	end
-end
-]]
+        if input.spells.spells[i] ~= "nil" then
+            input.spells.spells[i].index = input.spells.spells[i].index + 1
+        end
+    end
+end]]
+
 ---获取一个法杖中法术指定位置索引的id
 ---@param input Wand
 ---@param index integer
@@ -1063,8 +1060,13 @@ function InitWand(wandData, wand, x, y)
 	local hotspot = EntityGetFirstComponentIncludingDisabled(wand, "HotspotComponent", "shoot_pos")
 	--初始化数据
     ComponentSetValueVector2(hotspot, "offset", wandData.shoot_pos.x, wandData.shoot_pos.y)
-	if wandData.item_name then
-		ComponentSetValue2(item, "item_name", wandData.item_name)
+    if wandData.item_name then
+        ComponentSetValue2(item, "item_name", wandData.item_name)
+    end
+	if wandData.always_use_item_name_in_ui then
+        ComponentSetValue2(item, "always_use_item_name_in_ui", wandData.always_use_item_name_in_ui)
+    else
+		ComponentSetValue2(item, "always_use_item_name_in_ui", false)
 	end
 	CompSetValue("mana_max", wandData.mana_max)
 	CompSetValue("mana_charge_speed", wandData.mana_charge_speed)

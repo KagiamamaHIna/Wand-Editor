@@ -8,6 +8,7 @@
 #include "LuaStandardLoad.h"
 #include "LuaRatioStr.h"
 #include "lua.hpp"
+#include "ImageLoad.h"
 
 namespace lua {
 	int lua_UTF8StringSub(lua_State* L) {
@@ -58,6 +59,38 @@ namespace lua {
 		lua_pushstring(L, result.c_str());
 		return 1;
 	}
+
+	int lua_FlipImageLoadAndWrite(lua_State* L) {
+		const char* FileStr = luaL_checkstring(L, 1);
+		const char* WritePath = luaL_checkstring(L, 2);
+		stbi_set_flip_vertically_on_load(true);
+		image::stb_image img(FileStr);
+		if (img.GetImageData() == nullptr) {
+			luaL_error(L, "no found file");
+			lua_pushboolean(L, false);
+			stbi_set_flip_vertically_on_load(false);
+			return 1;
+		}
+		auto data = img.GetImageData();
+		auto height = img.GetHeight();
+		auto width = img.GetWidth();
+		auto channels = img.GetChannels();
+
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width / 2; ++x) {
+				for (int c = 0; c < channels; ++c) {
+					int left = (y * width + x) * channels + c;
+					int right = (y * width + (width - 1 - x)) * channels + c;
+					std::swap(data[left], data[right]);
+				}
+			}
+		}
+
+		img.WritePng(WritePath);
+		lua_pushboolean(L, true);
+		stbi_set_flip_vertically_on_load(false);
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -85,6 +118,8 @@ static luaL_Reg luaLibs[] = {
 	{ "SetClipboard", lua::lua_SetClipboard},
 	{ "GetClipboard", lua::lua_GetClipboard},
 	{ "SetDllDirectory", lua::lua_SetDllDirectory},
+
+	{ "FlipImageLoadAndWrite", lua::lua_FlipImageLoadAndWrite},
 
 	{ NULL, NULL }
 };

@@ -642,5 +642,5 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		::continue::
 	end
     GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1) --设置深度，确保行为正确
-    this.DrawScrollContainer(ContainerName,not UI.GetPickerStatus("KeyBoardInput"))
+    this.DrawScrollContainer(ContainerName, true)
 end

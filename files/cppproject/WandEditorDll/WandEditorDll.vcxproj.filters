@@ -36,6 +36,9 @@
     <ClCompile Include="LuaStandardLoad.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ImageLoad.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -57,6 +60,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="LuaRatioStr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageLoad.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -96,3 +96,8 @@ function Cpp.Rename(old_filename, new_filename)end
 ---@param ... string
 ---@return string
 function Cpp.ConcatStr(...)end
+
+---读取图片垂直翻转和水平翻转后再写入到指定路径
+---@param FileStr string
+---@param WritePath string
+function Cpp.FlipImageLoadAndWrite(FileStr,WritePath)end

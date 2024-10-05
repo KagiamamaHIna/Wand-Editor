@@ -28,7 +28,6 @@ local this = {
 		SliderMin = {},
         ScrollData = {},
 		ScrollItemData = {},
-		ScrollHover = {},
         HScrollData = {},
         HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
         HScrollItemData = {}, --元素数据，用于判断位置是否上下溢出
@@ -593,41 +592,44 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 		ModSettingRemove(Yname)
 		this.private.ResetAllCanMove[newid] = true
 	end
-	if not ModSettingGet(CanMoveStr) or noMove then --非移动状态
-		if not noSetting and not noMove then
-			if ModSettingGet(Xname) ~= nil then--没有设置就使用默认坐标
-				s_x = ModSettingGet(Xname)
-			end
-			if ModSettingGet(Yname) ~= nil then
-				s_y = ModSettingGet(Yname)
-			end
-		end
+    if not ModSettingGet(CanMoveStr) or noMove then --非移动状态
+        if not noSetting and not noMove then
+            if ModSettingGet(Xname) ~= nil then  --没有设置就使用默认坐标
+                s_x = ModSettingGet(Xname)
+            end
+            if ModSettingGet(Yname) ~= nil then
+                s_y = ModSettingGet(Yname)
+            end
+        end
 
-		local hasMove = ModSettingGet(ModID .. "hasButtonMove")                    --其他按钮移动时，将无法触发按钮事件
-		local left_click, right_click = ButtonCallBack(this.public.gui, numID, s_x, s_y) --调用回调参数，用于新建想要的控件
-		local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
-		if shift and left_click and (not this.private.NextFrNoClick) and not noMove then          --两者同时按下
-			--开始移动
-			ModSettingSet(ModID .. "hasButtonMove", true)
-			ModSettingSet(CanMoveStr, true)
-		elseif (not hasMove) or AlwaysCBClick then --其他按钮没有移动的时候
+        local hasMove = ModSettingGet(ModID .. "hasButtonMove")                    --其他按钮移动时，将无法触发按钮事件
+        local left_click, right_click = ButtonCallBack(this.public.gui, numID, s_x, s_y) --调用回调参数，用于新建想要的控件
+        local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
+        if shift and left_click and (not this.private.NextFrNoClick) and not noMove then --两者同时按下
+            --开始移动
+            ModSettingSet(ModID .. "hasButtonMove", true)
+            ModSettingSet(CanMoveStr, true)
+        elseif (not hasMove) or AlwaysCBClick then --其他按钮没有移动的时候
             if right_click and not noMove then --如果按下右键，且是非移动的
-                ModSettingRemove(Xname) --恢复默认设置
+                ModSettingRemove(Xname)        --恢复默认设置
                 ModSettingRemove(Yname)
             end
-			if HoverUseCallBack ~= nil then
-				HoverUseCallBack()
-			end
-			if AlwaysCallBack ~= nil then
-				AlwaysCallBack(s_x, s_y)
-			end
+            if HoverUseCallBack ~= nil then
+                HoverUseCallBack()
+            end
+            if AlwaysCallBack ~= nil then
+                AlwaysCallBack(s_x, s_y)
+            end
             if ClickCallBack ~= nil and ((not this.private.NextFrNoClick) or AlwaysCBClick) then
                 ClickCallBack(left_click, right_click, s_x, s_y)
             elseif ClickCallBack ~= nil and this.private.NextFrNoClick then --绘制但不判断
                 ClickCallBack(false, false, s_x, s_y)
-            end			
-		end
-		return ModSettingGet(CanMoveStr)
+            end
+        end
+        return ModSettingGet(CanMoveStr)
+    end
+	if not noSetting then
+		ModSettingSet(ModID .. "hasButtonMove", true)
 	end
 	--移动中
     local mx, my = InputGetMousePosOnScreen()
@@ -638,7 +640,6 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 		mx = mx - w / 2
 		my = my - h / 2
 	end
-
 	local click = ClickAble--如果点击了
 	if not IsNoListenerClick then
 		click = InputIsMouseButtonDown(Mouse_left)
@@ -828,7 +829,7 @@ function UI.DrawScrollContainer(id, IsBlock)
         local w = this.private.ScrollData[newid].w
 		local h = this.private.ScrollData[newid].h
         local function IsHover(posx, posy)
-            if posx > x and posx <= x + w + 5 and posy > y and posy <= y + h then
+            if posx > x and posx <= x + w + 5 + this.private.ScrollData[newid].margin_x and posy > y and posy <= y + h + this.private.ScrollData[newid].margin_y then
                 return true
             end
             return false
@@ -838,16 +839,22 @@ function UI.DrawScrollContainer(id, IsBlock)
 		mx = mx / this.private.Scale
         my = my / this.private.Scale
 		local hover = IsHover(mx, my)
-        if hover then
-            this.private.ScrollHover[newid] = hover
-			if IsBlock then
-				BlockAllInput()
-			end
-        elseif this.private.ScrollHover[newid] and (not hover) then
-            this.private.ScrollHover[newid] = nil
-			if IsBlock then
-            	RestoreInput()
-			end
+        if hover and IsBlock then
+			GuiAnimateBegin(this.public.gui)
+            GuiAnimateAlphaFadeIn(this.public.gui, UI.NewID("Alpha你肯定看不见我对吧的另一个动画"), 0, 0, false)
+
+			GuiLayoutBeginLayer(this.public.gui)
+            GuiZSetForNextWidget(this.public.gui, this.private.ZDeep - 1)
+			
+			GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.AlwaysClickable)
+
+			GuiBeginScrollContainer(this.public.gui, UI.NewID("你看不见的框"), this.private.ScrollData[newid].x,
+            this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
+                true, this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y)
+            GuiEndScrollContainer(this.public.gui)
+
+			GuiLayoutEndLayer(this.public.gui)
+			GuiAnimateEnd(this.public.gui)
         end
 		
         GuiLayoutBeginLayer(this.public.gui) --先开启这个

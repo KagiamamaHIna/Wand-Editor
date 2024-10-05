@@ -133,19 +133,19 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 	UI.MoveImagePicker("AlwaysDrawWandEditBox", PickerGap(4), iy + 40, 8, 0,
 		GameTextGet("$wand_editor_always_draw_wand_edit_box"),
 		"mods/wand_editor/files/gui/images/always_draw_wand_edit_box.png", nil, nil, nil, true, true, true)
-
+--[[
 	UI.MoveImagePicker("KeyBoardInput", PickerGap(5) + 1, iy + 40, 8, 0, GameTextGet("$wand_editor_keyboard_input"),
-		"mods/wand_editor/files/gui/images/keyboard_input.png", nil, nil, nil, true, true, true)
+		"mods/wand_editor/files/gui/images/keyboard_input.png", nil, nil, nil, true, true, true)]]
 
-	UI.MoveImagePicker("DisableSpellWobble", PickerGap(6), iy + 40, 8, 0,
+	UI.MoveImagePicker("DisableSpellWobble", PickerGap(5), iy + 40, 8, 0,
 		GameTextGet("$wand_editor_disable_spell_wobble"),
         "mods/wand_editor/files/gui/images/disable_spell_wobble.png", nil, nil, nil, true, true, true)
 
-	UI.MoveImagePicker("DisableWandHistory", PickerGap(7), iy + 40, 8, 0,
+	UI.MoveImagePicker("DisableWandHistory", PickerGap(6), iy + 40, 8, 0,
 		GameTextGet("$wand_editor_disable_wand_history"),
         "mods/wand_editor/files/gui/images/disable_wand_history.png", nil, nil, nil, true, true, true)
 	
-	UI.MoveImagePicker("DisableSpellHover", PickerGap(8), iy + 40, 8, 0,
+	UI.MoveImagePicker("DisableSpellHover", PickerGap(7), iy + 40, 8, 0,
 		GameTextGet("$wand_editor_disable_spell_hover"),
         "mods/wand_editor/files/gui/images/disable_spell_hover.png", nil, nil, nil, true, true, true)
 
@@ -379,14 +379,38 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 			GuiText(UI.gui, 0, 0, ModVersion)
 			GuiText(UI.gui, 0, 0, ModLink)
 			GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_about_copy_link_tips"))
-			if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then
-				GuiImage(UI.gui, UI.NewID("AuthorAvatar"), 0, 0, "mods/wand_editor/cache/avatar.png", 1, 0.5 / UI.GetScale())
+            if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then
+                GuiImage(UI.gui, UI.NewID("AuthorAvatar"), 0, 0, "mods/wand_editor/cache/avatar.png", 1,
+                    0.5 / UI.GetScale())
+            end
+			if ModSettingGet(ModID.."YukimiAvailable") and ModSettingGet(ModID.."YukimiAvailableShow") then
+                GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_yukimi_close"))
+            elseif ModSettingGet(ModID .. "YukimiAvailable") and not ModSettingGet(ModID .. "YukimiAvailableShow") then
+				GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_yukimi_open"))
 			end
 		end, nil, 8)
 		if hover then
-			if InputIsKeyDown(Key_c) then
-				Cpp.SetClipboard(ModLink)
-			end
+            if InputIsKeyDown(Key_c) then
+                Cpp.SetClipboard(ModLink)
+            end
+        elseif not hover and UI.UserData["ModAboutConut"] then
+			UI.UserData["ModAboutConut"] = nil
+		end
+	end
+	local ModAboutClickCB = function (left_click, right_click)
+        if left_click and ModSettingGet(ModID .. "YukimiAvailable") == nil then
+            if UI.UserData["ModAboutConut"] == nil then
+                UI.UserData["ModAboutConut"] = 1
+            elseif UI.UserData["ModAboutConut"] < 2 then
+                UI.UserData["ModAboutConut"] = UI.UserData["ModAboutConut"] + 1
+            else
+                ModSettingSet(ModID .. "YukimiAvailable", true)
+                ModSettingSet(ModID .. "YukimiAvailableShow", true)
+                UI.UserData["ModAboutConut"] = nil
+            end
+        end
+		if ModSettingGet(ModID.."YukimiAvailable") and right_click then
+			ModSettingSet(ModID.."YukimiAvailableShow",not ModSettingGet(ModID.."YukimiAvailableShow"))
 		end
 	end
 	if ModSettingGet("wand_editor.cache_spell_data") then
@@ -394,10 +418,10 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
         "mods/wand_editor/files/gui/images/reload_spell_data.png", nil, nil, nil, true, true, true)
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-		UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, nil, nil, true)
+		UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
 	else
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-		UI.MoveImageButton("ModAbout", PickerGap(2), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, nil, nil, true)
+		UI.MoveImageButton("ModAbout", PickerGap(2), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
 	end
 
 end

@@ -215,7 +215,122 @@ function GUIUpdate()
                     end
 					ClickSound()
 					GameRegenItemActionsInPlayer(GetPlayer())
-				end, false, true)
+                end, false, true)
+			if ModSettingGet(ModID.."YukimiAvailable") and ModSettingGet(ModID.."YukimiAvailableShow") then
+				local flag = Cpp.PathExists("mods/wand_editor/cache/yukimi/1.png")
+				flag = flag and Cpp.PathExists("mods/wand_editor/cache/yukimi/2.png")
+				flag = flag and Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png")
+				flag = flag and Cpp.PathExists("mods/wand_editor/cache/yukimi/4.png")
+                if flag then
+					if UI.UserData["YukimiTimeCount"] == nil then
+                        UI.UserData["YukimiTimeCount"] = 0
+                    elseif UI.UserData["YukimiTimeCount"] < 2147483647 then
+                        UI.UserData["YukimiTimeCount"] = UI.UserData["YukimiTimeCount"] + 1
+                    else--强制重置逻辑帧计时
+						UI.UserData["YukimiTimeCount"] = 0
+					end
+					local flag2 = Cpp.PathExists("mods/wand_editor/cache/yukimi/1_flip.png")
+					flag2 = flag2 and Cpp.PathExists("mods/wand_editor/cache/yukimi/2_flip.png")
+					flag2 = flag2 and Cpp.PathExists("mods/wand_editor/cache/yukimi/3_flip.png")
+					flag2 = flag2 and Cpp.PathExists("mods/wand_editor/cache/yukimi/4_flip.png")
+                    if not flag2 then
+                        Cpp.FlipImageLoadAndWrite("mods/wand_editor/cache/yukimi/1.png",
+                            "mods/wand_editor/cache/yukimi/1_flip.png")
+                        Cpp.FlipImageLoadAndWrite("mods/wand_editor/cache/yukimi/2.png",
+                            "mods/wand_editor/cache/yukimi/2_flip.png")
+                        Cpp.FlipImageLoadAndWrite("mods/wand_editor/cache/yukimi/3.png",
+                            "mods/wand_editor/cache/yukimi/3_flip.png")
+                        Cpp.FlipImageLoadAndWrite("mods/wand_editor/cache/yukimi/4.png",
+                            "mods/wand_editor/cache/yukimi/4_flip.png")
+                    end
+                    local ImgList = {
+						"mods/wand_editor/cache/yukimi/1_flip.png",
+                        "mods/wand_editor/cache/yukimi/2_flip.png",
+                        "mods/wand_editor/cache/yukimi/3_flip.png",
+						"mods/wand_editor/cache/yukimi/4_flip.png",
+					}
+                    local YukimiPosX = UI.ScreenWidth-10
+					local YukimiPosY = UI.ScreenHeight-25
+                    if UI.UserData["YukimiDEG"] == nil then
+                        UI.UserData["YukimiDEG"] = -173
+                        UI.UserData["YukimiDEGMax"] = -183
+                    elseif UI.UserData["YukimiDEG"] > UI.UserData["YukimiDEGMax"] then
+                        UI.UserData["YukimiDEG"] = UI.UserData["YukimiDEG"] - 0.2
+                        UI.UserData["YukimiDEGMax"] = -183
+                    else
+                        UI.UserData["YukimiDEG"] = UI.UserData["YukimiDEG"] + 0.2
+                        UI.UserData["YukimiDEGMax"] = -173
+                    end
+                    if UI.UserData["YukimiCurrentImg"] == nil then
+                        SetRandomSeed(GameGetRealWorldTimeSinceStarted(), 1919810)
+                        UI.UserData["YukimiCurrentImg"] = ImgList[Random(1, #ImgList)]
+                    end
+					GuiZSetForNextWidget(UI.gui,UI.GetZDeep())
+					GuiImage(UI.gui, UI.NewID("Yukimi"), YukimiPosX, YukimiPosY, UI.UserData["YukimiCurrentImg"], 1,
+						0.5 / UI.GetScale(), 0, math.rad(UI.UserData["YukimiDEG"]))
+					GuiAnimateBegin(UI.gui)
+                    GuiAnimateAlphaFadeIn(UI.gui, UI.NewID("SajoYukimiNoDraw"), 0, 0, false)
+					GuiZSetForNextWidget(UI.gui,UI.GetZDeep()-1)
+					GuiImage(UI.gui, UI.NewID("YukimiTrue"), YukimiPosX-65, YukimiPosY-55, UI.UserData["YukimiCurrentImg"], 1,
+						0.5 / UI.GetScale(), 0)
+                    GuiAnimateEnd(UI.gui)
+					local YukimiLeftClick = GuiGetPreviousWidgetInfo(UI.gui)
+                    local t = dofile_once("mods/wand_editor/files/misc/self/yukimi.lua")
+                    local RefreshAll = false
+					if UI.UserData["YukimiRefreshMax"] == nil then
+                        SetRandomSeed(GameGetRealWorldTimeSinceStarted(), 114514 + 1919810)
+                        UI.UserData["YukimiRefreshMax"] = 60 * (30 + Random(-10, 5))
+					end
+					if UI.UserData["YukimiTimeCount"] > UI.UserData["YukimiRefreshMax"] then
+                        RefreshAll = true
+						UI.UserData["YukimiTimeCount"] = 0
+						SetRandomSeed(GameGetRealWorldTimeSinceStarted(), 114514 + 1919810)
+                        UI.UserData["YukimiRefreshMax"] = 60 * (30 + Random(-10, 5))
+					end
+                    if UI.UserData["YukimiCurrentText"] == nil or YukimiLeftClick or RefreshAll then
+                        local count = UI.UserData["YukimiClickCount"] or 0
+                        local key = UI.UserData["LastYukimiImgKey"]
+						if UI.UserData["LastYukimiImgKey"] == nil then
+                            UI.UserData["LastYukimiImgKey"] = 1
+							key = 1
+						end
+						local NewCount = 0
+                        while UI.UserData["LastYukimiImgKey"] == key do
+                            SetRandomSeed(GameGetRealWorldTimeSinceStarted(), 114514 + count + NewCount)
+                            key = Random(1, #t)
+                            NewCount = NewCount + 1
+                        end
+						UI.UserData["LastYukimiImgKey"] = key
+                        UI.UserData["YukimiCurrentText"] = t[key]
+                    end
+					if YukimiLeftClick or RefreshAll then
+                        local count = UI.UserData["YukimiClickCount"] or 0
+                        local key = UI.UserData["LastYukimiTextKey"]
+						if UI.UserData["LastYukimiTextKey"] == nil then
+                            UI.UserData["LastYukimiTextKey"] = 1
+							key = 1
+						end
+                        local NewCount = 0
+                        while UI.UserData["LastYukimiTextKey"] == key do
+                            SetRandomSeed(GameGetRealWorldTimeSinceStarted(), 1919810 + count + NewCount)
+                            key = Random(1, #ImgList)
+                            NewCount = NewCount + 1
+                        end
+						UI.UserData["LastYukimiTextKey"] = key
+                        UI.UserData["YukimiCurrentImg"] = ImgList[key]
+						if UI.UserData["YukimiClickCount"] == nil then
+                            UI.UserData["YukimiClickCount"] = 1
+                        elseif UI.UserData["YukimiClickCount"] < 16384 then
+							UI.UserData["YukimiClickCount"] = UI.UserData["YukimiClickCount"] + 1
+                        else
+							UI.UserData["YukimiClickCount"] = 1
+						end
+					end
+					UI.BetterTooltipsNoCenter(function ()
+                        GuiText(UI.gui, 0, 0, UI.UserData["YukimiCurrentText"],0.23,"data/fonts/generated/notosans_jp_48.bin")
+					end,nil)
+				end
+			end
 		end
 		---@param this Gui
         UI.TickEventFn["main"] = function(this) --我认为的主事件循环）
@@ -258,7 +373,6 @@ function GUIUpdate()
                 local Request = function()
                     local https = require("ssl.https")
 					local ltn12 = require("ltn12")
-                    require("github_mirror")
                     local code = 0
                     local Returns
 					-- 准备sink，用于收集响应体数据
@@ -293,6 +407,86 @@ function GUIUpdate()
                     UI.TickEventFn["RequestAvatar"] = nil
                     UI.UserData["RequestAvatarhandle"] = nil
 				end
+			end
+		end
+
+        UI.TickEventFn["RequestYukimi"] = function()
+            local flag1 = Cpp.PathExists("mods/wand_editor/cache/yukimi/1.png") or UI.UserData["YKThisRunError1"]
+            local flag2 = Cpp.PathExists("mods/wand_editor/cache/yukimi/2.png") or UI.UserData["YKThisRunError2"]
+			local flag3 = Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png") or UI.UserData["YKThisRunError3"]
+			local flag4 = Cpp.PathExists("mods/wand_editor/cache/yukimi/4.png") or UI.UserData["YKThisRunError4"]
+            if flag1 and flag2 and flag3 and flag4 then
+                UI.TickEventFn["RequestYukimi"] = nil
+                return
+            end
+			--没有图片
+            local function RequestDownload(id, link, path)
+                local ModeKey = "RequestDMode" .. id
+                local HandleKey = "RequestDHandle" .. id
+				
+                if UI.UserData[ModeKey] == nil then
+					local Request = function()
+						local https = require("ssl.https")
+						local ltn12 = require("ltn12")
+						local code = 0
+						local Returns
+						-- 准备sink，用于收集响应体数据
+						local response_chunks = {}
+						local response_sink = ltn12.sink.table(response_chunks)
+						local count = 0
+						while code ~= 200 and count <= 10 do--失败太多次就不请求了
+							Returns = { https.request {
+								url = link,
+								sink = response_sink,
+							} }
+							code = Returns[2]
+							count = count + 1
+						end
+						return response_chunks,code
+					end
+					local runner = effil.thread(Request)
+					UI.UserData[HandleKey] = runner()
+					UI.UserData[ModeKey] = true
+				elseif UI.UserData[ModeKey] then
+					local handle = UI.UserData[HandleKey]
+					local status = handle:status()
+					if status == "completed" then
+						local response_chunks, code = handle:get()
+						if code == 200 then--如果正确请求了，那么就写入文件
+							local file = io.open(path, "wb")
+							for _, chunk in pairs(effil.dump(response_chunks)) do
+								file:write(chunk)
+							end
+                            file:close()
+                        else
+							UI.UserData["YKThisRunError"..id] = true
+						end
+                        UI.UserData[HandleKey] = nil
+					end
+                end
+            end
+			if not flag1 then
+				RequestDownload("1",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-1.png",
+					"mods/wand_editor/cache/yukimi/1.png")
+			end
+
+            if not flag2 then
+				RequestDownload("2",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-2.png",
+					"mods/wand_editor/cache/yukimi/2.png")
+            end
+			
+            if not flag3 then
+				RequestDownload("3",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-3.png",
+					"mods/wand_editor/cache/yukimi/3.png")
+            end
+			
+			if not flag4 then
+				RequestDownload("4",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-4.png",
+					"mods/wand_editor/cache/yukimi/4.png")
 			end
 		end
 
@@ -500,7 +694,7 @@ function GUIUpdate()
             if UI.GetPickerStatus("DamageInfo") then
                 DrawDamageInfo()
             end
-			if not UI.GetPickerStatus("SpellDepotBTN") and UI.GetPickerStatus("AlwaysDrawWandEditBox") and UI.GetPickerStatus("WandContainerBTN") then
+			if not UI.GetPickerStatus("SpellDepotBTN") and not ModSettingGet(ModID .. "hasButtonMove") and UI.GetPickerStatus("AlwaysDrawWandEditBox") and UI.GetPickerStatus("WandContainerBTN") then
 				DrawWandContainer(Compose(GetEntityHeldWand, GetPlayer)(), spellData)
 			end
 		end

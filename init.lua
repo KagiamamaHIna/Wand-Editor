@@ -28,8 +28,13 @@ if not Cpp.PathExists(cachePath) then
     Cpp.CreateDir(cachePath)
 end
 
+if not Cpp.PathExists(cachePath.."/yukimi") then
+	Cpp.CreateDir(cachePath.."/yukimi")
+end
+
 function OnPlayerSpawned(player)
 	RestoreInput()--防止笨蛋在一些情况下重启游戏
+	ModSettingSet(ModID .. "hasButtonMove", false)
     if not GameHasFlagRun("wand_editor_init") then
         GameAddFlagRun("wand_editor_init")
         EntityLoadChild(player, "mods/wand_editor/files/entity/Restore.xml")

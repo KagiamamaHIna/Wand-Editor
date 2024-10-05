@@ -379,29 +379,20 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                 end
                 Cpp.SetClipboard(Cpp.ConcatStr("return {\n", SerializeTable(T), "}"))
                 CopiedData = true
+				this.UserData["HasShiftClick"][CurrentWand] = nil
             end
-		elseif (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and InputIsKeyDown(Key_v) and this.UserData["HasShiftClick"][CurrentWand] then
+		elseif (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and InputIsKeyJustDown(Key_v) and hover then
             local ClipboardData = Cpp.GetClipboard()
             local flag, t = CheckSpells(ClipboardData)
             if flag then
-                local CurrentData = GetWandData(CurrentWand)
-				local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
-				local min = HasShiftClick[2]
-                local max = HasShiftClick[3] or min
-                min = math.min(min, max)
-                max = math.max(HasShiftClick[2], max)
-                local all = max - min
-				local indexCount = 0
                 for i = #t, 1, -1 do
-                    InsertTableSpells(CurrentData, t[i].id, min + indexCount)
-					indexCount = indexCount + 1
+                    InsertTableSpells(wandData, t[i].id, k)
                 end
-                InitWand(CurrentData, CurrentWand)
+                InitWand(wandData, wandEntity)
 				this.OnceCallOnExecute(function()
 					RefreshHeldWands()
 				end)
             end
-			this.UserData["HasShiftClick"][CurrentWand] = nil
         else
 			CopiedData = false]]
         end
@@ -558,7 +549,7 @@ function DrawWandContainer(wandEntity, spellData)
                 this.UserData["FixedWand"][1] = GetWandData(ViewerWandEntity)
 			end
 			L_GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			this.DrawScrollContainer("WandSpellViewerContainer", not this.GetPickerStatus("KeyBoardInput"))
+			this.DrawScrollContainer("WandSpellViewerContainer", true)
 		end
 	end
 	local ViewerClick = function(left_click)
