@@ -417,8 +417,7 @@ function GUIUpdate()
 			local flag3 = Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png") or UI.UserData["YKThisRunError3"]
 			local flag4 = Cpp.PathExists("mods/wand_editor/cache/yukimi/4.png") or UI.UserData["YKThisRunError4"]
             if flag1 and flag2 and flag3 and flag4 then
-                UI.TickEventFn["RequestYukimiAAA"] = nil
-                return
+                return---?为什么不能移除这个
             end
 			--没有图片
             local function RequestDownload(id, link, path)
