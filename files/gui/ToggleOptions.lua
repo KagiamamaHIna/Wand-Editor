@@ -297,7 +297,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
                 UI.UserData["DownloadThreadHandle"] = runner(UI.UserData["UpdateDataVer"]) --因为我发行的版本号都是有规则的，所以可以这么干 UI.UserData["UpdateDataVer"]
                 UI.UserData["DownloadStatus"] = "download"
                 ClickSound()
-                UI.TickEventFn["UpdateFn"] = function()
+                UI.MiscEventFn["UpdateFn"] = function()
                     if UI.UserData["DownloadThreadHandle"] and UI.UserData["DownloadStatus"] == "download" then
                         local handle = UI.UserData["DownloadThreadHandle"]
                         local status = handle:status()
@@ -318,7 +318,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
                             GamePrint(GameTextGet("$wand_editor_new_ver_failed_tip"))
                         end
                         UI.UserData["DownloadThreadHandle"] = nil --已经完成了，可以移除
-                        UI.TickEventFn["UpdateFn"] = nil
+                        UI.MiscEventFn["UpdateFn"] = nil
                     end
                 end
             end
@@ -338,7 +338,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
             UI.UserData["UpdateThreadHandle"] = runner()
             UI.UserData["UpdateCheck"] = "testing"
             ClickSound()
-            UI.TickEventFn["UpdateCheckFn"] = function() --分离方便检测
+            UI.MiscEventFn["UpdateCheckFn"] = function() --分离方便检测
                 if UI.UserData["UpdateThreadHandle"] and UI.UserData["UpdateCheck"] == "testing" then
                     local handle = UI.UserData["UpdateThreadHandle"]
                     local status = handle:status()
@@ -361,7 +361,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
                         UI.UserData["UpdateCheck"] = "error"
                         GamePrint(GameTextGet("$wand_editor_check_failed_tip"))
                     end
-                    UI.TickEventFn["UpdateCheckFn"] = nil
+                    UI.MiscEventFn["UpdateCheckFn"] = nil
                     UI.UserData["UpdateThreadHandle"] = nil --垃圾回收
                 end
             end
@@ -383,10 +383,15 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
                 GuiImage(UI.gui, UI.NewID("AuthorAvatar"), 0, 0, "mods/wand_editor/cache/avatar.png", 1,
                     0.5 / UI.GetScale())
             end
-			if ModSettingGet(ModID.."YukimiAvailable") and ModSettingGet(ModID.."YukimiAvailableShow") then
+            if ModSettingGet(ModID .. "YukimiAvailable") and ModSettingGet(ModID .. "YukimiAvailableShow") then
                 GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_yukimi_close"))
             elseif ModSettingGet(ModID .. "YukimiAvailable") and not ModSettingGet(ModID .. "YukimiAvailableShow") then
-				GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_yukimi_open"))
+                GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_yukimi_open"))
+            end
+			if ModSettingGet(ModID.."YukimiAvailable") and ModSettingGet(ModID.."YukimiAlways") then
+                GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_always_yukimi_close"))
+            elseif ModSettingGet(ModID .. "YukimiAvailable") and not ModSettingGet(ModID .. "YukimiAlways") then
+				GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_always_yukimi_open"))
 			end
 		end, nil, 8)
 		if hover then
@@ -406,9 +411,13 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
             else
                 ModSettingSet(ModID .. "YukimiAvailable", true)
                 ModSettingSet(ModID .. "YukimiAvailableShow", true)
+                ModSettingSet(ModID .. "YukimiAlways", false)
                 UI.UserData["ModAboutConut"] = nil
             end
         end
+		if ModSettingGet(ModID .. "YukimiAvailable") and left_click and (InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)) then
+			ModSettingSet(ModID.."YukimiAlways",not ModSettingGet(ModID.."YukimiAlways"))		
+		end
 		if ModSettingGet(ModID.."YukimiAvailable") and right_click then
 			ModSettingSet(ModID.."YukimiAvailableShow",not ModSettingGet(ModID.."YukimiAvailableShow"))
 		end

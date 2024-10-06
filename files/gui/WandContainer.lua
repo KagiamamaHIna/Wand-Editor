@@ -144,6 +144,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
         L_GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "BG", v.id, L_tostring(k))), -22, 0,
 			L_SpellTypeBG[spellData[v.id].type],
             1, 1)
+		local _,_,_,thisImgX = GuiGetPreviousWidgetInfo(this.gui)
         L_GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
         L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
         this.SetZDeep(this.GetZDeep() - 1)
@@ -165,6 +166,11 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
             this.SetZDeep(this.GetZDeep() - 1)
             L_GuiText(this.gui, 4, 2, L_tostring(v.uses_remaining), 1, "data/fonts/font_small_numbers.xml")
         end
+		GuiAnimateBegin(this.gui)
+		GuiAnimateAlphaFadeIn(this.gui, UI.NewID(fastConcatStr(id , BaseName, "SpellBGInvisibility", L_tostring(k))), 0, 0, false)
+		L_GuiOptionsAddForNextWidget(this.gui,GUI_OPTION.Layout_NoLayouting)
+		L_GuiImage(this.gui, this.NewID(fastConcatStr(id , BaseName, "full_BG_invisibility" , L_tostring(k))), thisImgX, 0,"data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
+		GuiAnimateEnd(this.gui)
         L_GuiLayoutEnd(this.gui)
     end
 	if not isAlways then
@@ -448,7 +454,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 			end)
 		end
 	end
-	this.SetZDeep(srcDeep) --恢复深度以解决奇怪深度问题
+    this.SetZDeep(srcDeep) --恢复深度以解决奇怪深度问题
 end
 
 local LastWand
@@ -487,29 +493,28 @@ function DrawWandContainer(wandEntity, spellData)
 	local TrueWidth = this.ScreenWidth - 20
 	local HScrollX = 10
 	local HScrollY = this.ScreenHeight - 38.5
-	local HScrollWidth = this.GetHScrollWidth("WandContainer")
+    local HScrollWidth = this.GetHScrollWidth("WandContainer")
+	
 	if not Skip then
         if HScrollWidth == nil or LastWand ~= wandEntity or this.UserData["NextResetHScroll"] then --自动居中
             HScrollX = this.ScreenWidth * 2
             HScrollY = this.ScreenHeight * 2
             this.UserData["NextResetHScroll"] = false
         elseif HScrollWidth < TrueWidth and HScrollWidth ~= 0 then
-            TrueWidth = HScrollWidth
             HScrollX = this.ScreenWidth * 0.5 - HScrollWidth / 2
         end
         local Ability = EntityGetFirstComponentIncludingDisabled(wandEntity, "AbilityComponent")
 		local thisDecks = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity")
         if LastCapacity ~= thisDecks then --如果不一致就刷新数据
-			this.UserData["NextResetHScroll"] = true
-			this.OnceCallOnExecute(function ()
-				this.ResetHScrollSlider("WandContainer")
-			end)
+            this.UserData["NextResetHScroll"] = true
+            this.OnceCallOnExecute(function()
+                this.ResetHScrollSlider("WandContainer")
+            end)
         end
 		if wandData then--执行顺序问题，先放这里防止始终数量更改
 			LastCapacity = thisDecks
 		end
 	end
-
 
 	this.HorizontalScroll("WandContainer", HScrollX, HScrollY, TrueWidth, 20, false, 0, 0)
 

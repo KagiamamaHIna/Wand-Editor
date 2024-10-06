@@ -770,7 +770,7 @@ function WandDepotCB(_, _right, _, _, this_enable)
 	end
 end
 
-UI.TickEventFn["LoadWandBox"] = function ()
+UI.MiscEventFn["LoadWandBox"] = function ()
 	if ModSettingGet(ModID .. "LoadSpellLab") then
 		local flag = ModDoesFileExist("mods/spell_lab/files/lib/wands.lua")
 		flag = flag or ModDoesFileExist("mods/spell_lab/files/lib/smallfolk.lua")

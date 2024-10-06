@@ -181,3 +181,5 @@ wand_editor_load_spell_lab_shug_wand_box_error,Probably because you don't have t
 wand_editor_load_import_wand_box_done,Wand box import complete,,,,,,,,法杖仓库导入完成,,,,,,,
 wand_editor_yukimi_close,Right-click to close the Yukimi in the lower right corner,,,,,,,,右键关闭右下角雪美小人,,,,,,,
 wand_editor_yukimi_open,Right-click to open the Yukimi in the lower right corner,,,,,,,,右键开启右下角雪美小人,,,,,,,
+wand_editor_always_yukimi_open,shift+left click will make Yukimi always display,,,,,,,,shift+左键可以让雪美始终显示,,,,,,,
+wand_editor_always_yukimi_close,shift+left click to turn off the Yukimi always display,,,,,,,,shift+左键关闭雪美始终显示,,,,,,,

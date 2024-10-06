@@ -38,8 +38,10 @@ local this = {
 	},
 	public = {
 		ScreenWidth = -1, --当前屏宽
-		ScreenHeight = -1, --当前屏高
-        TickEventFn = {}, --刻事件
+        ScreenHeight = -1, --当前屏高
+		MainTickFn = {},	--主要的刻事件，执行优先级更高
+        TickEventFn = {},  --刻事件
+		MiscEventFn = {},	--副要的刻事件，执行优先级最低
 		UserData = {},
 		gui = GuiCreate(), --gui userdata
 	}
@@ -49,6 +51,8 @@ local this = {
 ---@field ScreenWidth integer
 ---@field ScreenHeight integer
 ---@field TickEventFn table
+---@field MainTickFn table
+---@field MiscEventFn table
 ---@field UserData table
 ---@field gui userdata
 local UI = {}
@@ -1233,8 +1237,7 @@ function UI.DarwHorizontalScroll(id)
 		mx = mx / this.private.Scale
         my = my / this.private.Scale
 		hover =  IsHover(mx, my)
-
-		this.private.HScrollSlider[newid].width = math.floor(ScrollWidth)--取整减小误差
+        this.private.HScrollSlider[newid].width = math.floor(ScrollWidth) --取整减小误差
         if ScrollWidth > w then
             GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
             if not LastHover then
@@ -1327,7 +1330,7 @@ function UI.DispatchMessage()
             fn(UI)
         end
     end
-	
+
 	local max = table.maxn(this.private.TileTick)
     if max >= 0 then
         for i = max, 1, -1 do
@@ -1338,13 +1341,21 @@ function UI.DispatchMessage()
             this.private.TileTick[i] = nil
         end
     end
-	
-	for _, fn in pairs(this.public.TickEventFn) do
-		if type(fn) == "function" then
-			fn(UI)
-		end
+	for key, fn in pairs(this.public.MainTickFn) do
+        if type(fn) == "function" then
+            fn(UI)
+        end
 	end
-
+    for key, fn in pairs(this.public.TickEventFn) do
+        if type(fn) == "function" then
+            fn(UI)
+        end
+    end
+    for key, fn in pairs(this.public.MiscEventFn) do
+        if type(fn) == "function" then
+            fn(UI)
+        end
+    end
 
     if this.private.destroy then
         GuiDestroy(this.private.gui)

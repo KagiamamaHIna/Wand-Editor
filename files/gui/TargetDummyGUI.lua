@@ -87,10 +87,10 @@ function SpwanDummyCB(_, _, _, _, this_enable)
         GuiTooltip(UI.gui, GameTextGet("$wand_editor_options_spwan_dummy_tips"), "")
 
 		if spwan_left_click then
-            UI.TickEventFn["MoveDummyFn"] = function()
+            UI.MiscEventFn["MoveDummyFn"] = function()
                 local click = InputIsMouseButtonDown(Mouse_right)
                 if click or GameIsInventoryOpen() then --右键取消，或打开物品栏取消
-                    UI.TickEventFn["MoveDummyFn"] = nil
+                    UI.MiscEventFn["MoveDummyFn"] = nil
                     UI.OnMoveImage("MoveDummy", 0, 0, "mods/wand_editor/files/entity/dummy/dummy_target.png", true, 1.5)
                     return
                 end
@@ -122,7 +122,7 @@ function SpwanDummyCB(_, _, _, _, this_enable)
 						GamePrint(GameTextGet("$wand_editor_options_spwan_dummy_done_tips_default"))
                     end
                     UI.OnMoveImage("MoveDummy", 0, 0, "mods/wand_editor/files/entity/dummy/dummy_target.png", true, 1.5)
-					UI.TickEventFn["MoveDummyFn"] = nil
+					UI.MiscEventFn["MoveDummyFn"] = nil
 					return
                 end
             end
@@ -162,7 +162,7 @@ function SpwanDummyCB(_, _, _, _, this_enable)
         GuiLayoutEnd(UI.gui)
         GuiLayoutEnd(UI.gui)
     end)
-	if not UI.TickEventFn["MoveDummyFn"] then
+	if not UI.MiscEventFn["MoveDummyFn"] then
 		UI.DrawScrollContainer("SpwanDummyOptions", false)
 	end
 end

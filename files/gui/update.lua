@@ -10,7 +10,7 @@ function GUIUpdate()
 	local function RemoveNullEntityWithName(name)
 		EntityKill(EntityGetWithName(name))
 	end
-
+	local MainBtnEnable = false
 	if UI == nil then
 		--初始化
 		---@class Gui
@@ -42,7 +42,7 @@ function GUIUpdate()
 				UI.UserData["HasSpellMove"] = true
                 UI.TickEventFn["MoveSpellFn"] = function() --分离出一个事件，用于表示法术点击后的效果
                     UI.OnceCallOnExecute(function()
-						if UI.UserData["WandContainerHasHover"] == nil or UI.UserData["WandContainerHasHover"] then
+                        if UI.UserData["WandContainerHasHover"] == nil or UI.UserData["WandContainerHasHover"] then
 							UI.UserData["WandContainerHasHover"] = false
 						end
 					end)
@@ -74,7 +74,7 @@ function GUIUpdate()
 					end
 					if not status then
 						UI.TickEventFn["MoveSpellFn"] = nil
-						if (not UI.UserData["WandContainerHasHover"]) or UI.UserData["CreateItemActionEntityEnable"] then
+                        if (not UI.UserData["WandContainerHasHover"]) then
 							local worldx, worldy = DEBUG_GetMouseWorld()
 							local spell = CreateItemActionEntity(id, worldx, worldy + 5)
 							if UI.UserData["UpSpellIndex"] and UI.UserData["UpSpellIndex"][4] ~= nil then
@@ -84,7 +84,6 @@ function GUIUpdate()
 							end
 							UI.UserData["FloatSpellID"] = nil
                             UI.UserData["UpSpellIndex"] = nil
-							UI.UserData["CreateItemActionEntityEnable"] = false
 						end
 						UI.UserData["HasSpellMove"] = false
 						UI.OnMoveImage("MoveSpell", x, y, sprite, true)
@@ -102,7 +101,8 @@ function GUIUpdate()
 		UI.PickerEnableList("WandBuilderBTN", "SpellDepotBTN", "WandDepotBTN", "ToggleOptionsBTN", "SpwanDummyBTN")
         UI.SetCheckboxEnable("shuffle_builder", false)
 		UI.SetCheckboxEnable("update_image_builder", false)
-		local MainCB = function(left_click, right_click, x, _, enable)
+        local MainCB = function(left_click, right_click, x, _, enable)
+			MainBtnEnable = enable
             if not enable then
                 return
             end
@@ -117,7 +117,9 @@ function GUIUpdate()
 			UI.MoveImagePicker("SpellDepotBTN", PickerGap(0), y + 30, 8, 0, spellDepotText,
 				"mods/wand_editor/files/gui/images/spell_depot.png", nil, SpellDepotClickCB, nil, true, nil,
 				true)
-				
+			if not UI.GetPickerStatus("SpellDepotBTN") and not ModSettingGet(ModID .. "hasButtonMove") and UI.GetPickerStatus("AlwaysDrawWandEditBox") and UI.GetPickerStatus("WandContainerBTN") then
+				DrawWandContainer(Compose(GetEntityHeldWand, GetPlayer)(), spellData)
+			end
 			UI.MoveImagePicker("WandBuilderBTN", PickerGap(1), y + 30, 8, 0, GameTextGet("$wand_editor_wand_spawner"),
 				"mods/wand_editor/files/gui/images/wand_builder.png", nil, WandBuilderCB, nil, true, nil,
 				true)
@@ -216,7 +218,170 @@ function GUIUpdate()
 					ClickSound()
 					GameRegenItemActionsInPlayer(GetPlayer())
                 end, false, true)
-			if ModSettingGet(ModID.."YukimiAvailable") and ModSettingGet(ModID.."YukimiAvailableShow") then
+		end
+		---@param this Gui
+        UI.MainTickFn["Main"] = function(this) --我认为的主事件循环）
+            if CSV == nil then
+                CSV = dofile_once("mods/wand_editor/files/libs/csv.lua")(ModTextFileGetContent("data/translations/common.csv"))
+            end
+            if ModSettingGet("wand_editor.reset_all_btn") then
+				UI.ResetAllCanMove()
+                ModSettingSet("wand_editor.reset_all_btn", false)
+			end
+            if GameIsInventoryOpen() or GetPlayer() == nil then
+                return
+            end
+            if EntityGetWithName("WandEditorRestoreEntity") == 0 then--如果没有人外部手贱删除这个实体，那么应该是玩家重生之类的导致消失了
+				local player = GetPlayer()
+				EntityLoadChild(player, "mods/wand_editor/files/entity/Restore.xml")
+				EntityAddComponent2(player, "LuaComponent", { script_shot = "mods/wand_editor/files/misc/self/player_shot.lua" })
+			end
+			if InputIsKeyDown(Key_BACKSPACE) then
+                local worldx, worldy = DEBUG_GetMouseWorld()
+                local entitys = EntityGetInRadiusWithTag(worldx, worldy, 12, "polymorphable_NOT")
+				for _,v in pairs(entitys)do
+					if EntityGetName(v) == "wand_editor_dummy_target" then
+                        EntityKill(v)
+						GamePrint(GameTextGet("$wand_editor_kill_dummy_tip"))
+					end
+				end
+			end
+			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
+			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
+                "mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, false)
+        end
+		
+        UI.MiscEventFn["RequestAvatar"] = function()
+			if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then--请求头像
+                UI.MiscEventFn["RequestAvatar"] = nil
+				return
+			end
+            if UI.UserData["RequestAvatarMode"] == nil then
+                local Request = function()
+                    local https = require("ssl.https")
+					local ltn12 = require("ltn12")
+                    local code = 0
+                    local Returns
+					-- 准备sink，用于收集响应体数据
+					local response_chunks = {}
+                    local response_sink = ltn12.sink.table(response_chunks)
+					local count = 0
+                    while code ~= 200 and count <= 12 do--失败太多次就不请求了
+                        Returns = { https.request {
+							url = "https://avatars.githubusercontent.com/u/128758465",--?s=200&v200
+							sink = response_sink,
+						} }
+                        code = Returns[2]
+						count = count + 1
+                    end
+                    return response_chunks,code
+                end
+                local runner = effil.thread(Request)
+				UI.UserData["RequestAvatarhandle"] = runner()
+                UI.UserData["RequestAvatarMode"] = true
+            elseif UI.UserData["RequestAvatarMode"] then
+				local handle = UI.UserData["RequestAvatarhandle"]
+                local status = handle:status()
+                if status == "completed" then
+                    local response_chunks, code = handle:get()
+					if code == 200 then--如果正确请求了，那么就写入文件
+						local file = io.open("mods/wand_editor/cache/avatar.png", "wb")
+						for _, chunk in pairs(effil.dump(response_chunks)) do
+							file:write(chunk)
+						end
+						file:close()
+					end
+                    UI.MiscEventFn["RequestAvatar"] = nil
+                    UI.UserData["RequestAvatarhandle"] = nil
+				end
+			end
+		end
+
+        UI.MiscEventFn["RequestYukimi"] = function()--你问我AAA是什么？我不知道
+            local flag1 = Cpp.PathExists("mods/wand_editor/cache/yukimi/1.png") or UI.UserData["YKThisRunError1"]
+            local flag2 = Cpp.PathExists("mods/wand_editor/cache/yukimi/2.png") or UI.UserData["YKThisRunError2"]
+			local flag3 = Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png") or UI.UserData["YKThisRunError3"]
+			local flag4 = Cpp.PathExists("mods/wand_editor/cache/yukimi/4.png") or UI.UserData["YKThisRunError4"]
+            if flag1 and flag2 and flag3 and flag4 then
+				UI.MiscEventFn["RequestYukimi"] = nil
+                return---?为什么不能移除这个
+            end
+			--没有图片
+            local function RequestDownload(id, link, path)
+                local ModeKey = "RequestDMode" .. id
+                local HandleKey = "RequestDHandle" .. id
+				
+                if UI.UserData[ModeKey] == nil then
+					local Request = function()
+						local https = require("ssl.https")
+						local ltn12 = require("ltn12")
+						local code = 0
+						local Returns
+						-- 准备sink，用于收集响应体数据
+						local response_chunks = {}
+						local response_sink = ltn12.sink.table(response_chunks)
+						local count = 0
+						while code ~= 200 and count <= 10 do--失败太多次就不请求了
+							Returns = { https.request {
+								url = link,
+								sink = response_sink,
+							} }
+							code = Returns[2]
+							count = count + 1
+						end
+						return response_chunks,code
+					end
+					local runner = effil.thread(Request)
+					UI.UserData[HandleKey] = runner()
+					UI.UserData[ModeKey] = true
+				elseif UI.UserData[ModeKey] then
+					local handle = UI.UserData[HandleKey]
+					local status = handle:status()
+					if status == "completed" then
+						local response_chunks, code = handle:get()
+						if code == 200 then--如果正确请求了，那么就写入文件
+							local file = io.open(path, "wb")
+							for _, chunk in pairs(effil.dump(response_chunks)) do
+								file:write(chunk)
+							end
+                            file:close()
+                        else
+							UI.UserData["YKThisRunError"..id] = true
+						end
+                        UI.UserData[HandleKey] = nil
+					end
+                end
+            end
+			if not flag1 then
+				RequestDownload("1",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-1.png",
+					"mods/wand_editor/cache/yukimi/1.png")
+			end
+
+            if not flag2 then
+				RequestDownload("2",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-2.png",
+					"mods/wand_editor/cache/yukimi/2.png")
+            end
+			
+            if not flag3 then
+				RequestDownload("3",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-3.png",
+					"mods/wand_editor/cache/yukimi/3.png")
+            end
+			
+			if not flag4 then
+				RequestDownload("4",
+				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-4.png",
+					"mods/wand_editor/cache/yukimi/4.png")
+			end
+		end
+
+		UI.MiscEventFn["Yukimi"] = function ()
+            if ModSettingGet(ModID .. "YukimiAvailable") and ModSettingGet(ModID .. "YukimiAvailableShow") then
+				if not ModSettingGet(ModID .. "YukimiAlways") and not MainBtnEnable then
+					return
+				end
 				local flag = Cpp.PathExists("mods/wand_editor/cache/yukimi/1.png")
 				flag = flag and Cpp.PathExists("mods/wand_editor/cache/yukimi/2.png")
 				flag = flag and Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png")
@@ -255,10 +420,10 @@ function GUIUpdate()
                         UI.UserData["YukimiDEG"] = -173
                         UI.UserData["YukimiDEGMax"] = -183
                     elseif UI.UserData["YukimiDEG"] > UI.UserData["YukimiDEGMax"] then
-                        UI.UserData["YukimiDEG"] = UI.UserData["YukimiDEG"] - 0.2
+                        UI.UserData["YukimiDEG"] = UI.UserData["YukimiDEG"] - 0.18
                         UI.UserData["YukimiDEGMax"] = -183
                     else
-                        UI.UserData["YukimiDEG"] = UI.UserData["YukimiDEG"] + 0.2
+                        UI.UserData["YukimiDEG"] = UI.UserData["YukimiDEG"] + 0.18
                         UI.UserData["YukimiDEGMax"] = -173
                     end
                     if UI.UserData["YukimiCurrentImg"] == nil then
@@ -333,164 +498,8 @@ function GUIUpdate()
 				end
 			end
 		end
-		---@param this Gui
-        UI.TickEventFn["main"] = function(this) --我认为的主事件循环）
-            if CSV == nil then
-                CSV = dofile_once("mods/wand_editor/files/libs/csv.lua")(ModTextFileGetContent("data/translations/common.csv"))
-            end
-            if ModSettingGet("wand_editor.reset_all_btn") then
-				UI.ResetAllCanMove()
-                ModSettingSet("wand_editor.reset_all_btn", false)
-			end
-            if GameIsInventoryOpen() or GetPlayer() == nil then
-                return
-            end
-            if EntityGetWithName("WandEditorRestoreEntity") == 0 then--如果没有人外部手贱删除这个实体，那么应该是玩家重生之类的导致消失了
-				local player = GetPlayer()
-				EntityLoadChild(player, "mods/wand_editor/files/entity/Restore.xml")
-				EntityAddComponent2(player, "LuaComponent", { script_shot = "mods/wand_editor/files/misc/self/player_shot.lua" })
-			end
-			if InputIsKeyDown(Key_BACKSPACE) then
-                local worldx, worldy = DEBUG_GetMouseWorld()
-                local entitys = EntityGetInRadiusWithTag(worldx, worldy, 12, "polymorphable_NOT")
-				for _,v in pairs(entitys)do
-					if EntityGetName(v) == "wand_editor_dummy_target" then
-                        EntityKill(v)
-						GamePrint(GameTextGet("$wand_editor_kill_dummy_tip"))
-					end
-				end
-			end
-			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
-			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
-                "mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, false)
-        end
-		
-        UI.TickEventFn["RequestAvatar"] = function()
-			if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then--请求头像
-                UI.TickEventFn["RequestAvatar"] = nil
-				return
-			end
-            if UI.UserData["RequestAvatarMode"] == nil then
-                local Request = function()
-                    local https = require("ssl.https")
-					local ltn12 = require("ltn12")
-                    local code = 0
-                    local Returns
-					-- 准备sink，用于收集响应体数据
-					local response_chunks = {}
-                    local response_sink = ltn12.sink.table(response_chunks)
-					local count = 0
-                    while code ~= 200 and count <= 12 do--失败太多次就不请求了
-                        Returns = { https.request {
-							url = "https://avatars.githubusercontent.com/u/128758465",--?s=200&v200
-							sink = response_sink,
-						} }
-                        code = Returns[2]
-						count = count + 1
-                    end
-                    return response_chunks,code
-                end
-                local runner = effil.thread(Request)
-				UI.UserData["RequestAvatarhandle"] = runner()
-                UI.UserData["RequestAvatarMode"] = true
-            elseif UI.UserData["RequestAvatarMode"] then
-				local handle = UI.UserData["RequestAvatarhandle"]
-                local status = handle:status()
-                if status == "completed" then
-                    local response_chunks, code = handle:get()
-					if code == 200 then--如果正确请求了，那么就写入文件
-						local file = io.open("mods/wand_editor/cache/avatar.png", "wb")
-						for _, chunk in pairs(effil.dump(response_chunks)) do
-							file:write(chunk)
-						end
-						file:close()
-					end
-                    UI.TickEventFn["RequestAvatar"] = nil
-                    UI.UserData["RequestAvatarhandle"] = nil
-				end
-			end
-		end
 
-        UI.TickEventFn["RequestYukimiAAA"] = function()--你问我AAA是什么？我不知道
-            local flag1 = Cpp.PathExists("mods/wand_editor/cache/yukimi/1.png") or UI.UserData["YKThisRunError1"]
-            local flag2 = Cpp.PathExists("mods/wand_editor/cache/yukimi/2.png") or UI.UserData["YKThisRunError2"]
-			local flag3 = Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png") or UI.UserData["YKThisRunError3"]
-			local flag4 = Cpp.PathExists("mods/wand_editor/cache/yukimi/4.png") or UI.UserData["YKThisRunError4"]
-            if flag1 and flag2 and flag3 and flag4 then
-                return---?为什么不能移除这个
-            end
-			--没有图片
-            local function RequestDownload(id, link, path)
-                local ModeKey = "RequestDMode" .. id
-                local HandleKey = "RequestDHandle" .. id
-				
-                if UI.UserData[ModeKey] == nil then
-					local Request = function()
-						local https = require("ssl.https")
-						local ltn12 = require("ltn12")
-						local code = 0
-						local Returns
-						-- 准备sink，用于收集响应体数据
-						local response_chunks = {}
-						local response_sink = ltn12.sink.table(response_chunks)
-						local count = 0
-						while code ~= 200 and count <= 10 do--失败太多次就不请求了
-							Returns = { https.request {
-								url = link,
-								sink = response_sink,
-							} }
-							code = Returns[2]
-							count = count + 1
-						end
-						return response_chunks,code
-					end
-					local runner = effil.thread(Request)
-					UI.UserData[HandleKey] = runner()
-					UI.UserData[ModeKey] = true
-				elseif UI.UserData[ModeKey] then
-					local handle = UI.UserData[HandleKey]
-					local status = handle:status()
-					if status == "completed" then
-						local response_chunks, code = handle:get()
-						if code == 200 then--如果正确请求了，那么就写入文件
-							local file = io.open(path, "wb")
-							for _, chunk in pairs(effil.dump(response_chunks)) do
-								file:write(chunk)
-							end
-                            file:close()
-                        else
-							UI.UserData["YKThisRunError"..id] = true
-						end
-                        UI.UserData[HandleKey] = nil
-					end
-                end
-            end
-			if not flag1 then
-				RequestDownload("1",
-				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-1.png",
-					"mods/wand_editor/cache/yukimi/1.png")
-			end
-
-            if not flag2 then
-				RequestDownload("2",
-				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-2.png",
-					"mods/wand_editor/cache/yukimi/2.png")
-            end
-			
-            if not flag3 then
-				RequestDownload("3",
-				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-3.png",
-					"mods/wand_editor/cache/yukimi/3.png")
-            end
-			
-			if not flag4 then
-				RequestDownload("4",
-				"https://wiki.biligame.com/imascg/index.php?title=Special:Redirect/file/CGSS-Yukimi-Petit-9-4.png",
-					"mods/wand_editor/cache/yukimi/4.png")
-			end
-		end
-
-        UI.TickEventFn["ToggleOptions"] = function()
+        UI.MiscEventFn["ToggleOptions"] = function()
             if GetPlayer() == nil then --找不到玩家时禁止执行下一步
                 return
             end
@@ -694,9 +703,6 @@ function GUIUpdate()
             if UI.GetPickerStatus("DamageInfo") then
                 DrawDamageInfo()
             end
-			if not UI.GetPickerStatus("SpellDepotBTN") and UI.GetPickerStatus("AlwaysDrawWandEditBox") and UI.GetPickerStatus("WandContainerBTN") then
-				DrawWandContainer(Compose(GetEntityHeldWand, GetPlayer)(), spellData)
-			end
 		end
 	end
 	UI.DispatchMessage()
