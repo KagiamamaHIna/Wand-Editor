@@ -1,6 +1,6 @@
 ModDir = "mods/wand_editor/"
 ModID = "wand_editor"
-ModVersion = "1.6.1"
+ModVersion = "1.6.2"
 ModLink = "https://github.com/KagiamamaHIna/Wand-Editor"
 
 QuietNaN = 0/0

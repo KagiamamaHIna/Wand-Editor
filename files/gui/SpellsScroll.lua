@@ -584,19 +584,20 @@ function DrawSpellContainer(this, spellData, spellTable, type)
         this.ScrollContainer(ContainerName, 30, 64, 178, 130, nil, 0, 1.3)
         this.ScrollContainer("HistorySpells", 30, 200, 178, 45, nil, 0, 1.3)
 
-		local RemoveCB = function (left_click)
+        local RemoveCB = function(left_click)
             if left_click then
                 GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
-				if UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] == nil then
+                if UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] == nil then
                     UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] = true
-					return
-				end
+                    return
+                end
                 HistoryTableMap = {}
                 LastHistoryTable = {}
                 ModSettingSet(ModID .. "SpellDepotHistoryData", "return {}")
-				UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] = nil
-			end
-		end
+                UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] = nil
+            end
+        end
+		GuiZSetForNextWidget(UI.gui,UI.GetZDeep())
 		UI.MoveImageButton("RemoveSpellDepotHistoryBtn", 215, 200,
             "mods/wand_editor/files/gui/images/remove_spell_depot_history.png", nil, function()
 			local _,_,hover = GuiGetPreviousWidgetInfo(UI.gui)
