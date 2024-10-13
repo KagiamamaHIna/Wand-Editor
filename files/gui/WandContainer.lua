@@ -517,14 +517,54 @@ function DrawWandContainer(wandEntity, spellData)
 	end
 
 	this.HorizontalScroll("WandContainer", HScrollX, HScrollY, TrueWidth, 20, false, 0, 0)
-
+    local SecondWithSign = Compose(NumToWithSignStr, tonumber, FrToSecondStr)
+	
 	local ViewerHover = function()
 		local _, _, hover = L_GuiGetPreviousWidgetInfo(this.gui)
 		local tip = GameTextGet("$wand_editor_wand_spell_viewer_tip_close")
         if this.UserData["FixedWand"] then
             tip = GameTextGet("$wand_editor_wand_spell_viewer_tip_open")
         end
-		GuiTooltip(this.gui, tip, "")
+        UI.BetterTooltipsNoCenter(function()
+			local rightMargin = 70
+            local function NewLine(str1, str2)
+                local text = GameTextGetTranslatedOrNot(str1)
+                local w = GuiGetTextDimensions(UI.gui, text)
+                GuiLayoutBeginHorizontal(UI.gui, 0, 0, true, 2, -1)
+                GuiText(UI.gui, 0, 0, text)
+                GuiRGBAColorSetForNextWidget(UI.gui, 255, 222, 173, 255)
+                GuiText(UI.gui, rightMargin - w, 0, str2)
+                GuiLayoutEnd(UI.gui)
+            end
+            if InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL) then
+				local wand = wandData
+				if wand.always_use_item_name_in_ui then
+                    GuiText(UI.gui, 0, 0, GameTextGetTranslatedOrNot(wand.item_name))
+                else
+					GuiText(UI.gui, 0, 0, GameTextGetTranslatedOrNot("$item_wand"))
+				end
+				GuiLayoutAddVerticalSpacing(UI.gui, 1)
+                
+                local shuffle
+                if wand.shuffle_deck_when_empty then
+                    shuffle = GameTextGet("$menu_yes")
+                else
+                    shuffle = GameTextGet("$menu_no")
+                end
+                NewLine("$inventory_shuffle", shuffle)
+                NewLine("$inventory_actionspercast", wand.actions_per_round)
+                NewLine("$inventory_castdelay", SecondWithSign(wand.fire_rate_wait) .. "s(" .. wand.fire_rate_wait ..
+                    "f)")
+                NewLine("$inventory_rechargetime", SecondWithSign(wand.reload_time) .. "s(" .. wand.reload_time .. "f)")
+                NewLine("$inventory_manamax", math.floor(wand.mana_max))
+                NewLine("$inventory_manachargespeed", math.floor(wand.mana_charge_speed))
+                NewLine("$inventory_capacity", wand.deck_capacity)
+                NewLine("$inventory_spread", wand.spread_degrees .. GameTextGet("$wand_editor_deg"))
+                NewLine("$wand_editor_speed_multiplier", "x" .. string.format("%.8f", wand.speed_multiplier))				
+            else
+				GuiText(this.gui,0,0,tip)
+			end
+		end,-3000,10)
 		if hover or this.UserData["FixedWand"] then
 			local ViewerWandData = wandData
 			local ViewerWandEntity = wandEntity

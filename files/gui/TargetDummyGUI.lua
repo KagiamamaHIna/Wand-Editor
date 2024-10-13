@@ -88,6 +88,27 @@ function SpwanDummyCB(_, _, _, _, this_enable)
 
 		if spwan_left_click then
             UI.MiscEventFn["MoveDummyFn"] = function()
+                local ALTLockCamera = InputIsKeyDown(Key_LALT) or InputIsKeyDown(Key_RALT)
+				local player = GetPlayer()
+				if ALTLockCamera and player then
+                    local PSPComp = EntityGetFirstComponentIncludingDisabled(player, "PlatformShooterPlayerComponent")
+                    if PSPComp then
+                        local center_camera_on_this_entity = ComponentGetValue2(PSPComp, "center_camera_on_this_entity")
+                        if center_camera_on_this_entity then
+                            ComponentSetValue2(PSPComp, "center_camera_on_this_entity", false)
+							GlobalsSetValue(ModID.."CameraLocked", "1")
+                        end
+                    end
+                elseif not ALTLockCamera and player then
+					local PSPComp = EntityGetFirstComponentIncludingDisabled(player, "PlatformShooterPlayerComponent")
+                    if PSPComp then
+                        local center_camera_on_this_entity = ComponentGetValue2(PSPComp, "center_camera_on_this_entity")
+                        if not center_camera_on_this_entity then
+                            ComponentSetValue2(PSPComp, "center_camera_on_this_entity", true)
+							GlobalsSetValue(ModID.."CameraLocked", "0")
+                        end
+                    end
+				end
                 local click = InputIsMouseButtonDown(Mouse_right)
                 if click or GameIsInventoryOpen() then --右键取消，或打开物品栏取消
                     UI.MiscEventFn["MoveDummyFn"] = nil
@@ -97,6 +118,16 @@ function SpwanDummyCB(_, _, _, _, this_enable)
                 UI.OnMoveImage("MoveDummy", 0, 0, "mods/wand_editor/files/entity/dummy/dummy_target.png", false, 1.5,UI.GetZDeep() - 114514)
                 local LeftClick = InputIsMouseButtonDown(Mouse_left)
                 if LeftClick then
+					if player then
+						local PSPComp = EntityGetFirstComponentIncludingDisabled(player, "PlatformShooterPlayerComponent")
+						if PSPComp then
+							local center_camera_on_this_entity = ComponentGetValue2(PSPComp, "center_camera_on_this_entity")
+							if not center_camera_on_this_entity then
+                                ComponentSetValue2(PSPComp, "center_camera_on_this_entity", true)
+								GlobalsSetValue(ModID.."CameraLocked", "0")
+							end
+						end
+					end
 					local px, py = DEBUG_GetMouseWorld()
                     local dummy = EntityLoad("mods/wand_editor/files/entity/dummy_target.xml", px, py)
 					local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)

@@ -221,7 +221,7 @@ GuiTooltip = function(gui, text, description, xOffset)
 		if description ~= nil and description ~= "" then
 			GuiText(this.public.gui, 0, 0, description)
 		end
-	end,nil,10 + xOffset)
+	end,-3000,10 + xOffset)
 end
 
 local BTooltipCache = {}

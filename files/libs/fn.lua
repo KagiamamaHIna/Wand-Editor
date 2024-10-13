@@ -672,6 +672,7 @@ end
 ---@field rect_animation string
 ---@field sprite_pos Vec2
 ---@field __DepotPin string
+---@field always_use_item_name_in_ui bool
 
 ---获得法杖数据
 ---@param entity integer EntityID

@@ -117,16 +117,16 @@ mod_settings =
         scope = MOD_SETTING_SCOPE_RUNTIME,
     }),
 	Setting({
+        id = "split_search_text",
+		ui_name = "wand_editor_split_search_text",
+		ui_description = "wand_editor_split_search_text_tip",
+		value_default = false,
+        scope = MOD_SETTING_SCOPE_RUNTIME,
+    }),
+	Setting({
         id = "remove_fog_of_war",
 		ui_name = "wand_editor_remove_fog_of_war",
 		ui_description = "wand_editor_remove_fog_of_war_tip",
-		value_default = false,
-        scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
-    }),
-	Setting({
-        id = "remove_lighting",
-		ui_name = "wand_editor_remove_lighting",
-		ui_description = "wand_editor_remove_lighting_tip",
 		value_default = false,
         scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
     }),

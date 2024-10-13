@@ -9,6 +9,7 @@ local LastType        --上一次的类型，用于判断是否需要重新搜�
 local LastFn          --上一次调用的匹配函数，用于判断设置是否更改
 local LastRatioMinScore --上一次的匹配分数，用于判断设置是否更改
 local LastIDSearchMode  --上一次的是否启用id搜索模式，用于判断设置是否更改
+local LastListMax
 
 local IsFavorite = false
 local FavoriteTable
@@ -55,6 +56,8 @@ if ModSettingGet("wand_editor_RatioMinScore") == nil then
 end
 local RatioMinScore = ModSettingGet("wand_editor_RatioMinScore")
 local IDSearchMode = false
+local SearchHistoryList = {}
+local SearchKey
 
 function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     local SearchSettingFn = function(_, _, posX, posY, SettingEnable)
@@ -107,21 +110,78 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	local _,_, hover = GuiGetPreviousWidgetInfo(this.gui)
     if hover and InputIsMouseButtonJustDown(Mouse_right) then
         this.TextInputRestore("input")
-		GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+        GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
     end
+    if hover then
+        UI.UserData["SavedSearchHistory"] = false
+		if SearchKey == nil and Search ~= "" and InputIsKeyJustDown(Key_DOWN) then
+			PushValueOnList(SearchHistoryList, Search)
+			if #SearchHistoryList > 20 then --移除过多内容
+				table.remove(SearchHistoryList, 1)
+			end
+			this.SetInputText("input", "")
+		elseif #SearchHistoryList > 0 then--当列表有可选内容时会进行的操作
+            if InputIsKeyJustDown(Key_UP) then
+                if Search ~= "" and SearchKey == nil then
+					if Search ~= SearchHistoryList[#SearchHistoryList] then--需要判断是否是刚才保存过的，避免重复
+						PushValueOnList(SearchHistoryList, Search)
+						if #SearchHistoryList > 20 then --移除过多内容
+							table.remove(SearchHistoryList, 1)
+						end
+					end
+                    SearchKey = math.max(1, #SearchHistoryList - 1)
+                elseif SearchKey == nil then
+                    SearchKey = #SearchHistoryList
+                else
+                    SearchKey = math.max(1, SearchKey - 1)
+                end
+                this.SetInputText("input", SearchHistoryList[SearchKey])
+            elseif InputIsKeyJustDown(Key_DOWN) and SearchKey then
+                SearchKey = SearchKey + 1
+                if SearchKey <= #SearchHistoryList then
+                    this.SetInputText("input", SearchHistoryList[SearchKey])
+                else
+                    SearchKey = nil
+                    this.SetInputText("input", "")
+                end
+            end
+		end
+    end
+    if not hover and not UI.UserData["SavedSearchHistory"] then --历史搜索数据存储
+        if (#SearchHistoryList > 0 and SearchHistoryList[#SearchHistoryList] ~= Search) or #SearchHistoryList == 0 then
+            if Search ~= "" and SearchKey == nil then
+                PushValueOnList(SearchHistoryList, Search)
+                if #SearchHistoryList > 20 then --移除过多内容
+                    table.remove(SearchHistoryList, 1)
+                end
+            end
+            if SearchHistoryList[SearchKey] ~= Search then --文本不相同时再清除搜索key用于记录新的搜索文本
+                SearchKey = nil
+            end
+        end
+        UI.UserData["SavedSearchHistory"] = true
+    end
+	--TablePrint(SearchHistoryList)
+	
 	this.tooltips(function ()
 		GuiText(this.gui,0,0,GameTextGetTranslatedOrNot("$wand_editor_search_info"))
     end, nil, 8, 16)
 	local DrawSpellList
-	if SpellDrawType ~= "favorite" then
+    if SpellDrawType ~= "favorite" then
         DrawSpellList = TypeToSpellList[SpellDrawType]
-		IsFavorite = false
-    else--特判
+        IsFavorite = false
+    else --特判
         DrawSpellList = FavoriteTable
-		IsFavorite = true
+        IsFavorite = true
+    end
+	local SearchList
+	if ModSettingGet(ModID .. ".split_search_text") then
+		SearchList = split(string.lower(Search), " ")
+	else
+		SearchList = { string.lower(Search) }
 	end
 	--当搜索内容不为空且上一次搜索内容不等于现在的输入内容，或类型变化时搜索，或匹配分数变化时搜索，或搜索方式函数变化时搜索，或id搜索模式变化时搜索
-    if (Search ~= "" and LastSearch ~= Search) or LastType ~= SpellDrawType or LastFn ~= UesSearchRatio or LastRatioMinScore ~= RatioMinScore or LastIDSearchMode ~= IDSearchMode then
+    if (Search ~= "" and LastSearch ~= Search) or LastType ~= SpellDrawType or LastFn ~= UesSearchRatio or LastRatioMinScore ~= RatioMinScore or LastIDSearchMode ~= IDSearchMode or #SearchList ~= LastListMax then
 		if Search == "" then
 			return DrawSpellList,SpellDrawType
 		end
@@ -133,27 +193,32 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
         local ScoreList = {}
 		local ScoreListCount = 1
         local HasScore = {}
-		local lowerSearch = string.lower(Search)
 		for _, v in pairs(DrawSpellList) do --循环计算匹配程度
             if spellData[v] == nil then
                 goto continue
             end
-            local score = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), lowerSearch) --大小写不敏感
-            local IDScore = 0
-            if IDSearchMode then
-                IDScore = UesSearchRatio(string.lower(v), lowerSearch)
-            end
-            local key = string.sub(spellData[v].name, 2)
-            local EnStr = CSV.get(key, "en")
-			local EnScore = 0
-            if EnStr ~= nil then
-                EnScore = UesSearchRatio(string.lower(EnStr), lowerSearch)
-            end
-            if IDScore > score then
-                score = IDScore
-            end
-			if EnScore > score then
-				score = EnScore
+            local score = 0
+			for _,lowerSearch in pairs(SearchList)do
+                local TempScore = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), lowerSearch) --大小写不敏感
+				if TempScore > score then
+					score = TempScore
+				end
+				local IDScore = 0
+				if IDSearchMode then
+					IDScore = UesSearchRatio(string.lower(v), lowerSearch)
+				end
+				local key = string.sub(spellData[v].name, 2)
+				local EnStr = CSV.get(key, "en")
+				local EnScore = 0
+				if EnStr ~= nil then
+					EnScore = UesSearchRatio(string.lower(EnStr), lowerSearch)
+				end
+				if IDScore > score then
+					score = IDScore
+				end
+				if EnScore > score then
+					score = EnScore
+				end
 			end
             if ScoreToSpellID[score] == nil then
                 ScoreToSpellID[score] = {}
@@ -185,7 +250,8 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
         LastList = DrawSpellList
         LastFn = UesSearchRatio
         LastRatioMinScore = RatioMinScore
-		LastIDSearchMode = IDSearchMode
+        LastIDSearchMode = IDSearchMode
+		LastListMax = #SearchList
     elseif LastSearch == Search and LastType == SpellDrawType and Search ~= "" then
         DrawSpellList = LastList
     end
@@ -502,6 +568,8 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
 	end
 end
 
+local LastHistoryTable = {}
+local HistoryTableMap = {}
 ---用于绘制法术容器
 ---@param this table
 ---@param spellData table 法术数据
@@ -509,12 +577,40 @@ end
 ---@param type integer|string
 function DrawSpellContainer(this, spellData, spellTable, type)
     local ZDeepest = this.GetZDeep()
-	local ContainerName = fastConcatStr("SpellsScroll",tostring(type))
-	this.ScrollContainer(ContainerName, 30, 64, 178, 180, nil, 0, 1.3)
-    for pos, id in pairs(spellTable) do
-		if spellData[id] == nil then
-			goto continue
+    local ContainerName = fastConcatStr("SpellsScroll", tostring(type))
+	if UI.GetPickerStatus("SpellDepotHistoryMode") then
+        this.ScrollContainer(ContainerName, 30, 64, 178, 130, nil, 0, 1.3)
+        this.ScrollContainer("HistorySpells", 30, 200, 178, 45, nil, 0, 1.3)
+
+		local RemoveCB = function (left_click)
+            if left_click then
+                GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
+				if UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] == nil then
+                    UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] = true
+					return
+				end
+                HistoryTableMap = {}
+                LastHistoryTable = {}
+                ModSettingSet(ModID .. "SpellDepotHistoryData", "return {}")
+				UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] = nil
+			end
 		end
+		UI.MoveImageButton("RemoveSpellDepotHistoryBtn", 215, 200,
+            "mods/wand_editor/files/gui/images/remove_spell_depot_history.png", nil, function()
+			local _,_,hover = GuiGetPreviousWidgetInfo(UI.gui)
+			if UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] then
+				GuiTooltip(UI.gui, GameTextGet("$wand_editor_remove_spell_depot_history_IKnowWhatImDoing"), "")
+            else
+				GuiTooltip(UI.gui, GameTextGet("$wand_editor_remove_spell_depot_history"), "")
+			end
+			if not hover and UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] then
+				UI.UserData["RemoveSpellDepotHistoryBtn_IKnowWhatImDoing"] = nil
+			end
+		end, RemoveCB, false, true)
+    else
+		this.ScrollContainer(ContainerName, 30, 64, 178, 180, nil, 0, 1.3)
+	end
+	local SpellSlotDraw = function (pos,id,Container,GuiID)
 		this.SetZDeep(this.GetZDeep() + 3)--设置深度，确保行为正确
 		local sprite = spellData[id].sprite
 
@@ -595,7 +691,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                         GameTextGetTranslatedOrNot("$wand_editor_added_spell"))
                 end
             elseif left_click and ALT then --ALT+左键收藏/删除法术
-                if IsFavorite then
+                if IsFavorite and Container ~= "HistorySpells" then
                     HasFavorite[id] = nil
                     table.remove(FavoriteTable, pos)
                     GamePrint(GameTextGetTranslatedOrNot(spellData[id].name),
@@ -618,6 +714,25 @@ function DrawSpellContainer(this, spellData, spellTable, type)
             elseif left_click and not UI.UserData["HasSpellMove"]and not this.GetNoMoveBool() then --纯左键
                 this.UserData["SpellHoverEnable"] = false
                 DrawFloatSpell(x, y, sprite, id)
+                if HistoryTableMap[id] == nil then
+                    table.insert(LastHistoryTable, 1, id)
+                    HistoryTableMap[id] = true
+                elseif HistoryTableMap[id] then
+                    local KeyPos
+                    for key, Value in pairs(LastHistoryTable) do
+                        if Value == id then
+                            KeyPos = key
+                            break
+                        end
+                    end
+                    table.remove(LastHistoryTable, KeyPos)
+                    table.insert(LastHistoryTable, 1, id)
+                end
+				if #LastHistoryTable > 18 then
+					HistoryTableMap[LastHistoryTable[19]] = false
+					table.remove(LastHistoryTable,19)
+				end
+				ModSettingSet(ModID .. "SpellDepotHistoryData", fastConcatStr("return {",SerializeTable(LastHistoryTable),"}"))
             elseif left_click and UI.UserData["HasSpellMove"] then
                 UI.UserData["HasSpellMove"] = false
                 UI.UserData["FloatSpellID"] = nil
@@ -626,20 +741,46 @@ function DrawSpellContainer(this, spellData, spellTable, type)
             end
 		end
 
-		this.AddScrollImageItem(ContainerName, sprite, function()--添加图片项目的回调绘制
+		this.AddScrollImageItem(Container, sprite, function()--添加图片项目的回调绘制
             GuiZSetForNextWidget(this.gui, this.GetZDeep())
 			if not UI.GetPickerStatus("DisableSpellWobble") then
 				GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)--让法术摇摆
 			end
-			UI.MoveImageButton(fastConcatStr("__SPELL_", id), 0, 2, sprite, nil, SpellHover, SpellCilck, true, true)--最后两个参数是不始终调用点击回调和禁止移动
+			UI.MoveImageButton(fastConcatStr("__SPELL_", id, GuiID), 0, 2, sprite, nil, SpellHover, SpellCilck, true, true)--最后两个参数是不始终调用点击回调和禁止移动
 			--绘制法术背景，深度要控制好
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
-			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_BG")), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
+			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_BG", GuiID)), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_SPELLBG")), -22, 0, SpellTypeBG[spellData[id].type], 1, 1)
+			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_SPELLBG", GuiID)), -22, 0, SpellTypeBG[spellData[id].type], 1, 1)
         end)
 		this.SetZDeep(ZDeepest)
-		::continue::
+	end
+    for pos, id in pairs(spellTable) do
+        if spellData[id] == nil then
+            goto continue
+        end
+        SpellSlotDraw(pos, id, ContainerName, "spellTable")
+        ::continue::
+    end
+	if UI.GetPickerStatus("SpellDepotHistoryMode") then
+		local TableStr = ModSettingGet(ModID .. "SpellDepotHistoryData")
+		if TableStr == nil then
+			ModSettingSet(ModID .. "SpellDepotHistoryData", "return {}")
+			LastHistoryTable = {}
+        else
+            LastHistoryTable = loadstring(TableStr)()
+			for k,v in pairs(LastHistoryTable)do
+				HistoryTableMap[v] = true
+			end
+		end
+        for pos, id in pairs(LastHistoryTable) do
+            if spellData[id] == nil then
+                goto continue
+            end
+            SpellSlotDraw(pos, id, "HistorySpells", "History")
+            ::continue::
+        end
+		this.DrawScrollContainer("HistorySpells", false)
 	end
     GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1) --设置深度，确保行为正确
     this.DrawScrollContainer(ContainerName, true)

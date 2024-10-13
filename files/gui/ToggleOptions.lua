@@ -149,6 +149,10 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 		GameTextGet("$wand_editor_disable_spell_hover"),
         "mods/wand_editor/files/gui/images/disable_spell_hover.png", nil, nil, nil, true, true, true)
 
+	UI.MoveImagePicker(".remove_lighting", PickerGap(8), iy + 40, 8, 0,
+		GameTextGet("$wand_editor_remove_lighting"),
+        "mods/wand_editor/files/gui/images/remove_lighting.png", nil, nil, nil, true, true, true)
+
     local LabSettingKey = fastConcatStr(ModID , "SpellLab")
     local SrcPlayerXKey = fastConcatStr(ModID , "SpellLab_player_x")
 	local SrcPlayerYKey = fastConcatStr(ModID , "SpellLab_player_y")
@@ -270,7 +274,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
             if click and UI.UserData["DownloadThreadHandle"] == nil and UI.UserData["DownloadStatus"] == nil or (click and UI.UserData["DownloadStatus"] == "error") then
                 local function DownloadNewVer(verStr)
                     local link = "/KagiamamaHIna/Wand-Editor/releases/download/v" ..
-                    verStr .. "/wand_editor_v" .. verStr .. ".zip"
+                        verStr .. "/wand_editor_v" .. verStr .. ".zip"
                     local https = require("ssl.https")
                     local ltn12 = require("ltn12")
                     require("github_mirror")
@@ -305,7 +309,7 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
                             return
                         end
                         local response_chunks, code = handle:get()
-                        if code == 200 then                  --执行完毕的时候，并且页面请求正常
+                        if code == 200 then                                       --执行完毕的时候，并且页面请求正常
                             local file = io.open("mods/wand_editor_new_ver.zip", "wb")
                             for _, chunk in pairs(effil.dump(response_chunks)) do --将二进制数据写入文件
                                 file:write(chunk)
@@ -367,18 +371,21 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
             end
         end
     end
+	UI.MoveImagePicker("SpellDepotHistoryMode", PickerGap(1), iy + 60, 8, 0,
+		GameTextGet("$wand_editor_spell_depot_history"),
+        "mods/wand_editor/files/gui/images/spell_depot_history.png", nil, nil, nil, true, true, true)
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("UpdateMod", PickerGap(1), iy + 60, "mods/wand_editor/files/gui/images/update_mod.png", nil, UpdateHover, UpdateClick, nil, true)
+	UI.MoveImageButton("UpdateMod", PickerGap(2), iy + 60, "mods/wand_editor/files/gui/images/update_mod.png", nil, UpdateHover, UpdateClick, nil, true)
     local reloadText = GameTextGet("$wand_editor_reload_spell_data")
 	if UI.GetPickerStatus("ReloadSpellData") then
 		reloadText = reloadText .."\n".. GameTextGet("$menu_mods_help_paused")
 	end
-	local ModAboutCB = function ()
-		local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
-		UI.tooltips(function()
-			GuiText(UI.gui, 0, 0, ModVersion)
-			GuiText(UI.gui, 0, 0, ModLink)
-			GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_about_copy_link_tips"))
+    local ModAboutCB = function()
+        local _, _, hover = GuiGetPreviousWidgetInfo(UI.gui)
+        UI.tooltips(function()
+            GuiText(UI.gui, 0, 0, ModVersion)
+            GuiText(UI.gui, 0, 0, ModLink)
+            GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_about_copy_link_tips"))
             if Cpp.PathExists("mods/wand_editor/cache/avatar.png") then
                 GuiImage(UI.gui, UI.NewID("AuthorAvatar"), 0, 0, "mods/wand_editor/cache/avatar.png", 1,
                     0.5 / UI.GetScale())
@@ -388,20 +395,20 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
             elseif ModSettingGet(ModID .. "YukimiAvailable") and not ModSettingGet(ModID .. "YukimiAvailableShow") then
                 GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_yukimi_open"))
             end
-			if ModSettingGet(ModID.."YukimiAvailable") and ModSettingGet(ModID.."YukimiAlways") then
+            if ModSettingGet(ModID .. "YukimiAvailable") and ModSettingGet(ModID .. "YukimiAlways") then
                 GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_always_yukimi_close"))
             elseif ModSettingGet(ModID .. "YukimiAvailable") and not ModSettingGet(ModID .. "YukimiAlways") then
-				GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_always_yukimi_open"))
-			end
-		end, nil, 8)
-		if hover then
+                GuiText(UI.gui, 0, 0, GameTextGet("$wand_editor_always_yukimi_open"))
+            end
+        end, nil, 8)
+        if hover then
             if InputIsKeyDown(Key_c) then
                 Cpp.SetClipboard(ModLink)
             end
         elseif not hover and UI.UserData["ModAboutConut"] then
-			UI.UserData["ModAboutConut"] = nil
-		end
-	end
+            UI.UserData["ModAboutConut"] = nil
+        end
+    end
 	local ModAboutClickCB = function (left_click, right_click)
         if left_click and ModSettingGet(ModID .. "YukimiAvailable") == nil then
             if UI.UserData["ModAboutConut"] == nil then
@@ -423,14 +430,14 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 		end
 	end
 	if ModSettingGet("wand_editor.cache_spell_data") then
-		UI.MoveImagePicker("ReloadSpellData", PickerGap(2), iy + 60, 8, 0, reloadText,
+		UI.MoveImagePicker("ReloadSpellData", PickerGap(3), iy + 60, 8, 0, reloadText,
         "mods/wand_editor/files/gui/images/reload_spell_data.png", nil, nil, nil, true, true, true)
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-		UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
+		UI.MoveImageButton("ModAbout", PickerGap(4), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
 	else
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-		UI.MoveImageButton("ModAbout", PickerGap(2), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
+		UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
 	end
 
 end

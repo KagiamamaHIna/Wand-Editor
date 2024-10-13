@@ -500,6 +500,13 @@ function GUIUpdate()
 		end
 
         UI.MiscEventFn["ToggleOptions"] = function()
+			if ModSettingGet(ModID .. ".remove_lighting") and not UI.UserData["RemoveLighting"] then
+                GameSetPostFxParameter("WandEditor_ENABLE_LIGHTING", 2.0, 0.0, 0.0, 0.0)
+                UI.UserData["RemoveLighting"] = true
+            elseif not ModSettingGet(ModID .. ".remove_lighting") and UI.UserData["RemoveLighting"] then
+				GameSetPostFxParameter("WandEditor_ENABLE_LIGHTING", 0.0, 0.0, 0.0, 0.0)
+                UI.UserData["RemoveLighting"] = false
+			end
             if GetPlayer() == nil then --找不到玩家时禁止执行下一步
                 return
             end

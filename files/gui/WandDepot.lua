@@ -269,6 +269,13 @@ local function DrawWandSlot(id, k, wand)
         UI.BetterTooltipsNoCenter(function()
             GuiLayoutBeginVertical(UI.gui, 0, 0, true)
             if InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL) then
+				if wand.always_use_item_name_in_ui then
+                    GuiText(UI.gui, 0, 0, GameTextGetTranslatedOrNot(wand.item_name))
+                else
+					GuiText(UI.gui, 0, 0, GameTextGetTranslatedOrNot("$item_wand"))
+				end
+				GuiLayoutAddVerticalSpacing(UI.gui, 1)
+                
                 local shuffle
                 if wand.shuffle_deck_when_empty then
                     shuffle = GameTextGet("$menu_yes")
