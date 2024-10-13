@@ -115,9 +115,11 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
     if hover then
         UI.UserData["SavedSearchHistory"] = false
 		if SearchKey == nil and Search ~= "" and InputIsKeyJustDown(Key_DOWN) then
-			PushValueOnList(SearchHistoryList, Search)
-			if #SearchHistoryList > 20 then --移除过多内容
-				table.remove(SearchHistoryList, 1)
+			if Search ~= SearchHistoryList[#SearchHistoryList] then--需要判断是否是刚才保存过的，避免重复
+				PushValueOnList(SearchHistoryList, Search)
+				if #SearchHistoryList > 20 then --移除过多内容
+					table.remove(SearchHistoryList, 1)
+				end
 			end
 			this.SetInputText("input", "")
 		elseif #SearchHistoryList > 0 then--当列表有可选内容时会进行的操作
