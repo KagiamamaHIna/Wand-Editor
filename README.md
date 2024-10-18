@@ -53,7 +53,7 @@ lua的文件夹请命名为"lua"，或者在项目中手动更改路径，stb项
 根据编译脚本编译完成lua后即可在vs2022中编译此项目
 
 # 也尝试一下
-[Spell Lab Shugged](https://github.com/shoozzzh/Spell-Lab-Shugged)本模组的竞争者。
+[Spell Lab Shugged](https://github.com/shoozzzh/Spell-Lab-Shugged) 本模组的竞争者。
 
 # 致谢
 goki_dev所开发的Goki' Things和Spell lab，法杖编辑器参考了其中的部分代码或者是直接使用了部分代码，有一部分贴图也是来源于此
