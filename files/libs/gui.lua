@@ -2,9 +2,7 @@ dofile_once("mods/wand_editor/files/libs/unsafe.lua")
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("data/scripts/debug/keycodes.lua")
 dofile_once("data/scripts/lib/utilities.lua")
-local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
 local DefaultZDeep = -1250
-local RefreshScaleTime = 90
 
 local this = {
 	private = {
@@ -33,8 +31,8 @@ local this = {
         HScrollItemData = {}, --元素数据，用于判断位置是否上下溢出
 		ConcatCache = {},
 		ResetAllCanMove = nil,
-
-		RefreshScale = RefreshScaleTime,
+		LastScreenWidth = -1,
+		LastScreenHeight = -1,
 	},
 	public = {
 		ScreenWidth = -1, --当前屏宽
@@ -590,7 +588,7 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 	local numID = UI.NewID(id)
 	local Xname = newid .. "x"
 	local Yname = newid .. "y"
-    local CanMoveStr = "on_move_" .. id
+    local CanMoveStr = ConcatModID("on_move_" .. id)
     if this.private.ResetAllCanMove ~= nil and this.private.ResetAllCanMove[newid] == nil then
 		ModSettingRemove(Xname) --恢复默认设置
 		ModSettingRemove(Yname)
@@ -923,7 +921,7 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
 	allowed_characters = Default(allowed_characters, "")
     local newid = ConcatModID(id)
     if this.private.TextInputIDtoStr[newid] == nil then
-        this.private.TextInputIDtoStr[newid] = {s_str = str,str = str}
+        this.private.TextInputIDtoStr[newid] = { s_str = str, str = str }
     end
     local newStr = GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l, allowed_characters)
     if this.private.TextInputIDtoStr[newid].str ~= newStr and this.private.TextInputIDtoStr[newid].DelFr ~= 0 then --如果新文本和旧文本不匹配，那么就重新设置
@@ -1317,14 +1315,17 @@ end
 ---派发消息
 function UI.DispatchMessage()
     GuiStartFrame(this.public.gui)
-	GuiOptionsAdd(this.public.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
+    GuiOptionsAdd(this.public.gui, GUI_OPTION.NoPositionTween) --你不要再飞啦！
 	this.public.ScreenWidth, this.public.ScreenHeight = GuiGetScreenDimensions(this.public.gui)
-    if this.private.Scale == nil or this.private.RefreshScale == 0 then --初始化设置缩放参数
-        local configXml = Nxml.parse(ReadFileAll(SavePath .. "save_shared/config.xml"))
-        this.private.Scale = configXml.attr.internal_size_h / this.public.ScreenHeight
-		this.private.RefreshScale = RefreshScaleTime
-    end
-	this.private.RefreshScale = this.private.RefreshScale - 1--每1.5秒刷新一次
+	if this.public.ScreenWidth ~= this.private.LastScreenWidth or this.public.ScreenHeight ~= this.private.LastScreenHeight then
+        local GetScaleGui = GuiCreate()
+        local SrcW, SrcH = GuiGetScreenDimensions(GetScaleGui)
+        GuiDestroy(GetScaleGui)
+        this.private.Scale = SrcH / this.public.ScreenHeight
+        this.private.LastScreenWidth = this.public.ScreenWidth
+		this.private.LastScreenHeight = this.public.ScreenHeight
+	end
+	
     for _, fn in pairs(this.private.FirstEventFn) do
         if type(fn) == "function" then
             fn(UI)
@@ -1358,7 +1359,7 @@ function UI.DispatchMessage()
     end
 
     if this.private.destroy then
-        GuiDestroy(this.private.gui)
+        GuiDestroy(this.public.gui)
         this.private.gui = nil
         for _, fn in pairs(this.private.DestroyCallBack) do
             if type(fn) == "function" then

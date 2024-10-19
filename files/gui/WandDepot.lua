@@ -477,11 +477,11 @@ function WandDepotCB(_, _right, _, _, this_enable)
 	local WandDepotH = 210
 	local WandDepotW = 278
 	UI.ScrollContainer("WandDepot", 20, 64, WandDepotW, WandDepotH, 2, 2)
-	for k, v in pairs(CurrentTable) do --绘制法杖格
-		UI.AddAnywhereItem("WandDepot", function()
+	UI.AddAnywhereItem("WandDepot", function()
+		for k, v in pairs(CurrentTable) do --绘制法杖格
 			DrawWandSlot("WandDepotSlot", k, v)
-		end)
-	end
+		end
+	end)
     if #CurrentTable == 0 then --如果是空的绘制一段文本
         UI.AddAnywhereItem("WandDepot", function()
             GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 1)

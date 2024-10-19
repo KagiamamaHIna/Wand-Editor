@@ -46,7 +46,7 @@
 ## 如何编译cppproject里的项目
 请下载vs2022并用vs2022打开这个项目，
 
-下载[rapidfuzz-cpp-3.0.5](https://github.com/rapidfuzz/rapidfuzz-cpp/releases/tag/v3.0.5)，克隆stb的仓库和克隆lua5.1/luajit的仓库，将这三个个仓库的文件夹放在项目同级文件夹中，
+下载[rapidfuzz-cpp-3.0.5](https://github.com/rapidfuzz/rapidfuzz-cpp/releases/tag/v3.0.5)，克隆stb的仓库和克隆lua5.1/luajit的仓库，将这三个仓库的文件夹放在项目同级文件夹中，
 
 lua的文件夹请命名为"lua"，或者在项目中手动更改路径，stb项目则是命名为stb-master，或同上
 
