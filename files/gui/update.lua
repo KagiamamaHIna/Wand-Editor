@@ -297,14 +297,14 @@ function GUIUpdate()
 			end
 		end
 
-        UI.MiscEventFn["RequestYukimi"] = function()--你问我AAA是什么？我不知道
+        UI.MiscEventFn["RequestYukimi"] = function()
             local flag1 = Cpp.PathExists("mods/wand_editor/cache/yukimi/1.png") or UI.UserData["YKThisRunError1"]
             local flag2 = Cpp.PathExists("mods/wand_editor/cache/yukimi/2.png") or UI.UserData["YKThisRunError2"]
 			local flag3 = Cpp.PathExists("mods/wand_editor/cache/yukimi/3.png") or UI.UserData["YKThisRunError3"]
 			local flag4 = Cpp.PathExists("mods/wand_editor/cache/yukimi/4.png") or UI.UserData["YKThisRunError4"]
             if flag1 and flag2 and flag3 and flag4 then
 				UI.MiscEventFn["RequestYukimi"] = nil
-                return---?为什么不能移除这个
+                return
             end
 			--没有图片
             local function RequestDownload(id, link, path)

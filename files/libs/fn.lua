@@ -543,24 +543,6 @@ function BlockAllInput(blockNum)
         return
     end
     GlobalsSetValue(ModID .. "Blocked", "1")
-	--[[
-    local inventory_quick = EntityGetWithName("inventory_quick")
-    if inventory_quick ~= nil and blockNum then
-		local t = EntityGetAllChildren(inventory_quick)
-		for _,v in pairs(t or {}) do
-			if EntityHasTag(v, "wand") then
-                local AbilityComps = EntityGetComponentIncludingDisabled(v, "AbilityComponent")
-				for _,AbilityComp in pairs(AbilityComps or {})do
-					ComponentSetValue2(AbilityComp, "use_gun_script", false)
-				end
-            else
-				local ItemComps = EntityGetComponentIncludingDisabled(v, "ItemComponent")
-				for _, ItemComp in pairs(ItemComps or {}) do
-                    ComponentSetValue2(ItemComp, "is_equipable_forced", false)
-                end
-			end
-		end
-	end]]
     for k, v in pairs(ComponentGetMembers(Controls) or {}) do
         local HasMBtnDown = string.find(k, "mButtonDown")
         local HasMBtnDownDelay = string.find(k, "mButtonDownDelay")
@@ -576,24 +558,6 @@ end
 function RestoreInput()
 	if GlobalsGetValue(ModID.."Blocked") == "1" then
         GlobalsSetValue(ModID .. "Blocked", "0")
-		--[[
-		local inventory_quick = EntityGetWithName("inventory_quick")
-		if inventory_quick ~= nil then
-			local t = EntityGetAllChildren(inventory_quick)
-			for _,v in pairs(t or {}) do
-				if EntityHasTag(v, "wand") then
-					local AbilityComps = EntityGetComponentIncludingDisabled(v, "AbilityComponent")
-					for _,AbilityComp in pairs(AbilityComps or {})do
-						ComponentSetValue2(AbilityComp, "use_gun_script", true)
-					end
-				elseif not EntityHasTag(v, "this_is_sampo") then
-					local ItemComps = EntityGetComponentIncludingDisabled(v, "ItemComponent")
-					for _, ItemComp in pairs(ItemComps or {}) do
-						ComponentSetValue2(ItemComp, "is_equipable_forced", true)
-					end
-				end
-			end
-		end]]
 		local player = GetPlayer()
 		local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
 		ComponentSetValue2(Controls, "enabled", true)
@@ -612,32 +576,41 @@ function GetWandSpellIDs(entity)
 	local capacity = ComponentObjectGetValue2(Ability, "gun_config", "deck_capacity") --容量
 	local spellList = {}
     local spellEntitys = EntityGetChildWithTag(entity, "card_action")
+    local AlwaysSpellList = {}--保存始终法术列表
+	local AlwayIndexList = {}--保存始终法术Y索引的列表
 	local AlwaysCount = 0 --统计正确的容量用
 	local IndexZeroCount = 0 --有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
-	if spellEntitys ~= nil then
-		for _, v in L_pairs(spellEntitys) do
-			local ItemActionComp = L_EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
-			local ItemComp = L_EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
-			local isAlways = L_ComponentGetValue2(ItemComp, "permanently_attached")
-			local index = L_ComponentGetValue2(ItemComp, "inventory_slot")
-			local spellid = L_ComponentGetValue2(ItemActionComp, "action_id")
+    if spellEntitys ~= nil then
+        for _, v in L_pairs(spellEntitys) do
+            local ItemActionComp = L_EntityGetFirstComponentIncludingDisabled(v, "ItemActionComponent")
+            local ItemComp = L_EntityGetFirstComponentIncludingDisabled(v, "ItemComponent")
+            local isAlways = L_ComponentGetValue2(ItemComp, "permanently_attached")
+            local index, indexY = L_ComponentGetValue2(ItemComp, "inventory_slot")
+            local spellid = L_ComponentGetValue2(ItemActionComp, "action_id")
             local is_frozen = L_ComponentGetValue2(ItemComp, "is_frozen")
             local uses_remaining = L_ComponentGetValue2(ItemComp, "uses_remaining")
             if index == 0 and (not isAlways) then --当索引为0的时候
-                if IndexZeroCount > 0 then --判断数量
+                if IndexZeroCount > 0 then        --判断数量
                     index = IndexZeroCount
                 end
                 IndexZeroCount = IndexZeroCount + 1 --自增
             end
-			if not isAlways then
-				spellList[index + 1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
+            if not isAlways then
+                spellList[index + 1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen, uses_remaining =
+                uses_remaining }
             else
-				result.always[#result.always + 1] = { isAlways = isAlways, index = 0, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
-			end
-			if isAlways then
-				AlwaysCount = AlwaysCount + 1
-			end
-		end
+                AlwayIndexList[#AlwayIndexList + 1] = indexY
+                AlwaysSpellList[indexY] = { isAlways = isAlways, index = 0, id = spellid, is_frozen = is_frozen, uses_remaining =
+                uses_remaining }
+            end
+            if isAlways then
+                AlwaysCount = AlwaysCount + 1
+            end
+        end
+    end
+    table.sort(AlwayIndexList)--为了健壮性的设计
+	for i=1,#AlwayIndexList do
+		result.always[#result.always+1] = AlwaysSpellList[AlwayIndexList[i]]
 	end
 	for i = 1, capacity - AlwaysCount do
 		result.spells[i] = "nil"
@@ -969,7 +942,8 @@ function InitWand(wandData, wand, x, y)
                 local spellid = L_ComponentGetValue2(ItemActionComp, "action_id")
 				local action = Always[i]
                 if _spellData == nil or _spellData[spellid] and (_spellData[spellid].custom_xml_file or _spellData[spell.id].custom_xml_file) then
-                    EntityKill(action)
+                    EntityRemoveFromParent(action)
+					EntityKill(action)
                     action = CreateItemActionEntity(spell.id)
                     EntityAddChild(wand, action)
 					actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")--重设置
@@ -1008,6 +982,7 @@ function InitWand(wandData, wand, x, y)
                     local ItemActionComp = EntityGetFirstComponentIncludingDisabled(action, "ItemActionComponent")
                     local spellid = L_ComponentGetValue2(ItemActionComp, "action_id")
                     if _spellData == nil or _spellData[spellid] and (_spellData[spellid].custom_xml_file or _spellData[spell.id].custom_xml_file) then
+						EntityRemoveFromParent(action)
 						EntityKill(action)
                         action = CreateItemActionEntity(spell.id)
 						EntityAddChild(wand, action)
@@ -1040,13 +1015,16 @@ function InitWand(wandData, wand, x, y)
                     EntityAddChild(wand, action)
                 end
             elseif spell == "nil" and spells[i] then
+				EntityRemoveFromParent(spells[i])
                 EntityKill(spells[i])
             end
         end
         for i = #wandData.spells.spells + 1, EntityGetWandCapacity(wand) + #wandData.spells.always do --超出的法术需要杀死
-            EntityKill(spells[i])
+			EntityRemoveFromParent(spells[i])
+			EntityKill(spells[i])
         end
         for i = #wandData.spells.always + 1, #Always do
+			EntityRemoveFromParent(Always[i])
             EntityKill(Always[i])
         end
 	end
