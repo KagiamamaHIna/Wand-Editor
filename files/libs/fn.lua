@@ -536,7 +536,7 @@ function SetActiveItem(id)
 end
 
 ---屏蔽掉按键操作
-function BlockAllInput(blockNum)
+function BlockAllInput()
 	local player = GetPlayer()
     local Controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
     if GlobalsGetValue(ModID .. "Blocked") == "1" or (not ComponentGetValue2(Controls, "enabled")) then --防止和其他模组冲突
@@ -596,12 +596,10 @@ function GetWandSpellIDs(entity)
                 IndexZeroCount = IndexZeroCount + 1 --自增
             end
             if not isAlways then
-                spellList[index + 1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen, uses_remaining =
-                uses_remaining }
+                spellList[index + 1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
             else
                 AlwayIndexList[#AlwayIndexList + 1] = indexY
-                AlwaysSpellList[indexY] = { isAlways = isAlways, index = 0, id = spellid, is_frozen = is_frozen, uses_remaining =
-                uses_remaining }
+                AlwaysSpellList[indexY] = { isAlways = isAlways, index = 0, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
             end
             if isAlways then
                 AlwaysCount = AlwaysCount + 1

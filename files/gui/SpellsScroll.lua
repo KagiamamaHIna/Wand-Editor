@@ -778,6 +778,8 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		end
         for pos, id in pairs(LastHistoryTable) do
             if spellData[id] == nil then
+                HistoryTableMap[id] = nil
+				LastHistoryTable[pos] = nil
                 goto continue
             end
             SpellSlotDraw(pos, id, "HistorySpells", "History")

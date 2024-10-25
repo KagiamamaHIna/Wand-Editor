@@ -271,7 +271,15 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                     if ThisK > wandData.deck_capacity then
                         break
                     end
-                    SwapSpellPos(wandData, i, ThisK)
+                    if InputIsKeyDown(Key_v) then
+						if wandData.spells.spells[i] ~= "nil" then
+							SetTableSpells(wandData,wandData.spells.spells[i].id,ThisK,wandData.spells.spells[i].uses_remaining)
+                        else
+							wandData.spells.spells[ThisK] = "nil"							
+						end
+                    else
+						SwapSpellPos(wandData, i, ThisK)						
+					end
                     ThisK = ThisK + 1
                 end
                 InitWand(wandData, wandEntity)
@@ -303,7 +311,15 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                         if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
                             break
                         end
-                        Swap2InputSpellPos(wandData, OtherWand, ThisK, i)
+                        if InputIsKeyDown(Key_v) then
+							if OtherWand.spells.spells[i] ~= "nil" then
+								SetTableSpells(wandData, OtherWand.spells.spells[i].id,ThisK,OtherWand.spells.spells[i].uses_remaining)								
+                            else
+								wandData.spells.spells[ThisK] = "nil"
+							end
+						else
+							Swap2InputSpellPos(wandData, OtherWand, ThisK, i)
+						end
                         ThisK = ThisK + 1
                     end
                     if IsFixed then
