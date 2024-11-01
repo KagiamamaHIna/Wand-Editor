@@ -54,10 +54,41 @@ local function NewDamageSettingLine(str, id)
 end
 
 local function GetDmgNum(id)
-	return tonumber(UI.GetInputText(id)) or 0
+	return tonumber(UI.GetInputText(id) or "1") or 1
 end
 
-function SpwanDummyCB(_, _, _, _, this_enable)
+local OnPlayerPosSpwan = function ()
+	local player = GetPlayer()
+	local px,py = EntityGetTransform(player)
+	local dummy = EntityLoad("mods/wand_editor/files/entity/dummy_target.xml", px, py)
+	local shift = InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT)
+	if not shift then
+		local dmgModel = EntityGetFirstComponentIncludingDisabled(dummy, "DamageModelComponent")
+		local SetDmgMult = Curry(ComponentObjectSetValue2, 4)(dmgModel, "damage_multipliers")
+		SetDmgMult("projectile", GetDmgNum("DummyDmgProj"))
+		SetDmgMult("explosion", GetDmgNum("DummyDmgExpl"))
+		SetDmgMult("electricity", GetDmgNum("DummyDmgElectric"))
+		SetDmgMult("slice", GetDmgNum("DummyDmgSlice"))
+		SetDmgMult("drill", GetDmgNum("DummyDmgDrill"))
+		SetDmgMult("fire", GetDmgNum("DummyDmgFire"))
+		SetDmgMult("ice", GetDmgNum("DummyDmgIce"))
+		SetDmgMult("melee", GetDmgNum("DummyDmgMelee"))
+		SetDmgMult("holy", GetDmgNum("DummyDmgHoly"))
+		SetDmgMult("healing", GetDmgNum("DummyDmgHeal"))
+		SetDmgMult("physics_hit", GetDmgNum("DummyDmgPhysicsHit"))
+		SetDmgMult("curse", GetDmgNum("DummyDmgCurse"))
+		SetDmgMult("radioactive", GetDmgNum("DummyDmgToxic"))
+		SetDmgMult("poison", GetDmgNum("DummyDmgPoison"))
+		GamePrint(GameTextGet("$wand_editor_options_spwan_dummy_done_tips"))
+	else
+		GamePrint(GameTextGet("$wand_editor_options_spwan_dummy_done_tips_default"))
+	end
+end
+
+function SpwanDummyCB(_, right_click, _, _, this_enable)
+	if right_click then
+		OnPlayerPosSpwan()
+	end
     if not this_enable then
         return
     end
@@ -83,7 +114,7 @@ function SpwanDummyCB(_, _, _, _, this_enable)
         GuiLayoutBeginHorizontal(UI.gui, 0, 0, true, 4, 2)
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-		local spwan_left_click = GuiButton(UI.gui,UI.NewID("SettingDummySpwan"),3,0,GameTextGet("$wand_editor_options_spwan_dummy"))
+		local spwan_left_click, spwan_right_click = GuiButton(UI.gui,UI.NewID("SettingDummySpwan"),3,0,GameTextGet("$wand_editor_options_spwan_dummy"))
         GuiTooltip(UI.gui, GameTextGet("$wand_editor_options_spwan_dummy_tips"), "")
 
 		if spwan_left_click then
@@ -157,9 +188,10 @@ function SpwanDummyCB(_, _, _, _, this_enable)
 					return
                 end
             end
-			
 		end
-
+        if spwan_right_click then
+			OnPlayerPosSpwan()
+		end
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
 		local del_left_click = GuiButton(UI.gui,UI.NewID("SettingDummyDel"),3,0,GameTextGet("$wand_editor_options_del_dummy"))
 		if del_left_click then

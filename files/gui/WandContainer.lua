@@ -267,21 +267,36 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                 min = math.min(min, max)
                 max = math.max(HasShiftClick[2], max)
                 local ThisK = k
-                for i = min, max do
-                    if ThisK > wandData.deck_capacity then
-                        break
-                    end
-                    if InputIsKeyDown(Key_v) then
-						if wandData.spells.spells[i] ~= "nil" then
-							SetTableSpells(wandData,wandData.spells.spells[i].id,ThisK,wandData.spells.spells[i].uses_remaining)
-                        else
-							wandData.spells.spells[ThisK] = "nil"							
-						end
-                    else
-						SwapSpellPos(wandData, i, ThisK)						
-					end
-                    ThisK = ThisK + 1
+				local DeepCopyT
+                if InputIsKeyDown(Key_v) then
+                    DeepCopyT = DeepCopy(wandData.spells.spells)
                 end
+				if InputIsKeyDown(Key_v) or k <= min then
+					for i = min, max do
+						if ThisK > wandData.deck_capacity then
+							break
+						end
+						if InputIsKeyDown(Key_v) then
+							if DeepCopyT[i] ~= "nil" then
+								SetTableSpells(wandData,DeepCopyT[i].id,ThisK,DeepCopyT[i].uses_remaining)
+							else
+								wandData.spells.spells[ThisK] = "nil"
+							end
+						else
+							SwapSpellPos(wandData, i, ThisK)
+						end
+						ThisK = ThisK + 1
+					end
+                else
+					ThisK = ThisK + (max-min)
+                    for i = max, min, -1 do
+                        if ThisK > wandData.deck_capacity then
+                            break
+                        end
+						SwapSpellPos(wandData, i, ThisK)
+						ThisK = ThisK - 1
+					end
+				end
                 InitWand(wandData, wandEntity)
                 this.UserData["HasShiftClick"][wandEntity] = nil
                 this.OnceCallOnExecute(function()
@@ -307,21 +322,36 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                     min = math.min(min, max)
                     max = math.max(HasShiftClick[2], max)
                     local ThisK = k
-                    for i = min, max do                                     --i是原始位置，k是目标位置
-                        if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
-                            break
-                        end
-                        if InputIsKeyDown(Key_v) then
-							if OtherWand.spells.spells[i] ~= "nil" then
-								SetTableSpells(wandData, OtherWand.spells.spells[i].id,ThisK,OtherWand.spells.spells[i].uses_remaining)								
-                            else
-								wandData.spells.spells[ThisK] = "nil"
-							end
-						else
-							Swap2InputSpellPos(wandData, OtherWand, ThisK, i)
-						end
-                        ThisK = ThisK + 1
+                    local DeepCopyT
+                    if InputIsKeyDown(Key_v) then
+                        DeepCopyT = DeepCopy(OtherWand.spells.spells)
                     end
+					if InputIsKeyDown(Key_v) or k <= min then
+                    	for i = min, max do                                     --i是原始位置，k是目标位置
+                	        if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
+            	                break
+        	                end
+    	                    if InputIsKeyDown(Key_v) then
+								if DeepCopyT[i] ~= "nil" then
+									SetTableSpells(wandData, DeepCopyT[i].id,ThisK,DeepCopyT[i].uses_remaining)							
+                            	else
+									wandData.spells.spells[ThisK] = "nil"
+								end
+							else
+								Swap2InputSpellPos(wandData, OtherWand, ThisK, i)
+							end
+                        	ThisK = ThisK + 1
+                    	end
+					else
+                        ThisK = ThisK + (max - min)
+						for i = max, min, -1 do
+							if ThisK > OtherWand.deck_capacity then
+								break
+							end
+							Swap2InputSpellPos(OtherWand, wandData, i, ThisK)
+							ThisK = ThisK - 1
+						end
+					end
                     if IsFixed then
                         InitWand(wandData, wandEntity)
                         InitWand(OtherWand, HeldWand)

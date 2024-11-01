@@ -596,10 +596,10 @@ function GetWandSpellIDs(entity)
                 IndexZeroCount = IndexZeroCount + 1 --自增
             end
             if not isAlways then
-                spellList[index + 1] = { isAlways = isAlways, index = index, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
+                spellList[index + 1] = { isAlways = isAlways, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
             else
                 AlwayIndexList[#AlwayIndexList + 1] = indexY
-                AlwaysSpellList[indexY] = { isAlways = isAlways, index = 0, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
+                AlwaysSpellList[indexY] = { isAlways = isAlways, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
             end
             if isAlways then
                 AlwaysCount = AlwaysCount + 1
@@ -711,9 +711,9 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
     if isAlways then --判断是不是始终释放
         --是
         if index > #input.spells.always then
-            table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false, index = 0 })
+            table.insert(input.spells.always, { id = id, isAlways = true, is_frozen = false})
         else
-            input.spells.always[index] = { id = id, isAlways = true, is_frozen = false, index = 0 }
+            input.spells.always[index] = { id = id, isAlways = true, is_frozen = false}
         end
     else                                      --不是
         if index > #input.spells.spells then
@@ -725,8 +725,7 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
         if id == "nil" then
             input.spells.spells[index] = id
         elseif input.spells.spells[index] == nil or input.spells.spells[index] == "nil" then
-            input.spells.spells[index] = { id = id, index = index - 1, is_frozen = false, isAlways = false, uses_remaining =
-            uses_remaining }
+            input.spells.spells[index] = { id = id, is_frozen = false, isAlways = false, uses_remaining = uses_remaining }
         else
             input.spells.spells[index].id = id
             input.spells.spells[index].uses_remaining = uses_remaining
@@ -734,25 +733,52 @@ function SetTableSpells(input, id, index, uses_remaining, isAlways)
     end
 end
 
---[[
----插入表中的一个法术，越界了就增加大小
+---插入表中的一个法术，越界了不进行操作，返回操作成功有效性
 ---@param input Wand GetWandData函数的返回值
+---@param UpOrDown boolean
 ---@param id string
 ---@param index integer
 ---@param uses_remaining integer|nil uses_remaining = -1
-function InsertTableSpells(input, id, index, uses_remaining)
+function InsertTableSpells(input, UpOrDown, id, index, uses_remaining)
     uses_remaining = Default(uses_remaining, -1)
-    if id == "nil" then
-        table.insert(input.spells.spells, index, id)
-    else
-        table.insert(input.spells.spells, index, { id = id, index = index - 1, is_frozen = false, isAlways = false, uses_remaining = uses_remaining })
+    local TableInsertUp = function(t, i, v)
+		local NilIndex = i
+        while t[NilIndex] ~= "nil" and NilIndex > 0 do
+            NilIndex = NilIndex - 1
+        end
+		if NilIndex <= 0 then
+			return false
+        else
+            table.remove(t, NilIndex)
+			table.insert(t, i, v)
+			return true
+		end
     end
-    for i = index, #input.spells.spells do
-        if input.spells.spells[i] ~= "nil" then
-            input.spells.spells[i].index = input.spells.spells[i].index + 1
+    local TableInsert = function(t, i, v)
+        local NilIndex = i
+        while t[NilIndex] ~= "nil" and NilIndex <= #t do
+            NilIndex = NilIndex + 1
+        end
+        if NilIndex > #t then
+            return false
+        else
+            table.remove(t, NilIndex)
+            table.insert(t, i, v)
+            return true
         end
     end
-end]]
+    local InsertT
+	if id == "nil" then
+        InsertT = "nil"
+    else
+		InsertT = { id = id, is_frozen = false, isAlways = false, uses_remaining = uses_remaining }
+	end
+	if UpOrDown then
+        return TableInsertUp(input.spells.spells, index, InsertT)
+    else
+		return TableInsert(input.spells.spells, index, InsertT)
+	end
+end
 
 ---获取一个法杖中法术指定位置索引的id
 ---@param input Wand
@@ -777,20 +803,14 @@ function SwapSpellPos(input, pos1, pos2)
 		return
 	end
 	if input.spells.spells[pos1] ~= "nil" and input.spells.spells[pos2] ~= "nil" then --两个都不为空
-		--交换索引
-		local oldIndex = input.spells.spells[pos1].index
-		input.spells.spells[pos1].index = input.spells.spells[pos2].index
-		input.spells.spells[pos2].index = oldIndex
 		--交换表
 		local oldTable = input.spells.spells[pos1]
 		input.spells.spells[pos1] = input.spells.spells[pos2]
 		input.spells.spells[pos2] = oldTable
 	elseif input.spells.spells[pos1] == "nil" and input.spells.spells[pos2] ~= "nil" then
-		input.spells.spells[pos2].index = pos1 - 1
 		input.spells.spells[pos1] = input.spells.spells[pos2]
 		input.spells.spells[pos2] = "nil"
 	elseif input.spells.spells[pos2] == "nil" and input.spells.spells[pos1] ~= "nil" then
-		input.spells.spells[pos1].index = pos2 - 1
 		input.spells.spells[pos2] = input.spells.spells[pos1]
 		input.spells.spells[pos1] = "nil"
 	end
@@ -806,20 +826,14 @@ function Swap2InputSpellPos(input1, input2, pos1, pos2)
 		return
 	end
 	if input1.spells.spells[pos1] ~= "nil" and input2.spells.spells[pos2] ~= "nil" then --两个都不为空
-		--交换索引
-		local oldIndex = input1.spells.spells[pos1].index
-		input1.spells.spells[pos1].index = input2.spells.spells[pos2].index
-		input2.spells.spells[pos2].index = oldIndex
 		--交换表
 		local oldTable = input1.spells.spells[pos1]
 		input1.spells.spells[pos1] = input2.spells.spells[pos2]
 		input2.spells.spells[pos2] = oldTable
 	elseif input1.spells.spells[pos1] == "nil" and input2.spells.spells[pos2] ~= "nil" then
-		input2.spells.spells[pos2].index = pos1 - 1
 		input1.spells.spells[pos1] = input2.spells.spells[pos2]
 		input2.spells.spells[pos2] = "nil"
 	elseif input2.spells.spells[pos2] == "nil" and input1.spells.spells[pos1] ~= "nil" then
-		input1.spells.spells[pos1].index = pos2 - 1
 		input2.spells.spells[pos2] = input1.spells.spells[pos1]
 		input1.spells.spells[pos1] = "nil"
 	end
@@ -1004,7 +1018,7 @@ function InitWand(wandData, wand, x, y)
                 local actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
                 ComponentSetValue2(actionItem, "permanently_attached", spell.isAlways)
                 ComponentSetValue2(actionItem, "is_frozen", spell.is_frozen)
-                ComponentSetValue2(actionItem, "inventory_slot", spell.index, 0)
+                ComponentSetValue2(actionItem, "inventory_slot", i - 1, 0)
                 if spell.uses_remaining then
                     ComponentSetValue2(actionItem, "uses_remaining", spell.uses_remaining)
                 end
@@ -1079,13 +1093,13 @@ function InitWand(wandData, wand, x, y)
             EntitySetComponentsWithTagEnabled(action, "enabled_in_world", false)
             EntityAddChild(wand, action)
         end
-		for _,spell in pairs(wandData.spells.spells)do
+		for spellIndex,spell in pairs(wandData.spells.spells)do
 			if spell.id and spell.id ~= "nil" then
 				local action = CreateItemActionEntity(spell.id)
 				local actionItem = EntityGetFirstComponentIncludingDisabled(action, "ItemComponent")
 				ComponentSetValue2(actionItem, "permanently_attached", spell.isAlways)
 				ComponentSetValue2(actionItem, "is_frozen", spell.is_frozen)
-				ComponentSetValue2(actionItem, "inventory_slot", spell.index, 0)
+				ComponentSetValue2(actionItem, "inventory_slot", spellIndex - 1, 0)
 				if spell.uses_remaining then
 					ComponentSetValue2(actionItem, "uses_remaining", spell.uses_remaining)
 				end

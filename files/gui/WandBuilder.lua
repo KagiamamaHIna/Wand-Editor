@@ -1,7 +1,18 @@
 dofile_once("data/scripts/gun/procedural/gun_procedural.lua")
 local this = UI
+local sliderModeKey = ModID .. "sliderMode"
+local sliderMode = ModSettingGet(sliderModeKey)
+if sliderMode == nil then
+    ModSettingSet(sliderModeKey, false)
+	sliderMode = false
+end
 local function GetValue(id, isDecimal)
-    local num = tonumber(UI.GetInputText(id))
+    local num
+	if sliderMode then
+		num = UI.GetSliderValue(id.."WBSlider")
+    else
+		num = tonumber(UI.GetInputText(id))
+	end
     if num == nil then
         return ""
     end
@@ -12,11 +23,18 @@ local function GetValue(id, isDecimal)
 end
 
 local function GetValueSToF(id, isDecimal)
-	local num = tonumber(UI.GetInputText(id) or "")
+    local num
+	if sliderMode then
+		num = UI.GetSliderValue(id.."WBSlider")
+    else
+		num = tonumber(UI.GetInputText(id) or "")
+	end
     if num == nil then
         return ""
     end
-	num = math.floor(num*60 + 0.5)
+	if not sliderMode then
+		num = math.floor(num*60 + 0.5)
+	end
     if isDecimal then
         return num
     end
@@ -28,19 +46,25 @@ end
 local function GetWand()
 	local shuffleBool = UI.GetCheckboxEnable("shuffle_builder")
 	local IsShuffle
-	if shuffleBool then
-		IsShuffle = 1
-	else
-		IsShuffle = 0
+    if shuffleBool then
+        IsShuffle = 1
+    else
+        IsShuffle = 0
+    end
+    local GetDeckCapacity = Compose(tonumber, UI.GetInputText)
+	if sliderMode then
+		GetDeckCapacity = function (str)
+			return math.floor(UI.GetSliderValue(str.."WBSlider"))
+		end
 	end
 	local NewWand = {
 		item_name = nil,
 		mana_charge_speed = GetValue("manachargespeed_builder"),      					--回蓝速度
 		mana_max = GetValue("manamax_builder"),               							--蓝上限
-		fire_rate_wait = GetValueSToF("castdelay_builder"),         						--施放延迟
-		reload_time = GetValueSToF("rechargetime_builder"),            						--充能延迟
-		deck_capacity = Compose(tonumber,UI.GetInputText)("capacity_builder"),          --容量
-		spread_degrees = GetValue("spread_builder",true),         							--散射
+		fire_rate_wait = GetValueSToF("castdelay_builder"),         					--施放延迟
+		reload_time = GetValueSToF("rechargetime_builder"),            					--充能延迟
+		deck_capacity = GetDeckCapacity("capacity_builder"),          					--容量
+		spread_degrees = GetValue("spread_builder",true),         						--散射
 		shuffle_deck_when_empty = IsShuffle, 											--是否乱序
 		speed_multiplier = GetValue("speed_multiplier_builder", true),       			--初速度加成
 		mana = GetValue("manamax_builder"),                   							--蓝
@@ -83,9 +107,11 @@ local function GetWand()
 end
 
 local function NewSlider(id,x,y,text,value_min, value_max, value_default, value_display_multiplier, value_formatting, width)
+	id = id.."WBSlider"
     UI.Slider(id, x, y, text, value_min, value_max, value_default, value_display_multiplier, value_formatting, width)
-	local _,_,hover = GuiGetPreviousWidgetInfo(UI.gui)
-	GuiTooltip(this.gui,GameTextGet("$menuoptions_reset_keyboard").."\n"..GameTextGet("$wand_editor_wand_builder_slider_tips"),"")
+    local _, _, hover= GuiGetPreviousWidgetInfo(UI.gui)
+	local XOffset = UI.UserData["WandBuilderXOffset"] or 0
+	GuiTooltip(this.gui,GameTextGet("$menuoptions_reset_keyboard").."\n"..GameTextGet("$wand_editor_wand_builder_slider_tips"),"",XOffset+2)
 
     local function MoveSlider()
         local left = InputIsKeyDown(Key_KP_MINUS) or InputIsKeyDown(Key_LEFT) or InputIsKeyDown(Key_MINUS)
@@ -101,33 +127,34 @@ local function NewSlider(id,x,y,text,value_min, value_max, value_default, value_
         end
     end
     if hover then
-		local hasPush = InputIsKeyDown(Key_KP_PLUS) or InputIsKeyDown(Key_KP_MINUS) or InputIsKeyDown(Key_LEFT) or
-			InputIsKeyDown(Key_RIGHT) or InputIsKeyDown(Key_MINUS) or InputIsKeyDown(Key_EQUALS)
-		if UI.UserData["PushFrBuilderID" .. id] == nil then --如果在悬浮，就分配一个帧检测时间
-			UI.UserData["PushFrBuilderID" .. id] = 30
-		else
-			if hasPush then --如果按了
-				if UI.UserData["PushFrBuilderID" .. id] == 30 then--按的第一下
-					MoveSlider()
-				end
-				if UI.UserData["PushFrBuilderID" .. id] ~= 0 then
-					UI.UserData["PushFrBuilderID" .. id] = UI.UserData["PushFrBuilderID" .. id] - 1
-				else --如果到了0
-					MoveSlider()
-				end
-			else
-				UI.UserData["PushFrBuilderID" .. id] = 30 --如果不按就重置时间
-			end
-		end
-	elseif UI.UserData["PushFrBuilderID" .. id] then --如果未悬浮就设为空
-		UI.UserData["PushFrBuilderID" .. id] = nil
-	end
+        local hasPush = InputIsKeyDown(Key_KP_PLUS) or InputIsKeyDown(Key_KP_MINUS) or InputIsKeyDown(Key_LEFT) or
+            InputIsKeyDown(Key_RIGHT) or InputIsKeyDown(Key_MINUS) or InputIsKeyDown(Key_EQUALS)
+        if UI.UserData["PushFrBuilderID" .. id] == nil then --如果在悬浮，就分配一个帧检测时间
+            UI.UserData["PushFrBuilderID" .. id] = 30
+        else
+            if hasPush then                            --如果按了
+                if UI.UserData["PushFrBuilderID" .. id] == 30 then --按的第一下
+                    MoveSlider()
+                end
+                if UI.UserData["PushFrBuilderID" .. id] ~= 0 then
+                    UI.UserData["PushFrBuilderID" .. id] = UI.UserData["PushFrBuilderID" .. id] - 1
+                else --如果到了0
+                    MoveSlider()
+                end
+            else
+                UI.UserData["PushFrBuilderID" .. id] = 30 --如果不按就重置时间
+            end
+        end
+    elseif UI.UserData["PushFrBuilderID" .. id] then --如果未悬浮就设为空
+        UI.UserData["PushFrBuilderID" .. id] = nil
+    end
+	return width,hover
 end
 
 local function NumInput(id, x, y, w, l, str, allow)
 	allow = Default(allow, "1234567890.-")
     UI.TextInput(id, x, y, w, l, str, allow)
-    local _,right_click, hover,_,_,wdith = GuiGetPreviousWidgetInfo(UI.gui)
+    local _,right_click, hover,_,_,width = GuiGetPreviousWidgetInfo(UI.gui)
     if not hover then --文本检查
         local srcText = UI.GetInputText(id)
         local text = tonumber(srcText)
@@ -145,17 +172,22 @@ local function NumInput(id, x, y, w, l, str, allow)
         UI.TextInputRestore(id)
         GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
     end
-	return wdith,hover
+	return width,hover
 end
 
 function WandBuilderCB(_, _, _, _, this_enable)
-	if not this_enable then
-		return
-	end
+    if not this_enable then
+        return
+    end
 	UI.ScrollContainer("WandBuilder", 20, 64, 268, 160, 2, 2)
 	UI.AddAnywhereItem("WandBuilder", function()
         local function GetValueStr(id, format)
-            local num = UI.GetInputText(id)
+            local num
+			if sliderMode then
+				num = UI.GetSliderValue(id.."WBSlider")
+			else
+				num = UI.GetInputText(id)
+			end
             if num == nil or tonumber(num) == nil or num == "" then
                 return ""
             end
@@ -164,19 +196,29 @@ function WandBuilderCB(_, _, _, _, this_enable)
             end
             return Compose(tostring, math.floor)(num)
         end
-		local function GetValueStrSToF(id, format)
-			local num = tonumber(UI.GetInputText(id) or "")
+        local function GetValueStrSToF(id, format)
+            local num
+			if sliderMode then
+				num = tonumber(UI.GetSliderValue(id.."WBSlider") or "")
+			else
+                num = tonumber(UI.GetInputText(id) or "")
+			end
             if num == nil then
                 return ""
             end
-			num = math.floor(num*60 + 0.5)
+			if not sliderMode then
+				num = math.floor(num*60 + 0.5)
+			end
 			if format then
                 return string.format(format, num)
 			end
 			return Compose(tostring, math.floor)(num)
 		end
 		local leftMargin = 65
-		local ColTwoMargin = 73
+        local ColTwoMargin = 73
+		if sliderMode then
+			ColTwoMargin = 103
+		end
 		local function NewLine(str, ShowText, fn, ShowFrTran)
 			str = GameTextGetTranslatedOrNot(str)
 			GuiLayoutBeginHorizontal(this.gui, 0, 0, true, 0, 2)
@@ -213,39 +255,67 @@ function WandBuilderCB(_, _, _, _, this_enable)
 		end
 		NewLine("$inventory_shuffle", shuffle, function(ShowW)
             UI.checkbox("shuffle_builder", ShowW + 2, 1, "", nil, nil, nil, nil)
-			return 24.5,false
+			if sliderMode then
+				return 25,false
+            else
+				return 24.5,false
+			end
 		end)
 		NewLine("$inventory_actionspercast", GetValueStr("cast_builder"), function(ShowW)
-            --NewSlider("cast_builder", ShowW, 1, "", 1, 50, 1, 1, " ", 120)
-			return NumInput("cast_builder", ShowW + 2, 1, 70, 9, "1", "1234567890")
+			if sliderMode then
+            	return NewSlider("cast_builder", ShowW, 1, "", 1, 50, 1, 1, " ", 100)
+            else
+				return NumInput("cast_builder", ShowW + 2, 1, 70, 9, "1", "1234567890")
+			end
 		end)
-		NewLine("$inventory_castdelay", GetValueStrSToF("castdelay_builder"), function(ShowW)
-            --NewSlider("castdelay_builder", ShowW, 1, "", -21, 240, 10, 1, " ", 120)
-			return NumInput("castdelay_builder", ShowW + 2, 1, 70, 7, "0.33", "1234567890.-")
+        NewLine("$inventory_castdelay", GetValueStrSToF("castdelay_builder"), function(ShowW)
+			if sliderMode then
+            	return NewSlider("castdelay_builder", ShowW, 1, "", -21, 240, 10, 1, " ", 100)
+			else
+				return NumInput("castdelay_builder", ShowW + 2, 1, 70, 7, "0.33", "1234567890.-")
+			end
 		end, true)
-		NewLine("$inventory_rechargetime", GetValueStrSToF("rechargetime_builder"), function(ShowW)
-            --NewSlider("rechargetime_builder", ShowW, 1, "", -21, 240, 20, 1, " ", 120)
-            return NumInput("rechargetime_builder", ShowW + 2, 1, 70, 7, "0.17", "1234567890.-")
+        NewLine("$inventory_rechargetime", GetValueStrSToF("rechargetime_builder"), function(ShowW)
+			if sliderMode then
+            	return NewSlider("rechargetime_builder", ShowW, 1, "", -21, 240, 20, 1, " ", 100)
+			else
+	            return NumInput("rechargetime_builder", ShowW + 2, 1, 70, 7, "0.17", "1234567890.-")
+			end
 		end, true)
-		NewLine("$inventory_manamax", GetValueStr("manamax_builder"), function(ShowW)
-            --NewSlider("manamax_builder", ShowW, 1, "", 0, 20000, 2000, 1, " ", 120)
-			return NumInput("manamax_builder",ShowW + 2, 1, 70,9,"2000","1234567890")
+        NewLine("$inventory_manamax", GetValueStr("manamax_builder"), function(ShowW)
+			if sliderMode then
+            	return NewSlider("manamax_builder", ShowW, 1, "", 0, 20000, 2000, 1, " ", 100)
+			else
+				return NumInput("manamax_builder",ShowW + 2, 1, 70,9,"2000","1234567890")
+			end
 		end)
-		NewLine("$inventory_manachargespeed", GetValueStr("manachargespeed_builder"), function(ShowW)
-            --NewSlider("manachargespeed_builder", ShowW, 1, "", 0, 20000, 500, 1, " ", 120)
-			return NumInput("manachargespeed_builder",ShowW + 2, 1, 70,9,"500","1234567890")
+        NewLine("$inventory_manachargespeed", GetValueStr("manachargespeed_builder"), function(ShowW)
+			if sliderMode then
+            	return NewSlider("manachargespeed_builder", ShowW, 1, "", 0, 20000, 500, 1, " ", 100)
+			else
+				return NumInput("manachargespeed_builder",ShowW + 2, 1, 70,9,"500","1234567890")
+			end
 		end)
-		NewLine("$inventory_capacity", GetValueStr("capacity_builder"), function(ShowW)
-			return  NumInput("capacity_builder", ShowW + 2, 0, 70, 9, "26", "1234567890")
-
+        NewLine("$inventory_capacity", GetValueStr("capacity_builder"), function(ShowW)
+			if sliderMode then
+				return NewSlider("capacity_builder", ShowW, 1, "", 1, 50, 26, 1, " ", 100)
+			else
+				return NumInput("capacity_builder", ShowW + 2, 0, 70, 9, "26", "1234567890")
+			end
 		end)
-		NewLine("$inventory_spread", GetValueStr("spread_builder")..GameTextGet("$wand_editor_deg"), function(ShowW)
-			return NumInput("spread_builder", ShowW + 2, 0, 70, 9, "0", "1234567890.-")
-			--NewSlider("spread_builder", ShowW, 1, "", -30, 30, 0, 1," ",120)
+        NewLine("$inventory_spread", GetValueStr("spread_builder") .. GameTextGet("$wand_editor_deg"), function(ShowW)
+			if sliderMode then
+				return NewSlider("spread_builder", ShowW, 1, "", -30, 30, 0, 1," ",100)
+			else
+				return NumInput("spread_builder", ShowW + 2, 0, 70, 9, "0", "1234567890.-")
+			end
         end)
-		NewLine("$wand_editor_speed_multiplier", "x"..GetValueStr("speed_multiplier_builder", "%.8f"), function(ShowW)
-			return NumInput("speed_multiplier_builder", ShowW + 2, 0, 70, 9, "1", "1234567890.-")
-            --UI.Slider("speed_multiplier_builder", ShowW, 1, "", 0, 2, 1, 0.0001, " ", 120)
+        NewLine("$wand_editor_speed_multiplier", "x" .. GetValueStr("speed_multiplier_builder", "%.8f"), function(ShowW)
+			if sliderMode then
+			    return NewSlider("speed_multiplier_builder", ShowW, 1, "", 0, 2, 1, 0.0001, " ", 100)
+			else
+				return NumInput("speed_multiplier_builder", ShowW + 2, 0, 70, 9, "1", "1234567890.-")
+			end
 			--GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
         end)
 		local UpdateImage
@@ -256,7 +326,11 @@ function WandBuilderCB(_, _, _, _, this_enable)
 		end
 		NewLine("$wand_editor_update_wand_image", UpdateImage, function(ShowW)
             UI.checkbox("update_image_builder", ShowW + 2, 1, "", nil, nil, nil, nil)
-			return 24.5,false
+			if sliderMode then
+				return 25,false
+            else
+				return 24.5,false
+			end
 		end)
 		
 		GuiLayoutAddVerticalSpacing(this.gui, 18)
@@ -291,25 +365,41 @@ function WandBuilderCB(_, _, _, _, this_enable)
         if GuiButton(this.gui, this.NewID("wand_builder_update_botton"), 4, 0, GameTextGet("$wand_editor_wand_builder_update_botton")) then
             local wand = Compose(GetEntityHeldWand, GetPlayer)()
             if wand ~= nil then
-				local wandData = GetWandData(wand)
+                local wandData = GetWandData(wand)
                 local new = GetWand()
-				for i=new.deck_capacity+1,#wandData.spells.spells do--删除越界法术
-					wandData.spells.spells[i] = nil
-				end
-				new.spells = wandData.spells--更新法杖的时候不要更新法术啥的
+                for i = new.deck_capacity + 1, #wandData.spells.spells do --删除越界法术
+                    wandData.spells.spells[i] = nil
+                end
+                new.spells = wandData.spells --更新法杖的时候不要更新法术啥的
                 if this.GetCheckboxEnable("update_image_builder") then
                     InitWand(new, wand)
                 else
                     new.sprite_file = wandData.sprite_file
                     new.shoot_pos = wandData.shoot_pos
                     new.sprite_pos = wandData.sprite_pos
-					new.spells = wandData.spells
+                    new.spells = wandData.spells
                     InitWand(new, wand)
                 end
-				this.OnceCallOnExecute(function ()
-					RefreshHeldWands()
-				end)
-			end
+                this.OnceCallOnExecute(function()
+                    RefreshHeldWands()
+                end)
+            end
+        end
+        GuiZSetForNextWidget(this.gui, this.GetZDeep() - 1)
+        local modeStr
+		local modeTipsStr
+		if sliderMode then
+            modeStr = GameTextGet("$wand_editor_wand_builder_slider_mode")
+            modeTipsStr = GameTextGet("$wand_editor_wand_builder_slider_mode_tips")
+        else
+            modeStr = GameTextGet("$wand_editor_wand_builder_input_box_mode")
+			modeTipsStr = GameTextGet("$wand_editor_wand_builder_input_box_mode_tips")
+		end
+        local modeSwtich = GuiButton(this.gui, this.NewID("wand_builder_update_switch"), 4, 0, modeStr)
+        GuiTooltip(this.gui, modeTipsStr)
+		if modeSwtich then
+            sliderMode = not sliderMode
+			ModSettingSet(sliderModeKey, sliderMode)
 		end
         GuiLayoutEnd(this.gui)
         GuiLayoutEnd(this.gui)

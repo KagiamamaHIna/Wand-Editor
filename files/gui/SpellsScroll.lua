@@ -683,6 +683,33 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                         RefreshHeldWands()
                     end)
                 end
+			elseif right_click and SHIFT then
+                local CurrentWand
+                if this.UserData["FixedWand"] and this.UserData["HasShiftClick"] and this.UserData["HasShiftClick"][this.UserData["FixedWand"][2]] then --固定的法杖必须是有选框才能判定
+                    CurrentWand = this.UserData["FixedWand"][2]
+                else                                                                                                                                    --否则就判断手持
+                    local HeldWand = Compose(GetEntityHeldWand, GetPlayer)()
+                    if HeldWand then
+                        CurrentWand = HeldWand
+                    end
+                end
+				if CurrentWand and this.UserData["HasShiftClick"] and this.UserData["HasShiftClick"][CurrentWand] then --必须是有选框的
+					local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
+                    local min = HasShiftClick[2]
+                    local max = HasShiftClick[3] or min
+					if min == max then--必须是单选一格的情况下
+						local wandData = GetWandData(CurrentWand)
+                        local flag = InsertTableSpells(wandData, InputIsKeyDown(Key_z), id, min)
+                        if flag then
+							InitWand(wandData, CurrentWand)
+							this.OnceCallOnExecute(function()
+								RefreshHeldWands()
+							end)
+                        else
+							GamePrint(GameTextGet("$wand_editor_spell_insert_error"))
+						end
+					end
+				end
             elseif left_click and CTRL then --CTRL+左键
                 local inventory_full = EntityGetChildWithName(GetPlayer(), "inventory_full")
                 if inventory_full then
