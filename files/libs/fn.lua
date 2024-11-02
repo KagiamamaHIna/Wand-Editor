@@ -276,7 +276,11 @@ end
 ---@param file string
 ---@return table|nil
 function ParseXmlAndBase(file)
-	local result = Nxml.parse(ModTextFileGetContent(file))
+    local text = ModTextFileGetContent(file)
+	if text == "" or nil then
+		return
+	end
+	local result = Nxml.parse(text)
 
     local function recursionBase(xmlData) --递归解析器
         local function recursion(this) --处理所有子元素的
