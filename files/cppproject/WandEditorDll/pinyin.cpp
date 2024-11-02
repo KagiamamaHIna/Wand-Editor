@@ -66,6 +66,9 @@ namespace pinyin {
 					bitmask = 1;
 					bitmask &= (input[i] >> ((sizeof(char) * 8 - 1) - ByteSizeCount));//char大小不定，为了兼容性这样写
 				}
+				if (i + ByteSizeCount > input.size()) {
+					ByteSizeCount = input.size() - i;
+				}
 				str.push_back(input.substr(i, ByteSizeCount));//截取字符串
 				i += ByteSizeCount - 1;//对字符串索引进行一下更改
 			}
