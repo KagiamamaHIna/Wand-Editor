@@ -412,7 +412,7 @@ local function SaveFile(effil, _ModIdToEnable, _result, _TypeToSpellList)
 				parts[partsKey] = fastConcatStr(indent, key, _tostr(v), ",\n")
 				partsKey = partsKey + 1
 			else
-				parts[partsKey] = fastConcatStr(indent, key,'"',v,'",\n')
+				parts[partsKey] = fastConcatStr(indent, key,'[[',v,']],\n')
 				partsKey = partsKey + 1
 			end
 		end
