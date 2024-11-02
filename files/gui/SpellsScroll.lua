@@ -572,6 +572,28 @@ end
 
 local LastHistoryTable = {}
 local HistoryTableMap = {}
+
+local NewUseHistory = function (id)
+	if HistoryTableMap[id] == nil then
+		table.insert(LastHistoryTable, 1, id)
+		HistoryTableMap[id] = true
+	elseif HistoryTableMap[id] then
+		local KeyPos
+		for key, Value in pairs(LastHistoryTable) do
+			if Value == id then
+				KeyPos = key
+				break
+			end
+		end
+		table.remove(LastHistoryTable, KeyPos)
+		table.insert(LastHistoryTable, 1, id)
+	end
+	if #LastHistoryTable > 18 then
+		HistoryTableMap[LastHistoryTable[19]] = false
+		table.remove(LastHistoryTable,19)
+	end
+	ModSettingSet(ModID .. "SpellDepotHistoryData", fastConcatStr("return {",SerializeTable(LastHistoryTable),"}"))
+end
 ---用于绘制法术容器
 ---@param this table
 ---@param spellData table 法术数据
@@ -670,6 +692,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                     this.OnceCallOnExecute(function()
                         RefreshHeldWands()
                     end)
+					NewUseHistory(id)
                 elseif CurrentWand then --没有选框
                     local wandData = GetWandData(CurrentWand)
                     for k, v in pairs(wandData.spells.spells) do
@@ -682,6 +705,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                     this.OnceCallOnExecute(function()
                         RefreshHeldWands()
                     end)
+					NewUseHistory(id)
                 end
 			elseif right_click and SHIFT then
                 local CurrentWand
@@ -694,6 +718,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
                     end
                 end
 				if CurrentWand and this.UserData["HasShiftClick"] and this.UserData["HasShiftClick"][CurrentWand] then --必须是有选框的
+					NewUseHistory(id)
 					local HasShiftClick = this.UserData["HasShiftClick"][CurrentWand]
                     local min = HasShiftClick[2]
                     local max = HasShiftClick[3] or min
@@ -713,6 +738,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
             elseif left_click and CTRL then --CTRL+左键
                 local inventory_full = EntityGetChildWithName(GetPlayer(), "inventory_full")
                 if inventory_full then
+					NewUseHistory(id)
                     local px, py = GetPlayerXY()
                     local spell = CreateItemActionEntity(id, px, py)
                     EntitySetComponentsWithTagEnabled(spell, "enabled_in_world", false)
@@ -744,25 +770,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
             elseif left_click and not UI.UserData["HasSpellMove"]and not this.GetNoMoveBool() then --纯左键
                 this.UserData["SpellHoverEnable"] = false
                 DrawFloatSpell(x, y, sprite, id)
-                if HistoryTableMap[id] == nil then
-                    table.insert(LastHistoryTable, 1, id)
-                    HistoryTableMap[id] = true
-                elseif HistoryTableMap[id] then
-                    local KeyPos
-                    for key, Value in pairs(LastHistoryTable) do
-                        if Value == id then
-                            KeyPos = key
-                            break
-                        end
-                    end
-                    table.remove(LastHistoryTable, KeyPos)
-                    table.insert(LastHistoryTable, 1, id)
-                end
-				if #LastHistoryTable > 18 then
-					HistoryTableMap[LastHistoryTable[19]] = false
-					table.remove(LastHistoryTable,19)
-				end
-				ModSettingSet(ModID .. "SpellDepotHistoryData", fastConcatStr("return {",SerializeTable(LastHistoryTable),"}"))
+				NewUseHistory(id)
             elseif left_click and UI.UserData["HasSpellMove"] then
                 UI.UserData["HasSpellMove"] = false
                 UI.UserData["FloatSpellID"] = nil
@@ -772,16 +780,21 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		end
 
 		this.AddScrollImageItem(Container, sprite, function()--添加图片项目的回调绘制
-            GuiZSetForNextWidget(this.gui, this.GetZDeep())
-			if not UI.GetPickerStatus("DisableSpellWobble") then
-				GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)--让法术摇摆
-			end
-			UI.MoveImageButton(fastConcatStr("__SPELL_", id, GuiID), 0, 2, sprite, nil, SpellHover, SpellCilck, true, true)--最后两个参数是不始终调用点击回调和禁止移动
-			--绘制法术背景，深度要控制好
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
-			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_BG", GuiID)), -20, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
-			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
-			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_SPELLBG", GuiID)), -22, 0, SpellTypeBG[spellData[id].type], 1, 1)
+			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_BG", GuiID)), -2, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
+            local _, _, _, x, y, w,h = GuiGetPreviousWidgetInfo(this.gui)
+            GuiZSetForNextWidget(this.gui, this.GetZDeep())
+            GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.Layout_NoLayouting)
+            if not UI.GetPickerStatus("DisableSpellWobble") then
+                GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble) --让法术摇摆
+            end
+            local sw,sh = GuiGetImageDimensions(this.gui, sprite, 1)
+			UI.MoveImageButton(fastConcatStr("__SPELL_", id, GuiID), x + (w-sw)/2, y + (h-sh)/2, sprite, nil, SpellHover, SpellCilck, true, true)--最后两个参数是不始终调用点击回调和禁止移动
+			--绘制法术背景，深度要控制好
+
+            GuiZSetForNextWidget(this.gui, this.GetZDeep() + 1)
+			GuiOptionsAddForNextWidget(this.gui,GUI_OPTION.Layout_NoLayouting)
+			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_SPELLBG", GuiID)), x, y, SpellTypeBG[spellData[id].type], 1, 1)
         end)
 		this.SetZDeep(ZDeepest)
 	end

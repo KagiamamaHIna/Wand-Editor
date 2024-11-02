@@ -87,7 +87,8 @@ end
 
 function SpwanDummyCB(_, right_click, _, _, this_enable)
 	if right_click then
-		OnPlayerPosSpwan()
+        OnPlayerPosSpwan()
+		GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 	end
     if not this_enable then
         return
@@ -190,7 +191,8 @@ function SpwanDummyCB(_, right_click, _, _, this_enable)
             end
 		end
         if spwan_right_click then
-			OnPlayerPosSpwan()
+            OnPlayerPosSpwan()
+			GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", GameGetCameraPos())
 		end
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
 		local del_left_click = GuiButton(UI.gui,UI.NewID("SettingDummyDel"),3,0,GameTextGet("$wand_editor_options_del_dummy"))

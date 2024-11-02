@@ -602,9 +602,14 @@ function WandDepotCB(_, _right, _, _, this_enable)
 			if page > GetWandDepotSize() then
 				local max = GetWandDepotSize()
 				UI.UserData["WandDepotCurrentIndex"] = max
-				UI.SetInputText("WandDepotPage", tostring(max))
-			else --及时同步
+                UI.SetInputText("WandDepotPage", tostring(max))
+            elseif page <= 0 then
+                page = 1
 				UI.UserData["WandDepotCurrentIndex"] = page
+				UI.SetInputText("WandDepotPage", tostring(page))
+			else --及时同步
+                UI.UserData["WandDepotCurrentIndex"] = page
+				UI.SetInputText("WandDepotPage", tostring(page))
 			end
 		elseif page and page ~= CurrentIndex then
 			UI.SetInputText("WandDepotPage", tostring(CurrentIndex))

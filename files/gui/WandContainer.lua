@@ -68,7 +68,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 	
 	L_GuiImage(this.gui, this.NewID(fastConcatStr(id , BaseName, "full_BG" , L_tostring(k))), 0, 0,
         "data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
-	local click, _, hover, x, y = L_GuiGetPreviousWidgetInfo(this.gui)
+	local click, _, hover, x, y,FullBoxW,FullBoxH = L_GuiGetPreviousWidgetInfo(this.gui)
 	local CacheKey = fastConcatStr(id, "HoverCache")
 	if this.UserData[CacheKey] == nil then
 		local scale = this.GetScale()
@@ -141,23 +141,27 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
     if v ~= "nil" and spellData[v.id] ~= nil then --绘制法术与背景
         L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
         this.SetZDeep(this.GetZDeep() - 1)
-        L_GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "BG", v.id, L_tostring(k))), -22, 0,
+		GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.Layout_NoLayouting)
+        L_GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "BG", v.id, L_tostring(k))), x, y,
 			L_SpellTypeBG[spellData[v.id].type],
             1, 1)
 		local _,_,_,thisImgX = GuiGetPreviousWidgetInfo(this.gui)
-        L_GuiLayoutBeginHorizontal(this.gui, -20, 0, true, -20, 6) --使得正确的布局实现
         L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
         this.SetZDeep(this.GetZDeep() - 1)
         if not this.GetPickerStatus("DisableSpellWobble") then
             L_GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.DrawWobble)
         end
         L_GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.AlwaysClickable)
-        L_GuiImageButton(this.gui, this.NewID(fastConcatStr(id, BaseName, v.id, L_tostring(k))), 0, 2, "",
+        GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.Layout_NoLayouting)
+		local sw,sh = GuiGetImageDimensions(this.gui, spellData[v.id].sprite, 1)
+		
+        L_GuiImageButton(this.gui, this.NewID(fastConcatStr(id, BaseName, v.id, L_tostring(k))), x + (FullBoxW-sw)/2, y + (FullBoxH-sh)/2, "",
             spellData[v.id].sprite)
         if isAlways then
             L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
             this.SetZDeep(this.GetZDeep() - 1)
-            L_GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "Always", v.id, L_tostring(k))), 1, 0,
+			GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.Layout_NoLayouting)
+            L_GuiImage(this.gui, this.NewID(fastConcatStr(id, BaseName, "Always", v.id, L_tostring(k))), x+1, y,
                 "mods/wand_editor/files/gui/images/always_icon.png",
                 1, 1)
         end
@@ -171,7 +175,6 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 		L_GuiOptionsAddForNextWidget(this.gui,GUI_OPTION.Layout_NoLayouting)
 		L_GuiImage(this.gui, this.NewID(fastConcatStr(id , BaseName, "full_BG_invisibility" , L_tostring(k))), thisImgX, 0,"data/ui_gfx/inventory/full_inventory_box.png", BGAlpha, 1)
 		GuiAnimateEnd(this.gui)
-        L_GuiLayoutEnd(this.gui)
     end
 	if not isAlways then
 		this.UserData[fastConcatStr(id , "LastWandContHover" , L_tostring(k))] = hover
