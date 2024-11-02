@@ -603,8 +603,8 @@ function DrawSpellContainer(this, spellData, spellTable, type)
     local ZDeepest = this.GetZDeep()
     local ContainerName = fastConcatStr("SpellsScroll", tostring(type))
 	if UI.GetPickerStatus("SpellDepotHistoryMode") then
-        this.ScrollContainer(ContainerName, 30, 64, 178, 130, nil, 0, 1.3)
-        this.ScrollContainer("HistorySpells", 30, 200, 178, 45, nil, 0, 1.3)
+        this.ScrollContainer(ContainerName, 30, 64, 178, 130, nil, 0, 1.35)
+        this.ScrollContainer("HistorySpells", 30, 200, 178, 45, nil, 0, 1.35)
 
         local RemoveCB = function(left_click)
             if left_click then
@@ -782,7 +782,7 @@ function DrawSpellContainer(this, spellData, spellTable, type)
 		this.AddScrollImageItem(Container, sprite, function()--添加图片项目的回调绘制
 			GuiZSetForNextWidget(this.gui, this.GetZDeep() + 2)
 			GuiImage(this.gui, this.NewID(fastConcatStr("__SPELL_" , id , "_BG", GuiID)), -2, 0, "data/ui_gfx/inventory/full_inventory_box.png", 1, 1)
-            local _, _, _, x, y, w,h = GuiGetPreviousWidgetInfo(this.gui)
+            local _, _, _, x, y, w, h = GuiGetPreviousWidgetInfo(this.gui)
             GuiZSetForNextWidget(this.gui, this.GetZDeep())
             GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.Layout_NoLayouting)
             if not UI.GetPickerStatus("DisableSpellWobble") then

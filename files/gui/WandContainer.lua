@@ -168,7 +168,8 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
         if not isAlways and v ~= "nil" and v.uses_remaining ~= -1 then
             L_GuiZSetForNextWidget(this.gui, this.GetZDeep())
             this.SetZDeep(this.GetZDeep() - 1)
-            L_GuiText(this.gui, 4, 2, L_tostring(v.uses_remaining), 1, "data/fonts/font_small_numbers.xml")
+			GuiOptionsAddForNextWidget(this.gui, GUI_OPTION.Layout_NoLayouting)
+            L_GuiText(this.gui, x+2, y+2, L_tostring(v.uses_remaining), 1, "data/fonts/font_small_numbers.xml")
         end
 		GuiAnimateBegin(this.gui)
 		GuiAnimateAlphaFadeIn(this.gui, UI.NewID(fastConcatStr(id , BaseName, "SpellBGInvisibility", L_tostring(k))), 0, 0, false)

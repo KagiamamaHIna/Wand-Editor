@@ -63,9 +63,11 @@ function GUIUpdate()
 					--绘制悬浮图标
 					local status = UI.OnMoveImage("MoveSpell", x, y, sprite, nil, nil, ZDeepest - 114514,
 						UI.UserData["SpellHoverEnable"],
-						function(movex, movey)
+                        function(movex, movey)
+                            local sw, sh = GuiGetImageDimensions(UI.gui, spellData[id].sprite, 1)
+                            local w, h = GuiGetImageDimensions(UI.gui, "data/ui_gfx/inventory/full_inventory_box.png", 1)
 							GuiZSetForNextWidget(UI.gui, ZDeepest - 114513)
-							GuiImage(UI.gui, UI.NewID("MoveSpell_BG"), movex - 2, movey - 2,
+							GuiImage(UI.gui, UI.NewID("MoveSpell_BG"), movex - (w-sw)/2, movey - (h-sh)/2,
 								SpellTypeBG[spellData[id].type], 1, 1)                                         --绘制背景
 						end)
 					local LeftClick = (InputIsMouseButtonDown(Mouse_left) and not ModSettingGet(fastConcatStr(ModID, "SpellDepotCloseSpellOnGround")))
