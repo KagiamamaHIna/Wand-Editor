@@ -299,22 +299,24 @@ local function DrawWandSlot(id, k, wand)
                     GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 101)
                     GuiImage(UI.gui, UI.NewID(id .. "always_full_BG" .. tostring(i)), 0, 0,
                         "data/ui_gfx/inventory/full_inventory_box.png", 1, 0.5)
-                    local _, _, _, weigthX, _, weigthW = GuiGetPreviousWidgetInfo(UI.gui)
+                    local _, _, _, weigthX, weigthY, weigthW, weigthH = GuiGetPreviousWidgetInfo(UI.gui)
                     if spellData[v.id] ~= nil then --判空，防止法术数据异常
                         GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 102)
-                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "always" .. tostring(i)), -12, 0,
+						GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "always" .. tostring(i)), weigthX, weigthY,
                             SpellTypeBG[spellData[v.id].type],
                             1, 0.5)
-                        GuiLayoutBeginHorizontal(UI.gui, -11, 0, true, -8, 4) --使得正确的布局实现
+						local sw,sh = GuiGetImageDimensions(UI.gui, spellData[v.id].sprite, 0.5)
                         GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 103)
-                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "always_spell" .. tostring(i) .. "BG"), 0, 1,
+						GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "always_spell" .. tostring(i) .. "BG"), weigthX + (weigthW-sw)/2, weigthY + (weigthH-sh)/2,
                             spellData[v.id].sprite, 1, 0.5)
 
                         GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 104)
-                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "Always_icon" .. tostring(k)), 0, 0,
+						GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "Always_icon" .. tostring(k)), weigthX, weigthY,
                             "mods/wand_editor/files/gui/images/always_icon.png",
                             1, 0.5)
-                        GuiLayoutEnd(UI.gui)
                     end
                     if weigthX + weigthW >= UI.ScreenWidth - 80 then
                         GuiLayoutEnd(UI.gui)
@@ -326,22 +328,25 @@ local function DrawWandSlot(id, k, wand)
                     GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 101)
                     GuiImage(UI.gui, UI.NewID(id .. "full_BG" .. tostring(i)), 0, 0,
                         "data/ui_gfx/inventory/full_inventory_box.png", 1, 0.5)
-                    local _, _, _, weigthX, _, weigthW = GuiGetPreviousWidgetInfo(UI.gui)
+                    local _, _, _, weigthX, weigthY, weigthW, weigthH = GuiGetPreviousWidgetInfo(UI.gui)
                     if v ~= "nil" and spellData[v.id] ~= nil then --判空，防止法术数据异常
                         GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 102)
-                        GuiImage(UI.gui, UI.NewID(id .. v.id .. tostring(i) .. "BG"), -12, 0,
+						GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. tostring(i) .. "BG"), weigthX, weigthY,
                             SpellTypeBG[spellData[v.id].type],
                             1, 0.5)
-                        GuiLayoutBeginHorizontal(UI.gui, -11, 0, true, -8, 4) --使得正确的布局实现
+						local sw,sh = GuiGetImageDimensions(UI.gui, spellData[v.id].sprite, 0.5)
                         GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 103)
-                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "spell" .. tostring(i)), 0, 1, spellData[v.id].sprite, 1,
+						GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
+                        GuiImage(UI.gui, UI.NewID(id .. v.id .. "spell" .. tostring(i)), weigthX + (weigthW-sw)/2, weigthY + (weigthH-sh)/2, spellData[v.id].sprite, 1,
                             0.5)
                         local DrawUses = function(thisUses)
                             GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 104)
+							GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
                             if thisUses then
-                                GuiText(UI.gui, 0, 0, tostring(thisUses), 0.5, "data/fonts/font_small_numbers.xml")
+                                GuiText(UI.gui, weigthX, weigthY, tostring(thisUses), 0.5, "data/fonts/font_small_numbers.xml")
                             else
-                                GuiText(UI.gui, 0, 0, tostring(v.uses_remaining), 0.5,
+                                GuiText(UI.gui, weigthX, weigthY, tostring(v.uses_remaining), 0.5,
                                     "data/fonts/font_small_numbers.xml")
                             end
                         end
@@ -353,7 +358,6 @@ local function DrawWandSlot(id, k, wand)
                         elseif v.uses_remaining ~= -1 and not inf_spells_enable then
                             DrawUses()
                         end
-                        GuiLayoutEnd(UI.gui)
                     end
                     if weigthX + weigthW >= UI.ScreenWidth - 80 then
                         GuiLayoutEnd(UI.gui)
