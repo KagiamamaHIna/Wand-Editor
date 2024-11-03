@@ -272,14 +272,14 @@ function WandBuilderCB(_, _, _, _, this_enable)
 			if sliderMode then
             	return NewSlider("castdelay_builder", ShowW, 1, "", -21, 240, 10, 1, " ", 100)
 			else
-				return NumInput("castdelay_builder", ShowW + 2, 1, 70, 7, "0.33", "1234567890.-")
+				return NumInput("castdelay_builder", ShowW + 2, 1, 70, 7, "0.17", "1234567890.-")
 			end
 		end, true)
         NewLine("$inventory_rechargetime", GetValueStrSToF("rechargetime_builder"), function(ShowW)
 			if sliderMode then
             	return NewSlider("rechargetime_builder", ShowW, 1, "", -21, 240, 20, 1, " ", 100)
 			else
-	            return NumInput("rechargetime_builder", ShowW + 2, 1, 70, 7, "0.17", "1234567890.-")
+	            return NumInput("rechargetime_builder", ShowW + 2, 1, 70, 7, "0.33", "1234567890.-")
 			end
 		end, true)
         NewLine("$inventory_manamax", GetValueStr("manamax_builder"), function(ShowW)
@@ -314,7 +314,7 @@ function WandBuilderCB(_, _, _, _, this_enable)
 			if sliderMode then
 			    return NewSlider("speed_multiplier_builder", ShowW, 1, "", 0, 2, 1, 0.0001, " ", 100)
 			else
-				return NumInput("speed_multiplier_builder", ShowW + 2, 0, 70, 9, "1", "1234567890.-")
+				return NumInput("speed_multiplier_builder", ShowW + 2, 0, 70, 10, "1", "1234567890.-")
 			end
 			--GuiTooltip(this.gui,GameTextGetTranslatedOrNot("$menuoptions_reset_keyboard"),"")
         end)
@@ -347,15 +347,29 @@ function WandBuilderCB(_, _, _, _, this_enable)
 			if wand ~= nil then
                 local wandData = GetWandData(wand)
 				if InputIsKeyDown(Key_LSHIFT) or InputIsKeyDown(Key_RSHIFT) then
-					this.SetCheckboxEnable("shuffle_builder", wandData.shuffle_deck_when_empty)
-					this.SetInputText("cast_builder", wandData.actions_per_round)
-					this.SetInputText("castdelay_builder", FrToSecondStr(wandData.fire_rate_wait))
-					this.SetInputText("rechargetime_builder", FrToSecondStr(wandData.reload_time))
-					this.SetInputText("manamax_builder", wandData.mana_max)
-					this.SetInputText("manachargespeed_builder", wandData.mana_charge_speed)
-					this.SetInputText("capacity_builder", tostring(wandData.deck_capacity))
-					this.SetInputText("spread_builder", wandData.spread_degrees)
-                    this.SetInputText("speed_multiplier_builder", wandData.speed_multiplier)
+                    this.SetCheckboxEnable("shuffle_builder", wandData.shuffle_deck_when_empty)
+					if sliderMode then
+						local SetSlider = function (id, v)
+							this.SetSliderValue(id.."WBSlider", v)
+						end
+						SetSlider("cast_builder", wandData.actions_per_round)
+						SetSlider("castdelay_builder", wandData.fire_rate_wait)
+						SetSlider("rechargetime_builder", wandData.reload_time)
+						SetSlider("manamax_builder", wandData.mana_max)
+						SetSlider("manachargespeed_builder", wandData.mana_charge_speed)
+						SetSlider("capacity_builder", wandData.deck_capacity)
+						SetSlider("spread_builder", wandData.spread_degrees)
+						SetSlider("speed_multiplier_builder", wandData.speed_multiplier)
+                    else
+						this.SetInputText("cast_builder", wandData.actions_per_round)
+						this.SetInputText("castdelay_builder", FrToSecondStr(wandData.fire_rate_wait))
+						this.SetInputText("rechargetime_builder", FrToSecondStr(wandData.reload_time))
+						this.SetInputText("manamax_builder", wandData.mana_max)
+						this.SetInputText("manachargespeed_builder", wandData.mana_charge_speed)
+						this.SetInputText("capacity_builder", tostring(wandData.deck_capacity))
+						this.SetInputText("spread_builder", wandData.spread_degrees)
+						this.SetInputText("speed_multiplier_builder", wandData.speed_multiplier)
+					end
                 else
 					InitWand(wandData,nil,Compose(EntityGetTransform, GetPlayer)())
 				end
@@ -404,5 +418,12 @@ function WandBuilderCB(_, _, _, _, this_enable)
         GuiLayoutEnd(this.gui)
         GuiLayoutEnd(this.gui)
 	end)
-	UI.DrawScrollContainer("WandBuilder", false)
+    UI.DrawScrollContainer("WandBuilder", false)
+	
+    local flag, wand = pcall(GetWand)
+    if flag then
+        local w, h = GuiGetImageDimensions(UI.gui, wand.sprite_file, 3)
+		GuiZSetForNextWidget(UI.gui,UI.GetZDeep())
+		GuiImage(UI.gui,UI.NewID("TestImage"),20,234,wand.sprite_file,1,3,0)
+	end
 end
