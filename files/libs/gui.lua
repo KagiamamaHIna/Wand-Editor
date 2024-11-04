@@ -801,13 +801,17 @@ function UI.GetScrollY(id)
     end
 end
 
+---@param id string
+---@return number|nil
 function UI.GetScrollMX(id)
-	local newid = ConcatModID(id)
+    local newid = ConcatModID(id)
     if this.private.ScrollData[newid] then --判断是否有数据
         return this.private.ScrollData[newid].margin_x
     end
 end
 
+---@param id string
+---@return number|nil
 function UI.GetScrollMY(id)
 	local newid = ConcatModID(id)
     if this.private.ScrollData[newid] then --判断是否有数据

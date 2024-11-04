@@ -581,7 +581,10 @@ function GetWandSpellIDs(entity)
 	local spellList = {}
     local spellEntitys = EntityGetChildWithTag(entity, "card_action")
     local AlwaysSpellList = {}--保存始终法术列表
-	local AlwayIndexList = {}--保存始终法术Y索引的列表
+    local AlwayIndexList = {}  --保存始终法术Y索引的列表'
+	local SrcSpellList = {}
+	local HasAlwaysYIndex = {}
+	local AlwaysYIndexOverlap = false
 	local AlwaysCount = 0 --统计正确的容量用
 	local IndexZeroCount = 0 --有时候sb nolla不会初始化inventory_slot.x，导致全部都是0，这时候需要手动重新分配，并且计数
     if spellEntitys ~= nil then
@@ -603,16 +606,27 @@ function GetWandSpellIDs(entity)
                 spellList[index + 1] = { isAlways = isAlways, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
             else
                 AlwayIndexList[#AlwayIndexList + 1] = indexY
-                AlwaysSpellList[indexY] = { isAlways = isAlways, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
+				local spellT = { isAlways = isAlways, id = spellid, is_frozen = is_frozen, uses_remaining = uses_remaining }
+                if HasAlwaysYIndex[indexY] == nil then--判重
+                    HasAlwaysYIndex[indexY] = true
+                    AlwaysSpellList[indexY] = spellT
+                else
+                    AlwaysYIndexOverlap = true
+                end
+				SrcSpellList[#SrcSpellList + 1] = spellT
             end
             if isAlways then
                 AlwaysCount = AlwaysCount + 1
             end
         end
     end
-    table.sort(AlwayIndexList)--为了健壮性的设计
-	for i=1,#AlwayIndexList do
-		result.always[#result.always+1] = AlwaysSpellList[AlwayIndexList[i]]
+    table.sort(AlwayIndexList) --为了健壮性的设计
+	if not AlwaysYIndexOverlap then
+        for i = 1, #AlwayIndexList do
+            result.always[#result.always + 1] = AlwaysSpellList[AlwayIndexList[i]]
+        end
+    else
+		result.always = SrcSpellList
 	end
 	for i = 1, capacity - AlwaysCount do
 		result.spells[i] = "nil"
