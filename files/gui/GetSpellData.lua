@@ -34,6 +34,13 @@ local function GetModEnableList()
 	return ModIdToEnable
 end
 local mustReload = false
+local LastRealUnlimitedSpells = ModSettingGet(ModID .. "Last_real_unlimited_spells") or false
+local RefreshRealUnlimitedSpells = false
+if LastRealUnlimitedSpells ~= ModSettingGet("wand_editor.real_unlimited_spells") then
+    ModSettingSet(ModID .. "Last_real_unlimited_spells", ModSettingGet("wand_editor.real_unlimited_spells") or false)
+    mustReload = true
+	RefreshRealUnlimitedSpells = true
+end
 if not ModSettingGet("wand_editor.cache_spell_data") then
     mustReload = true
 end
@@ -86,7 +93,7 @@ if HasCahce and (not mustReload) then
 	if not Change then--可以直接读取缓存！
 		--print("Cache Get")
 		local result1 = dofile_once("mods/wand_editor/cache/SpellsData.lua")
-		local result2 = dofile_once("mods/wand_editor/cache/TypeToSpellList.lua")
+        local result2 = dofile_once("mods/wand_editor/cache/TypeToSpellList.lua")
 		return {result1,result2}
 	end
 end
@@ -470,4 +477,4 @@ OnActionPlayed = nil
 OnNotEnoughManaForAction = nil
 BaabInstruction = nil
 
-return {result, TypeToSpellList}
+return {result, TypeToSpellList, RefreshRealUnlimitedSpells}

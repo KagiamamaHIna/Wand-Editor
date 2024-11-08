@@ -374,8 +374,13 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 	UI.MoveImagePicker("SpellDepotHistoryMode", PickerGap(1), iy + 60, 8, 0,
 		GameTextGet("$wand_editor_spell_depot_history"),
         "mods/wand_editor/files/gui/images/spell_depot_history.png", nil, nil, nil, true, true, true)
+
+	UI.MoveImagePicker("SpellInfMana", PickerGap(2), iy + 60, 8, 0,
+		GameTextGet("$wand_editor_spell_inf_mana"),
+        "mods/wand_editor/files/gui/images/inf_mana.png", nil, nil, nil, true, true, true)
+	
 	GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-	UI.MoveImageButton("UpdateMod", PickerGap(2), iy + 60, "mods/wand_editor/files/gui/images/update_mod.png", nil, UpdateHover, UpdateClick, nil, true)
+	UI.MoveImageButton("UpdateMod", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/update_mod.png", nil, UpdateHover, UpdateClick, nil, true)
     local reloadText = GameTextGet("$wand_editor_reload_spell_data")
 	if UI.GetPickerStatus("ReloadSpellData") then
 		reloadText = reloadText .."\n".. GameTextGet("$menu_mods_help_paused")
@@ -430,14 +435,14 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 		end
 	end
 	if ModSettingGet("wand_editor.cache_spell_data") then
-		UI.MoveImagePicker("ReloadSpellData", PickerGap(3), iy + 60, 8, 0, reloadText,
+		UI.MoveImagePicker("ReloadSpellData", PickerGap(4), iy + 60, 8, 0, reloadText,
         "mods/wand_editor/files/gui/images/reload_spell_data.png", nil, nil, nil, true, true, true)
 
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-		UI.MoveImageButton("ModAbout", PickerGap(4), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
+		UI.MoveImageButton("ModAbout", PickerGap(5), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
 	else
 		GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-		UI.MoveImageButton("ModAbout", PickerGap(3), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
+		UI.MoveImageButton("ModAbout", PickerGap(4), iy + 60, "mods/wand_editor/files/gui/images/about.png", nil, ModAboutCB, ModAboutClickCB, nil, true)
 	end
 
 end

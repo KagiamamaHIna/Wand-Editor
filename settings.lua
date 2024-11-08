@@ -124,6 +124,13 @@ mod_settings =
         scope = MOD_SETTING_SCOPE_RUNTIME,
     }),
 	Setting({
+        id = "real_unlimited_spells",
+		ui_name = "wand_editor_real_unlimited_spells",
+		ui_description = "wand_editor_real_unlimited_spells_tips",
+		value_default = false,
+        scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+    }),
+	Setting({
         id = "remove_fog_of_war",
 		ui_name = "wand_editor_remove_fog_of_war",
 		ui_description = "wand_editor_remove_fog_of_war_tip",

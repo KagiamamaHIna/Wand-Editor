@@ -27,6 +27,7 @@ function GUIUpdate()
 		local data = dofile_once("mods/wand_editor/files/gui/GetSpellData.lua") --读取法术数据
 		local spellData = data[1]
         local TypeToSpellList = data[2]
+        local RefreshRealUnlimitedSpells = data[3]
 		_ToFnSpellData = spellData
 		dofile("mods/wand_editor/files/libs/fn.lua")
 		local ZDeepest = UI.GetZDeep()
@@ -227,10 +228,25 @@ function GUIUpdate()
                 CSV = dofile_once("mods/wand_editor/files/libs/csv.lua")(ModTextFileGetContent("data/translations/common.csv"))
             end
             if ModSettingGet("wand_editor.reset_all_btn") then
-				UI.ResetAllCanMove()
+                UI.ResetAllCanMove()
                 ModSettingSet("wand_editor.reset_all_btn", false)
+            end
+            if GetPlayer() == nil then
+                return
+            end --分离一下停止逻辑
+			if RefreshRealUnlimitedSpells then--刷新法术使用次数
+                GameRegenItemActionsInPlayer(GetPlayer())
+				RefreshRealUnlimitedSpells = false
 			end
-            if GameIsInventoryOpen() or GetPlayer() == nil then
+			if UI.UserData["LastSpellInfManaEnable"] == nil then
+				UI.UserData["LastSpellInfManaEnable"] = UI.GetPickerHover("SpellInfMana")
+            elseif UI.UserData["LastSpellInfManaEnable"] ~= UI.GetPickerHover("SpellInfMana") then
+                UI.UserData["LastSpellInfManaEnable"] = UI.GetPickerHover("SpellInfMana")
+				UI.OnceCallOnExecute(function ()--需要刷新法杖的数据来让法术可以正常耗蓝
+					RefreshHeldWands()
+				end)
+			end
+            if GameIsInventoryOpen() then
                 return
             end
             if EntityGetWithName("WandEditorRestoreEntity") == 0 then--如果没有人外部手贱删除这个实体，那么应该是玩家重生之类的导致消失了

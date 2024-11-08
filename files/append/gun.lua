@@ -35,3 +35,20 @@ function StartReload(...)
     end
 	__wand_editor_StartReload(...)
 end
+
+local __wand_editor_draw_action = draw_action
+
+function draw_action(instant_reload_if_empty)
+	local Enable = ModSettingGet("wand_editor" .. "SpellInfMana") 
+	local LastMana
+    if Enable then
+        if #deck > 0 then
+            deck[1].mana = 0
+        end
+		LastMana = mana
+    end
+    __wand_editor_draw_action(instant_reload_if_empty)
+	if Enable then
+		mana = LastMana
+	end
+end

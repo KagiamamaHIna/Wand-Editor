@@ -4,6 +4,9 @@ dofile_once("mods/wand_editor/files/gui/update.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 
 ModLuaFileAppend("data/scripts/gun/gun.lua", "mods/wand_editor/files/append/gun.lua")
+if ModSettingGet("wand_editor.real_unlimited_spells") then
+	ModLuaFileAppend("data/scripts/gun/gun_actions.lua", "mods/wand_editor/files/append/gun_actions.lua")
+end
 
 local SrcCsv = ModTextFileGetContent("data/translations/common.csv")--设置新语言文件
 local AddCsv = ModTextFileGetContent("mods/wand_editor/files/lang/lang.csv")
@@ -25,7 +28,12 @@ local AppendPostFinalFrag = [[
 	uniform vec4 WandEditor_ENABLE_LIGHTING = vec4(0.0,0.0,0.0,0.0);
 ]]
 local TempPostFinalFrag = string.gsub(ModTextFileGetContent("data/shaders/post_final.frag"),"uniform sampler2D tex_bg;",AppendPostFinalFrag)
-TempPostFinalFrag = string.gsub(TempPostFinalFrag,"#version 110","#version 120")--拉高版本
+
+local _, _, version = string.find(TempPostFinalFrag, "#version%s(%d+)")--拉高版本，更好的实现
+if (tonumber(version) < 120) then
+    TempPostFinalFrag = string.gsub(TempPostFinalFrag, "#version " .. version, "#version 120")
+end
+
 ModTextFileSetContent("data/shaders/post_final.frag", string.gsub(TempPostFinalFrag,"const bool ENABLE_LIGHTING	    		= 1>0;","bool ENABLE_LIGHTING	    		= 1>WandEditor_ENABLE_LIGHTING.x;"))
 
 local cachePath = Cpp.CurrentPath() .. "/mods/wand_editor/cache"

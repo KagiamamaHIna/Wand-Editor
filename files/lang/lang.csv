@@ -192,3 +192,6 @@ wand_editor_remove_spell_depot_history_IKnowWhatImDoing,"Sure you want to clear 
 wand_editor_split_search_text,Space Split Multi-Item Search,,,,,,,,空格分割多项目搜索,,,,,,,
 wand_editor_split_search_text_tip,Inserting spaces between text allows you to search for more than one thing at once.,,,,,,,,在文本之间插入空格可以同时搜索多个内容,,,,,,,
 wand_editor_spell_insert_error,"Insertion failed, no slots remaining",,,,,,,,插入失败，没有剩余的槽位,,,,,,,
+wand_editor_spell_inf_mana,Spells no longer cost mana,,,,,,,,法术不再耗蓝,,,,,,,
+wand_editor_real_unlimited_spells,Real Unlimited Spells,,,,,,,,真正的无限法术,,,,,,,
+wand_editor_real_unlimited_spells_tips,All spells will be unlimited,,,,,,,,所有法术都将是无限使用次数的,,,,,,,
