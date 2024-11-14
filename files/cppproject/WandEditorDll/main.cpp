@@ -20,7 +20,7 @@ namespace lua {
 			return 1;
 		}
 		std::string result = "";
-		for (int i = pos1; i < pos2; i++) {
+		for (int i = pos1; i <= pos2; i++) {
 			result += s1[i];
 		}
 		lua_pushstring(L, result.c_str());
@@ -30,6 +30,16 @@ namespace lua {
 	int lua_UTF8StringSize(lua_State* L) {
 		pinyin::Utf8String s1 = pinyin::Utf8String(luaL_checkstring(L, 1));
 		lua_pushnumber(L, s1.size());
+		return 1;
+	}
+
+	int lua_UTF8StringChars(lua_State* L) {
+		lua_newtable(L);//新建一个表
+		pinyin::Utf8String s1 = pinyin::Utf8String(luaL_checkstring(L, 1));
+		for (size_t i = 0; i < s1.size(); i++) {
+			lua_pushstring(L, s1[i].c_str());
+			lua_rawseti(L, -2, i + 1);
+		}
 		return 1;
 	}
 
@@ -91,6 +101,12 @@ namespace lua {
 		stbi_set_flip_vertically_on_load(false);
 		return 1;
 	}
+
+	int lua_System(lua_State* L) {
+		const char* command = luaL_checkstring(L, 1);
+		lua_pushnumber(L, system(command));
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -106,6 +122,7 @@ static luaL_Reg luaLibs[] = {
 
 	{ "UTF8StringSize", lua::lua_UTF8StringSize},
 	{ "UTF8StringSub", lua::lua_UTF8StringSub},
+	{ "UTF8StringChars", lua::lua_UTF8StringChars},
 	{ "ConcatStr", lua::lua_ConcatStr},
 
 	{ "LoadStandardForAllLua",lua::LoadStandardForAllLua},
@@ -120,6 +137,7 @@ static luaL_Reg luaLibs[] = {
 	{ "SetDllDirectory", lua::lua_SetDllDirectory},
 
 	{ "FlipImageLoadAndWrite", lua::lua_FlipImageLoadAndWrite},
+	{ "System", lua::lua_System},
 
 	{ NULL, NULL }
 };

@@ -2,6 +2,7 @@ dofile_once("mods/wand_editor/files/libs/unsafe.lua")
 dofile_once("mods/wand_editor/files/libs/fn.lua")
 dofile_once("mods/wand_editor/files/gui/update.lua")
 dofile_once("data/scripts/lib/utilities.lua")
+Cpp.System("chcp 65001")
 
 ModLuaFileAppend("data/scripts/gun/gun.lua", "mods/wand_editor/files/append/gun.lua")
 if ModSettingGet("wand_editor.real_unlimited_spells") then

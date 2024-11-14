@@ -332,7 +332,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                     end
 					if InputIsKeyDown(Key_v) or k <= min then
                     	for i = min, max do                                     --i是原始位置，k是目标位置
-                	        if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
+                            if i > OtherWand.deck_capacity or ThisK > wandData.deck_capacity then --超出容量就什么都不做
             	                break
         	                end
     	                    if InputIsKeyDown(Key_v) then
@@ -349,7 +349,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 					else
                         ThisK = ThisK + (max - min)
 						for i = max, min, -1 do
-							if ThisK > OtherWand.deck_capacity then
+							if ThisK > wandData.deck_capacity then
 								break
 							end
 							Swap2InputSpellPos(OtherWand, wandData, i, ThisK)
@@ -410,7 +410,6 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
                     RefreshHeldWands()
                 end)
             end
-		--[[
         elseif (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and (InputIsKeyDown(Key_c) or InputIsKeyDown(Key_x)) and this.UserData["HasShiftClick"][CurrentWand] then
             if not CopiedData then
                 local CurrentData = GetWandData(CurrentWand)
@@ -442,7 +441,9 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
             local flag, t = CheckSpells(ClipboardData)
             if flag then
                 for i = #t, 1, -1 do
-                    InsertTableSpells(wandData, t[i].id, k)
+					if t[i] ~= 'nil' then
+						InsertTableSpells(wandData, false, t[i].id, k, t[i].uses_remaining)
+					end
                 end
                 InitWand(wandData, wandEntity)
 				this.OnceCallOnExecute(function()
@@ -450,7 +451,7 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
 				end)
             end
         else
-			CopiedData = false]]
+			CopiedData = false
         end
     else --是始终施放法术的操作
         if hover and InputIsKeyDown(Key_BACKSPACE) then

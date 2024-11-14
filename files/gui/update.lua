@@ -395,7 +395,7 @@ function GUIUpdate()
 			end
 		end
 
-		UI.MiscEventFn["Yukimi"] = function ()
+        UI.MiscEventFn["Yukimi"] = function()
             if ModSettingGet(ModID .. "YukimiAvailable") and ModSettingGet(ModID .. "YukimiAvailableShow") then
 				if not ModSettingGet(ModID .. "YukimiAlways") and not MainBtnEnable then
 					return

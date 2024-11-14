@@ -48,7 +48,7 @@ local function NewDamageSettingLine(str, id)
 	GuiText(UI.gui, 5, 0, ShowText)
 	
     GuiZSetForNextWidget(UI.gui, UI.GetZDeep())
-    NumInput(id, ColTwoMargin - ShowW, 0, 90, 14, "1")
+    NumInput(id, ColTwoMargin - ShowW, 0, 90, -1, "1")
 	
 	GuiLayoutEnd(UI.gui)
 end

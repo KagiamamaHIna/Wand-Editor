@@ -14,7 +14,10 @@ local this = {
 		DestroyCallBack = {}, --销毁时的回调函数
 		destroy = false, --销毁状态
         CompToID = {},   --组件转id
-		TextInputIDtoStr = {}, --输入框id转其文本
+        TextInputIDtoStr = {}, --输入框id转其文本
+        TextInputPos = {},     --输入框光标位置
+        TextInputDrawPosTimer = nil,
+        TextInputDrawPosHas = false;
 		FirstEventFn = {}, --用于内部优先级最高的回调函数
 		NextFrNoClick = false,
 		NextFrClick = 0,
@@ -911,7 +914,7 @@ function UI.DrawScrollContainer(id, IsBlock)
 	end
 end
 
----文本输入框
+---文本输入框，会保证文本不会超出限制
 ---@param id string
 ---@param x number
 ---@param y number
@@ -921,13 +924,145 @@ end
 ---@param allowed_characters string?
 ---@return string
 function UI.TextInput(id, x, y, w, l, str, allowed_characters)
+    local Remove1Char = function(InputStr, pos)
+        local utf8Size = Cpp.UTF8StringSize(InputStr)
+		if pos > utf8Size or pos < 1 then--检查越界
+			return InputStr
+		end
+        local FirstStr = ""
+        if pos - 1 >= 1 and utf8Size > pos - 1 then
+            FirstStr = Cpp.UTF8StringSub(InputStr, 1, pos - 1)
+        end
+		local SecondStr = ""
+        if pos + 1 <= utf8Size and pos + 1 > 0 then
+            SecondStr = Cpp.UTF8StringSub(InputStr, pos + 1, utf8Size)
+        end
+        if FirstStr == "" and SecondStr == "" and (utf8Size ~= 1 and pos ~= 1) then
+            return InputStr
+        elseif utf8Size == 1 and pos == 1 then --单独删除字符的特判
+            return ""
+        end
+        return Cpp.ConcatStr(FirstStr, SecondStr)
+    end
+    local Add1Char = function(InputStr, pos, char)
+        local utf8Size = Cpp.UTF8StringSize(InputStr)
+        local FirstStr = ""
+        if pos > 0 and utf8Size >= pos then
+            FirstStr = Cpp.UTF8StringSub(InputStr, 1, pos)
+        end
+        local SecondStr = ""
+        if pos + 1 <= utf8Size and pos + 1 > 0 then
+            SecondStr = Cpp.UTF8StringSub(InputStr, pos + 1, Cpp.UTF8StringSize(InputStr))
+        end
+        return Cpp.ConcatStr(FirstStr, char, SecondStr)
+    end
+	
     str = Default(str, "")
 	allowed_characters = Default(allowed_characters, "")
     local newid = ConcatModID(id)
-    if this.private.TextInputIDtoStr[newid] == nil then
+    if this.private.TextInputIDtoStr[newid] == nil then--初始化中
         this.private.TextInputIDtoStr[newid] = { s_str = str, str = str }
     end
-    local newStr = GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l, allowed_characters)
+	if this.private.TextInputPos[newid] == nil then
+        this.private.TextInputPos[newid] = Cpp.UTF8StringSize(this.private.TextInputIDtoStr[newid].str)
+		this.private.TextInputDrawPosTimer = 60--顺带重置这个
+    elseif this.private.TextInputPos[newid] < 0 then--这个也是防止越界的
+        this.private.TextInputPos[newid] = 0
+	end
+	local newStr = this.private.TextInputIDtoStr[newid].str
+
+	GuiOptionsAddForNextWidget(this.public.gui,GUI_OPTION.NonInteractive)
+    GuiTextInput(this.public.gui, UI.NewID(id), x, y, this.private.TextInputIDtoStr[newid].str, w, l, allowed_characters)
+
+    local _, _, TXHover, TIx, TIy, TXWidth, height = GuiGetPreviousWidgetInfo(this.public.gui)	--绘制光标
+    this.private.TextInputDrawPosHas = this.private.TextInputDrawPosHas or TXHover
+    if this.private.TextInputIDtoStr[newid].SetStr ~= nil then--设置文本，并检查超出部分
+        local SetStr = this.private.TextInputIDtoStr[newid].SetStr
+        local strWidth = GuiGetTextDimensions(this.public.gui, SetStr, 1)
+        local Size = Cpp.UTF8StringSize(SetStr)
+        local LastChar = ""
+        if Size > 1 then
+            LastChar = Cpp.UTF8StringSub(SetStr, Size - 1, Size)
+        end
+        local LastCharWidth = GuiGetTextDimensions(this.public.gui, LastChar, 1)
+        while strWidth + 4 > TXWidth - LastCharWidth do --自动裁剪超出文本框的文本
+            SetStr = Cpp.UTF8StringSub(SetStr, 1, Cpp.UTF8StringSize(SetStr) - 1)
+            Size = Cpp.UTF8StringSize(SetStr)
+            LastChar = ""
+            if Size > 1 then
+                LastChar = Cpp.UTF8StringSub(SetStr, Size - 1, Size)
+            end
+            LastCharWidth = GuiGetTextDimensions(this.public.gui, LastChar, 1)
+            strWidth = GuiGetTextDimensions(this.public.gui, SetStr, 1)
+        end
+        newStr = SetStr
+        this.private.TextInputIDtoStr[newid].SetStr = nil
+		this.private.TextInputPos[newid] = Cpp.UTF8StringSize(newStr)--设置光标位置
+    end
+	
+	--[[
+    local HasMoreSpaceWidth = GuiGetTextDimensions(this.public.gui, "| |", 1)--因为有时候空格不会渲染长度，所以用一种奇特但有效的方式兼容
+    local MoreCharWidth = GuiGetTextDimensions(this.public.gui, "|", 1)
+    SpaceWidth = HasMoreSpaceWidth - MoreCharWidth * 2
+	]]
+    if TXHover then
+        if this.private.TextInputDrawPosTimer == nil or this.private.TextInputDrawPosTimer <= 0 then
+            this.private.TextInputDrawPosTimer = 60
+        elseif this.private.TextInputDrawPosTimer > 0 then
+            this.private.TextInputDrawPosTimer = this.private.TextInputDrawPosTimer - 1
+        end
+        if this.private.TextInputPos[newid] > Cpp.UTF8StringSize(newStr) then --防止越界
+            this.private.TextInputPos[newid] = Cpp.UTF8StringSize(newStr)
+        end
+		local CalcStr = Cpp.UTF8StringSub(newStr,1,this.private.TextInputPos[newid])
+		local StrWidth = GuiGetTextDimensions(this.public.gui, CalcStr, 1)
+
+        if this.private.TextInputDrawPosTimer > 30 then--可以使得悬浮在上面的时候立刻绘制一段时间光标作为提示
+
+            --local GreyWidth = GuiGetImageDimensions(this.public.gui, "mods/wand_editor/files/gui/images/grey_1px.png", 1)
+            local MoreHeight = height - math.floor(height)
+            local MaxI = 1
+            for i = 1, math.floor(height) - 4 do
+                MaxI = i
+                GuiZSetForNextWidget(this.public.gui, UI.GetZDeep() - 100)
+                GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.Layout_NoLayouting)
+                GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.NonInteractive)
+                GuiImage(UI.gui, UI.NewID("NoDarwGreyPixel" .. tostring(i)), TIx + StrWidth + 2, TIy + i + 1, "mods/wand_editor/files/gui/images/grey_1px.png", 1, 1)
+			end
+            if MoreHeight > 0 then--高度不为整数的时候补齐提示光标
+                MoreHeight = MoreHeight / 2
+                GuiZSetForNextWidget(this.public.gui, UI.GetZDeep() - 100)
+                GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.Layout_NoLayouting)
+                GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.NonInteractive)
+                GuiImage(UI.gui, UI.NewID("NoDarwGreyPixelLow"), TIx + StrWidth + 2, TIy + 2 - MoreHeight, "mods/wand_editor/files/gui/images/grey_1px.png", 1, 1)
+                
+                GuiZSetForNextWidget(this.public.gui, UI.GetZDeep() - 100)
+                GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.Layout_NoLayouting)
+                GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.NonInteractive)
+                GuiImage(UI.gui, UI.NewID("NoDarwGreyPixelHigh"), TIx + StrWidth + 2, TIy + MaxI + 2 - MoreHeight, "mods/wand_editor/files/gui/images/grey_1px.png", 1, 1)
+            end
+        end
+    end
+
+	GuiAnimateBegin(this.public.gui)
+    GuiAnimateAlphaFadeIn(this.public.gui, UI.NewID("Alpha你肯定看不见我对吧的另一个动画" .. id), 0, 0, false)
+	GuiOptionsAddForNextWidget(this.public.gui,GUI_OPTION.Layout_NoLayouting)
+    local newChar = GuiTextInput(this.public.gui, UI.NewID(id .. "NoDarwTextInput"), TIx,TIy, "", w, l, allowed_characters)
+    GuiAnimateEnd(this.public.gui)
+
+    if newChar ~= "" and (Cpp.UTF8StringSize(newStr) + Cpp.UTF8StringSize(newChar) < l + 1 or l == -1) then--新增字符操作，也要重置光标显示
+        local SrcNewStr = newStr
+        newStr = Add1Char(newStr, this.private.TextInputPos[newid], newChar)
+        local strWidth = GuiGetTextDimensions(this.public.gui, newStr, 1)
+        local newCharWidth = GuiGetTextDimensions(this.public.gui, newChar, 1)
+        if strWidth + 4 < TXWidth - newCharWidth then--自动判断是否超出文本框
+            this.private.TextInputPos[newid] = this.private.TextInputPos[newid] + Cpp.UTF8StringSize(newChar)
+			this.private.TextInputDrawPosTimer = 60
+        else
+            newStr = SrcNewStr
+        end
+    end
+
     if this.private.TextInputIDtoStr[newid].str ~= newStr and this.private.TextInputIDtoStr[newid].DelFr ~= 0 then --如果新文本和旧文本不匹配，那么就重新设置
         this.private.TextInputIDtoStr[newid].str = newStr
     end
@@ -937,21 +1072,39 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
             this.private.TextInputIDtoStr[newid].ActiveItem = GetActiveItem()
         end
 		--屏蔽按键输入
-        BlockAllInput(true)
+        BlockAllInput()
 		if this.private.TextInputIDtoStr[newid].ActiveItem then--屏蔽切换物品
             UI.OnceCallOnExecute(function()
 				SetActiveItem(this.private.TextInputIDtoStr[newid].ActiveItem)
 			end)
 		end
-        if this.private.TextInputIDtoStr[newid].DelFr == nil then --如果在悬浮，就分配一个帧检测时间
+        if this.private.TextInputIDtoStr[newid].DelFr == nil then --如果在悬浮，就分配一个删除用的帧检测时间
             this.private.TextInputIDtoStr[newid].DelFr = 30
         else
-            if InputIsKeyDown(Key_BACKSPACE) then --如果按了退格键
+            if InputIsKeyDown(Key_BACKSPACE) or InputIsKeyDown(Key_DELETE) then --如果按了退格键
+                if this.private.TextInputIDtoStr[newid].DelFr == 30 then        --移除时也要重置光标显示
+                    local input = this.private.TextInputIDtoStr[newid].str
+                    if InputIsKeyDown(Key_DELETE) then
+                        this.private.TextInputIDtoStr[newid].str = Remove1Char(input,
+                            this.private.TextInputPos[newid] + 1)
+                    else
+                        this.private.TextInputIDtoStr[newid].str = Remove1Char(input, this.private.TextInputPos[newid])
+                        this.private.TextInputPos[newid] = this.private.TextInputPos[newid] - 1
+                    end
+                    this.private.TextInputDrawPosTimer = 60
+                end
                 if this.private.TextInputIDtoStr[newid].DelFr ~= 0 then
                     this.private.TextInputIDtoStr[newid].DelFr = this.private.TextInputIDtoStr[newid].DelFr - 1
                 else --如果到了0
                     local input = this.private.TextInputIDtoStr[newid].str
-                    this.private.TextInputIDtoStr[newid].str = Cpp.UTF8StringSub(input, 1, Cpp.UTF8StringSize(input) - 1)--删除字符
+                    if InputIsKeyDown(Key_DELETE) then
+                        this.private.TextInputIDtoStr[newid].str = Remove1Char(input,
+                            this.private.TextInputPos[newid] + 1)
+                    else
+                        this.private.TextInputIDtoStr[newid].str = Remove1Char(input, this.private.TextInputPos[newid])
+                        this.private.TextInputPos[newid] = this.private.TextInputPos[newid] - 1
+                    end
+                    this.private.TextInputDrawPosTimer = 60
                 end
             else
                 this.private.TextInputIDtoStr[newid].DelFr = 30 --如果不按退格键就重置时间
@@ -962,7 +1115,76 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
 		this.private.TextInputIDtoStr[newid].ActiveItem = nil
 		this.private.TextInputIDtoStr[newid].DelFr = nil
     end
-	
+	if hover then
+        if this.private.TextInputIDtoStr[newid].PosFr == nil then --如果在悬浮，就分配一个移动光标用的帧检测时间
+            this.private.TextInputIDtoStr[newid].PosFr = 30
+        end
+		if InputIsKeyDown(Key_LEFT) or InputIsKeyDown(Key_RIGHT) then --如果按了退格键
+			if this.private.TextInputIDtoStr[newid].PosFr == 30 then        --移除时也要重置光标显示
+                if InputIsKeyDown(Key_LEFT) then
+					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] - 1
+                else
+					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] + 1
+				end
+				this.private.TextInputDrawPosTimer = 60
+			end
+			if this.private.TextInputIDtoStr[newid].PosFr ~= 0 then
+				this.private.TextInputIDtoStr[newid].PosFr = this.private.TextInputIDtoStr[newid].PosFr - 1
+			else --如果到了0
+				this.private.TextInputIDtoStr[newid].PosFr = 2--间隔两帧
+				if InputIsKeyDown(Key_LEFT) then
+					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] - 1
+                else
+					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] + 1
+				end
+				this.private.TextInputDrawPosTimer = 60
+			end
+		else--如果不按就重置时间
+			this.private.TextInputIDtoStr[newid].PosFr = 30
+		end
+    elseif this.private.TextInputIDtoStr[newid].PosFr then--如果未悬浮就设为空
+		this.private.TextInputIDtoStr[newid].PosFr = nil
+	end
+    --点击文本切换光标位置
+    if hover and InputIsMouseButtonJustDown(Mouse_left) and this.private.TextInputIDtoStr[newid].str ~= "" then --如果点击了且是悬浮状态
+        local mx, my = InputGetMousePosOnScreen()
+        mx = mx / this.private.Scale
+        my = my / this.private.Scale
+        local input = this.private.TextInputIDtoStr[newid].str
+        local CharTable = Cpp.UTF8StringChars(input)
+        local ConcatChars = ""
+        local SwitchPos = 0
+        local StrWidth
+        for i = 1, #CharTable do
+            ConcatChars = ConcatChars .. CharTable[i]                                   --拼接用于计算字符串长度
+            StrWidth = GuiGetTextDimensions(this.public.gui, ConcatChars, 1) + 2        --2是偏移量
+            if mx > TIx and mx < TIx + StrWidth and my > TIy and my < TIy + height then --判断是否在范围内
+                SwitchPos = i
+                --print("Result:",i)
+                break --及时退出
+            end
+        end
+        if SwitchPos > 0 then --有结果
+            local CharLen = GuiGetTextDimensions(this.public.gui, CharTable[SwitchPos], 1)
+            if mx < TIx + StrWidth - CharLen + CharLen / 2 then
+                this.private.TextInputPos[newid] = SwitchPos - 1
+            else
+                this.private.TextInputPos[newid] = SwitchPos
+            end
+            this.private.TextInputDrawPosTimer = 60 --切换位置时重置光标绘制
+        elseif mx < TXWidth + TIx and mx > TIx then
+            this.private.TextInputPos[newid] = nil --重置到最前面
+            this.private.TextInputDrawPosTimer = 60
+        end
+    end
+	if hover and InputIsKeyDown(Key_HOME) or InputIsKeyDown(Key_END) then--home和end键的实现
+        if InputIsKeyDown(Key_HOME) then
+            this.private.TextInputPos[newid] = 0
+        else
+            this.private.TextInputPos[newid] = nil --重置到最前面
+        end
+		this.private.TextInputDrawPosTimer = 60
+	end
 	return this.private.TextInputIDtoStr[newid].str
 end
 
@@ -981,8 +1203,8 @@ end
 ---@param str string
 function UI.SetInputText(id, str)
     local newid = ConcatModID(id)
-	if this.private.TextInputIDtoStr[newid] ~= nil then
-        this.private.TextInputIDtoStr[newid].str = str
+    if this.private.TextInputIDtoStr[newid] ~= nil then
+		this.private.TextInputIDtoStr[newid].SetStr = str
     end
 end
 
@@ -991,6 +1213,7 @@ end
 function UI.TextInputRestore(id)
 	local newid = ConcatModID(id)
     if this.private.TextInputIDtoStr[newid] ~= nil then
+		this.private.TextInputPos[newid] = nil--重置光标位置
         this.private.TextInputIDtoStr[newid].str = this.private.TextInputIDtoStr[newid].s_str
     end
 end
@@ -1374,9 +1597,13 @@ function UI.DispatchMessage()
     if next(this.private.ScrollData) then --如果表有数据
         this.private.ScrollData = {}      --清空数据		
     end
-	if next(this.private.HScrollData) then --如果表有数据
-        this.private.HScrollData = {}   --清空数据		
+    if next(this.private.HScrollData) then --如果表有数据
+        this.private.HScrollData = {}     --清空数据        
     end
+    if not this.private.TextInputDrawPosHas then--如果没有悬浮的就清空数据
+        this.private.TextInputDrawPosTimer = nil
+    end
+    this.private.TextInputDrawPosHas = false
     this.private.ZDeep = DefaultZDeep
 end
 

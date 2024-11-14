@@ -152,6 +152,7 @@ local function NewSlider(id,x,y,text,value_min, value_max, value_default, value_
 end
 
 local function NumInput(id, x, y, w, l, str, allow)
+	l = -1--不管显示会不会超出了，直接自动分配可输入字符
 	allow = Default(allow, "1234567890.-")
     UI.TextInput(id, x, y, w, l, str, allow)
     local _,right_click, hover,_,_,width = GuiGetPreviousWidgetInfo(UI.gui)

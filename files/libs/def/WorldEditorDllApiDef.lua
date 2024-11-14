@@ -72,6 +72,11 @@ function Cpp.UTF8StringSize(s1)end
 ---@return string
 function Cpp.UTF8StringSub(str,pos1,pos2)end
 
+--返回一个按utf8字符分割的字符串数组，比如"ABC"，返回{"A", "B", "C"}
+---@param str string
+---@return table
+function Cpp.UTF8StringChars(str)end
+
 ---设置剪切板的新内容，返回的为 是否设置成功
 ---@param str string
 ---@return boolean
@@ -101,3 +106,8 @@ function Cpp.ConcatStr(...)end
 ---@param FileStr string
 ---@param WritePath string
 function Cpp.FlipImageLoadAndWrite(FileStr,WritePath)end
+
+---同windows api int system(const char* command)
+---@param command string
+---@return integer
+function Cpp.System(command)end

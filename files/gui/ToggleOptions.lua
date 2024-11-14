@@ -97,10 +97,24 @@ function ToggleOptionsCB(_, _, _, iy, this_enable)
 		"mods/wand_editor/files/gui/images/protection_all.png", nil, nil, nil, true, true, true)
 
 	UI.MoveImagePicker("ProtectionPoly", PickerGap(2), iy + 20, 8, 0, GameTextGet("$wand_editor_protection_poly"),
-		"mods/wand_editor/files/gui/images/protection_poly.png", nil, nil, nil, true, true, true)
-
+        "mods/wand_editor/files/gui/images/protection_poly.png", nil, nil, nil, true, true, true)
+	
+	local LockHPCB = function (_, LockHP_right_click)--右键使血量恢复至满血的实现
+			local player = GetPlayer()
+			if LockHP_right_click and player then
+            local damage_model = EntityGetFirstComponent(player, "DamageModelComponent")
+			local MaxHP
+            if damage_model then
+                MaxHP = ComponentGetValue2(damage_model, "max_hp")
+				if UI.UserData["LockHPValue"] ~= nil then
+					UI.UserData["LockHPValue"] = MaxHP
+				end
+				ComponentSetValue2(damage_model, "hp", MaxHP)
+			end
+		end
+	end
 	UI.MoveImagePicker("LockHP", PickerGap(3), iy + 20, 8, 0, GameTextGet("$wand_editor_lock_hp"),
-		"mods/wand_editor/files/gui/images/lock_hp.png", nil, nil, nil, true, true, true)
+		"mods/wand_editor/files/gui/images/lock_hp.png", nil, LockHPCB, nil, true, true, true)
 
 	UI.MoveImagePicker("DamageInfo", PickerGap(4), iy + 20, 8, 0, GameTextGet("$wand_editor_damage_info"),
 		"mods/wand_editor/files/gui/images/damage_info.png", nil, nil, nil, true, true, true)

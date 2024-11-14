@@ -106,7 +106,7 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
 	this.MoveImagePicker("SearchSetting", 50, 249, 5, 0, GameTextGetTranslatedOrNot("$wand_editor_search_setting"), "mods/wand_editor/files/gui/images/button_fold_open.png", nil, SearchSettingFn, "mods/wand_editor/files/gui/images/button_fold_close.png", nil, nil, true)
 
 	GuiZSetForNextWidget(this.gui, this.GetZDeep()+1000)--不要再覆盖啦！
-    local Search = this.TextInput("input", 63, 249, 123, 26)
+    local Search = this.TextInput("input", 63, 249, 123, -1)
 	local _,_, hover = GuiGetPreviousWidgetInfo(this.gui)
     if hover and InputIsMouseButtonJustDown(Mouse_right) then
         this.TextInputRestore("input")

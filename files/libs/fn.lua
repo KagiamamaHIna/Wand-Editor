@@ -753,7 +753,7 @@ end
 
 ---插入表中的一个法术，越界了不进行操作，返回操作成功有效性
 ---@param input Wand GetWandData函数的返回值
----@param UpOrDown boolean
+---@param UpOrDown boolean --为真向前，为假向后
 ---@param id string
 ---@param index integer
 ---@param uses_remaining integer|nil uses_remaining = -1
