@@ -1,15 +1,17 @@
 dofile_once("mods/wand_editor/files/libs/fp.lua")
 dofile_once("mods/wand_editor/files/libs/define.lua")
 local Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
-local noita_print = print
 local fastConcatStr
 if Cpp == nil then
-	fastConcatStr = function (...)
-		return table.concat({...})
-	end
+    fastConcatStr = function(...)
+        return table.concat({ ... })
+    end
 else
-	fastConcatStr = Cpp.ConcatStr
+    fastConcatStr = Cpp.ConcatStr
 end
+
+local noita_print = print
+
 ---重新实现来模拟正确的print行为
 ---@param ... any
 print = function(...)
