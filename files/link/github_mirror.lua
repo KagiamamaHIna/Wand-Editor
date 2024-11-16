@@ -1,7 +1,7 @@
 function GitHubProxy_Link(str,raw)
-    local GitHubProxyLink = "https://mirror.ghproxy.com/"
+    local GitHubProxyLink = "https://ghp.ci/"
     if raw then
-		return GitHubProxyLink .. "raw.githubusercontent.com" .. str
+		return GitHubProxyLink .. "https://raw.githubusercontent.com" .. str
     else
 		return GitHubProxyLink .. "https://github.com" .. str
 	end
