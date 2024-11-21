@@ -329,7 +329,7 @@ local function DrawWandSlot(id, k, wand)
                     GuiImage(UI.gui, UI.NewID(id .. "full_BG" .. tostring(i)), 0, 0,
                         "data/ui_gfx/inventory/full_inventory_box.png", 1, 0.5)
                     local _, _, _, weigthX, weigthY, weigthW, weigthH = GuiGetPreviousWidgetInfo(UI.gui)
-                    if v ~= "nil" and spellData[v.id] ~= nil then --判空，防止法术数据异常
+                    if v and v ~= "nil" and spellData[v.id] ~= nil then --判空，防止法术数据异常
                         GuiZSetForNextWidget(UI.gui, UI.GetZDeep() - 102)
 						GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
                         GuiImage(UI.gui, UI.NewID(id .. v.id .. tostring(i) .. "BG"), weigthX, weigthY,
@@ -892,7 +892,7 @@ UI.MiscEventFn["LoadWandBox"] = function ()
                                 Current = {}
                             end
                             Current[#Current + 1] = t
-                            EntityKill(wand)
+							EntityKill(wand)
                         end
 						AllTable[#AllTable + 1] = Current
 						Current = {}

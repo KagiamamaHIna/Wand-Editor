@@ -1,5 +1,13 @@
 #include "LuaFilesApi.h"
 
+static void FormatPath(std::string& str) {
+	for (auto& v : str) {
+		if (v == '\\') {
+			v = '/';
+		}
+	}
+}
+
 namespace lua {
 	int lua_GetDirectoryPath(lua_State* L) {//lua的C API中，实现了一个被叫做Lua虚拟栈的东西，函数传入的参数的栈索引是从1开始的
 		const char* str = luaL_checkstring(L, 1);//所以1代表第一个参数
@@ -11,13 +19,15 @@ namespace lua {
 		int i_path = 1;
 		int i_file = 1;
 		for (const auto& entry : dir_iter) {
+			std::string path = entry.path().string();
+			FormatPath(path);
 			if (entry.is_directory()) {
-				lua_pushstring(L, entry.path().string().c_str());//这个函数会push元素到栈顶，会导致之前的表的索引又-1
+				lua_pushstring(L, path.c_str());//这个函数会push元素到栈顶，会导致之前的表的索引又-1
 				lua_rawseti(L, -3, i_path);//所以此时想赋值给path表，则需要再-1，所以参数是-3，这个函数会执行出栈操作，即刚刚压入的参数，并赋值在指定数组索引上
 				i_path++;
 			}
 			else {
-				lua_pushstring(L, entry.path().string().c_str());
+				lua_pushstring(L, path.c_str());
 				lua_rawseti(L, -2, i_file);//和上面的情况类似，file表原本是-1，因为lua_pushstring函数变成-2
 				i_file++;
 			}
@@ -42,13 +52,15 @@ namespace lua {
 		int i_path = 1;
 		int i_file = 1;
 		for (const auto& entry : dir_iter) {
+			std::string path = entry.path().string();
+			FormatPath(path);
 			if (entry.is_directory()) {
-				lua_pushstring(L, entry.path().string().c_str());//这个函数会push元素到栈顶，会导致之前的表的索引又-1
+				lua_pushstring(L, path.c_str());//这个函数会push元素到栈顶，会导致之前的表的索引又-1
 				lua_rawseti(L, -3, i_path);//所以此时想赋值给path表，则需要再-1，所以参数是-3，这个函数会执行出栈操作，即刚刚压入的参数，并赋值在指定数组索引上
 				i_path++;
 			}
 			else {
-				lua_pushstring(L, entry.path().string().c_str());
+				lua_pushstring(L, path.c_str());
 				lua_rawseti(L, -2, i_file);//和上面的情况类似，file表原本是-1，因为lua_pushstring函数变成-2
 				i_file++;
 			}
@@ -77,6 +89,12 @@ namespace lua {
 	int lua_CreateDir(lua_State* L) {
 		std::string str = luaL_checkstring(L, 1);
 		lua_pushboolean(L, std::filesystem::create_directory(str));
+		return 1;
+	}
+
+	int lua_CreateDirs(lua_State* L) {
+		std::string str = luaL_checkstring(L, 1);
+		lua_pushboolean(L, std::filesystem::create_directories(str));
 		return 1;
 	}
 
@@ -110,6 +128,18 @@ namespace lua {
 		const char* path = luaL_checkstring(L, 1);
 		const char* tar = luaL_checkstring(L, 2);
 		lua_pushinteger(L, std::rename(path, tar));
+		return 1;
+	}
+
+	int lua_Remove(lua_State* L) {
+		const char* path = luaL_checkstring(L, 1);
+		lua_pushboolean(L, std::filesystem::remove(path));
+		return 1;
+	}
+
+	int lua_RemoveAll(lua_State* L) {
+		const char* path = luaL_checkstring(L, 1);
+		lua_pushinteger(L, std::filesystem::remove_all(path));
 		return 1;
 	}
 }

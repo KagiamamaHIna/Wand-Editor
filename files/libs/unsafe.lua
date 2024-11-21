@@ -1,4 +1,5 @@
 dofile_once("mods/wand_editor/files/libs/define.lua")
+dofile_once("mods/wand_editor/unsafeFn.lua")
 
 SavePath = "%userprofile%/AppData/LocalLow/Nolla_Games_Noita/"
 
@@ -17,20 +18,6 @@ Cpp.SetDllDirectory(Cpp.CurrentPath().."/mods/wand_editor/files/module/openssl")
 effil = require("effil")
 --初始化为绝对路径
 SavePath = Cpp.GetAbsPath(SavePath)
-
----读取整个文件
----@param path string
----@return string
-function ReadFileAll(path)
-    local resultCache = {}
-	local cacheCount = 1
-    for v in io.lines(path) do
-        resultCache[cacheCount] = v
-        resultCache[cacheCount + 1] = '\n'
-        cacheCount = cacheCount + 2
-    end
-    return table.concat(resultCache)
-end
 
 dofile_once("data/scripts/gun/gun_enums.lua")
 

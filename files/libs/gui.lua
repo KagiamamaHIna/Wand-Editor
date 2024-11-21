@@ -29,6 +29,7 @@ local this = {
 		SliderMin = {},
         ScrollData = {},
 		ScrollItemData = {},
+		ScrollAutoPos = {},
         HScrollData = {},
         HScrollSlider = {},--滑条数据，不重启游戏就是持久性的
         HScrollItemData = {}, --元素数据，用于判断位置是否上下溢出
@@ -96,7 +97,7 @@ function UI.tooltips(callback, z, xOffset, yOffset, NoYAutoMove, YMoreOffset)
         local gui = this.public.gui
         if TooltipsCache[1] and TooltipsCache[2] then
             if TooltipsCache[1] ~= math.floor(x) or TooltipsCache[2] ~= math.floor(y) then
-                if tooltipID < 1023 then
+                if tooltipID < 31 then
                     tooltipID = tooltipID + 1
                 else
                     tooltipID = 0
@@ -168,7 +169,7 @@ function UI.BetterTooltipsNoCenter(callback, z, xOffset, yOffset, leftMargin, ri
 
 		if BTooltipsNC[1] and BTooltipsNC[2] then
 			if BTooltipsNC[1] ~= math.floor(x) or BTooltipsNC[2] ~= math.floor(y) then
-				if tooltipID < 1023 then
+				if tooltipID < 31 then
                     tooltipID = tooltipID + 1
                 else
 					tooltipID = 0
@@ -257,7 +258,7 @@ function UI.BetterTooltips(callback, z, xOffset, yOffset, leftMargin, rightMargi
         local _,_,_,_,_,OffsetW,OffsetH = GuiGetPreviousWidgetInfo(gui)
 		if BTooltipCache[1] and BTooltipCache[2] then
 			if BTooltipCache[1] ~= math.floor(x) or BTooltipCache[2] ~= math.floor(y) then
-				if tooltipID < 1023 then
+				if tooltipID < 31 then
                     tooltipID = tooltipID + 1
                 else
 					tooltipID = 0
@@ -470,7 +471,9 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, StatusCustomText, 
             this.private.CompToPickerBool[newid] = false
         end
 		if SaveModSetting then
-			ModSettingSet(newid, this.private.CompToPickerBool[newid])
+            ModSettingSet(newid, this.private.CompToPickerBool[newid])
+        elseif not SaveModSetting and ModSettingGet(newid) ~= nil then--移除
+			ModSettingRemove(newid)
 		end
 	end
     if this.private.CompToPickerBool[newid] == nil then
@@ -497,7 +500,11 @@ function UI.MoveImagePicker(id, x, y, mx, my, Content, image, StatusCustomText, 
             GuiText(this.public.gui, 0, 0, Content)
             if id == "MainButton" then
                 GuiColorSetForNextWidget(this.public.gui, 0.5, 0.5, 0.5, 1.0)
-                GuiText(this.public.gui, 0, 2, ModVersion)
+				if Cpp.PathExists("mods/wand_editor/cache/UpdateFlag") and this.public.UserData["UpdateDataVer"] then
+					GuiText(this.public.gui, 0, 2, ModVersion.."->"..this.public.UserData["UpdateDataVer"]..GameTextGet("$wand_editor_auto_update_done"))
+                else
+					GuiText(this.public.gui, 0, 2, ModVersion)
+				end
                 GuiLayoutAddVerticalSpacing(this.public.gui, 2)
                 GuiZSet(this.public.gui, this.private.ZDeep)
             end
@@ -772,6 +779,9 @@ end
 ---@return number|nil
 function UI.GetScrollWidth(id)
     local newid = ConcatModID(id)
+	if this.private.ScrollAutoPos[newid] then
+		return this.private.ScrollAutoPos[newid].w
+	end
     if this.private.ScrollData[newid] then --判断是否有数据
         return this.private.ScrollData[newid].w
     end
@@ -780,7 +790,10 @@ end
 ---@param id string
 ---@return number|nil
 function UI.GetScrollHeight(id)
-	local newid = ConcatModID(id)
+    local newid = ConcatModID(id)
+	if this.private.ScrollAutoPos[newid] then
+		return this.private.ScrollAutoPos[newid].h
+	end
     if this.private.ScrollData[newid] then --判断是否有数据
         return this.private.ScrollData[newid].h
     end
@@ -829,7 +842,9 @@ end
 
 ---根据指定id开始绘制Scroll控件
 ---@param id string
-function UI.DrawScrollContainer(id, IsBlock)
+---@param IsBlock boolean?
+---@param IsAutoBox boolean?
+function UI.DrawScrollContainer(id, IsBlock, IsAutoBox)
     local newid = ConcatModID(id)
 	IsBlock = Default(IsBlock, true)
     if this.private.ScrollData[newid] then --如果有数据
@@ -847,7 +862,7 @@ function UI.DrawScrollContainer(id, IsBlock)
 		local mx, my = InputGetMousePosOnScreen()
 		mx = mx / this.private.Scale
         my = my / this.private.Scale
-		local hover = IsHover(mx, my)
+        local hover = IsHover(mx, my)
         if hover and IsBlock then
 			GuiAnimateBegin(this.public.gui)
             GuiAnimateAlphaFadeIn(this.public.gui, UI.NewID("Alpha你肯定看不见我对吧的另一个动画"), 0, 0, false)
@@ -856,10 +871,18 @@ function UI.DrawScrollContainer(id, IsBlock)
             GuiZSetForNextWidget(this.public.gui, this.private.ZDeep - 1)
 			
 			GuiOptionsAddForNextWidget(this.public.gui, GUI_OPTION.AlwaysClickable)
-
-			GuiBeginScrollContainer(this.public.gui, UI.NewID("你看不见的框"), this.private.ScrollData[newid].x,
-            this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
-                true, this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y)
+            local autow, autoh
+			if this.private.ScrollAutoPos[newid] then--好像不生效，不管了反正也用不到，先不修了
+                autow = this.private.ScrollAutoPos[newid].w
+                autoh = this.private.ScrollAutoPos[newid].h
+            else
+				autow = this.private.ScrollData[newid].w
+				autoh = this.private.ScrollData[newid].h
+			end
+            GuiBeginScrollContainer(this.public.gui, UI.NewID("你看不见的框"), this.private.ScrollData[newid].x,
+            this.private.ScrollData[newid].y, autow, autoh, true, this.private.ScrollData[newid].margin_x,
+                this.private.ScrollData[newid].margin_y)
+			
             GuiEndScrollContainer(this.public.gui)
 
 			GuiLayoutEndLayer(this.public.gui)
@@ -867,11 +890,33 @@ function UI.DrawScrollContainer(id, IsBlock)
         end
 		
         GuiLayoutBeginLayer(this.public.gui) --先开启这个
-		GuiZSetForNextWidget(this.public.gui,this.private.ZDeep)
-        GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
+		local thisDrawIsOffsetInit = false
+        if IsAutoBox then
+            if this.private.ScrollAutoPos[newid] == nil or this.private.ScrollAutoPos[newid].LastScale ~= this.private.Scale then
+                this.private.ScrollAutoPos[newid] = {}
+                this.private.ScrollAutoPos[newid].LastScale = this.private.Scale
+                thisDrawIsOffsetInit = true
+				GuiAnimateBegin(this.public.gui)
+				GuiAnimateAlphaFadeIn(this.public.gui, UI.NewID("Alpha你肯定看不见我对吧的另一个动画之自动偏移需要计算因而被隐藏了"), 0, 0, false)
+            end
+            local offsetX = this.private.ScrollAutoPos[newid].x
+            local offsetY = this.private.ScrollAutoPos[newid].y
+			if offsetX and offsetY then
+				offsetX = offsetX - this.private.ScrollData[newid].x
+				offsetY = offsetY - this.private.ScrollData[newid].y
+            else
+                offsetX = 0
+				offsetY = 0
+			end
+			GuiLayoutBeginVertical(this.public.gui, this.private.ScrollData[newid].x - offsetX, this.private.ScrollData[newid].y - offsetY, true)
+			GuiBeginAutoBox(this.public.gui)
+        else
+			GuiZSetForNextWidget(this.public.gui, this.private.ZDeep)
+			GuiBeginScrollContainer(this.public.gui, UI.NewID(id), this.private.ScrollData[newid].x,
             this.private.ScrollData[newid].y, this.private.ScrollData[newid].w, this.private.ScrollData[newid].h,
-			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y
-        )
+			true,this.private.ScrollData[newid].margin_x, this.private.ScrollData[newid].margin_y)
+		end
+
 		for _,v in pairs(this.private.ScrollData[newid].Any)do
 			v()
 		end
@@ -908,10 +953,96 @@ function UI.DrawScrollContainer(id, IsBlock)
 		end
         GuiLayoutEnd(this.public.gui)
 		
-		GuiLayoutEnd(this.public.gui)
-		GuiEndScrollContainer(this.public.gui)
+        GuiLayoutEnd(this.public.gui)
+		if IsAutoBox then--移位问题，没解决
+			GuiZSetForNextWidget(this.public.gui, this.private.ZDeep + 100)
+            GuiEndAutoBoxNinePiece(this.public.gui, this.private.ScrollData[newid].margin_x,this.private.ScrollData[newid].w,this.private.ScrollData[newid].h)
+            if this.private.ScrollAutoPos[newid].x == nil and this.private.ScrollAutoPos[newid].y == nil then
+                local _, _, _, autox, autoy, width, height = GuiGetPreviousWidgetInfo(this.public.gui)
+                this.private.ScrollAutoPos[newid].x = autox
+                this.private.ScrollAutoPos[newid].y = autoy
+                this.private.ScrollAutoPos[newid].h = height
+                this.private.ScrollAutoPos[newid].w = width
+            end
+            GuiLayoutEnd(this.public.gui)
+			if thisDrawIsOffsetInit then
+				GuiAnimateEnd(this.public.gui)
+			end
+		else
+			GuiEndScrollContainer(this.public.gui)
+		end
 		GuiLayoutEndLayer(this.public.gui)
 	end
+end
+
+-- 分隔符集合
+local separators = { [' '] = true, ['.'] = true, ['-'] = true , ['_'] = true}
+
+-- 判断字符是否为分隔符
+local function is_separator(char)
+    return separators[char] ~= nil
+end
+
+--缝缝补补的逻辑乱的我都不想看
+local function jump_to_next_position(text, cursor_pos)
+    local length = Cpp.UTF8StringSize(text)
+    local pos = cursor_pos
+	--判断是否需要跳过
+	if is_separator(Cpp.UTF8StringSub(text, pos+1, pos+1)) or is_separator(Cpp.UTF8StringSub(text, pos, pos)) then
+		pos = pos + 1
+	end
+    --如果有就跳过当前可能的分隔符，然后就是位置
+	local JumpFlag = false
+    while pos <= length and is_separator(Cpp.UTF8StringSub(text, pos, pos)) do
+        pos = pos + 1
+        JumpFlag = true
+    end
+	if JumpFlag then
+		return pos - 1
+	end
+    --找到下一个分隔符，返回前一个位置
+    while pos <= length do
+        local char = Cpp.UTF8StringSub(text, pos, pos)
+        if is_separator(char) then
+            return pos - 1
+        end
+        pos = pos + 1
+    end
+
+    --如果没有更多位置，返回文本结尾
+    return length
+end
+
+local function jump_to_previous_position(text, cursor_pos)
+    local pos = cursor_pos
+    --判断是否需要跳过
+	local JumpSeparator = false
+	if is_separator(Cpp.UTF8StringSub(text, pos, pos)) then
+		pos = pos - 1
+		JumpSeparator = true
+	end
+    --如果有就跳过当前可能的分隔符，然后就是位置
+	local JumpFlag = false
+    while pos > 1 and is_separator(Cpp.UTF8StringSub(text, pos, pos)) do
+        pos = pos - 1
+		JumpFlag = true
+    end
+    if JumpFlag then
+        return pos
+	elseif JumpSeparator then
+		return pos
+    end
+    --找到上一个分隔符，返回下一个位置
+    while pos > 0 do
+        local char = Cpp.UTF8StringSub(text, pos, pos)
+        if is_separator(char) then
+            return pos
+        end
+        pos = pos - 1
+    end
+
+    --如果到达文本开头，返回位置0
+    return 0
 end
 
 ---文本输入框，会保证文本不会超出限制
@@ -956,7 +1087,7 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
         end
         return Cpp.ConcatStr(FirstStr, char, SecondStr)
     end
-	
+
     str = Default(str, "")
 	allowed_characters = Default(allowed_characters, "")
     local newid = ConcatModID(id)
@@ -1068,16 +1199,16 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
     end
     local _, _, hover = GuiGetPreviousWidgetInfo(this.public.gui)--获得当前控件是否悬浮
     if hover then
-		if this.private.TextInputIDtoStr[newid].ActiveItem == nil then
+        if this.private.TextInputIDtoStr[newid].ActiveItem == nil then
             this.private.TextInputIDtoStr[newid].ActiveItem = GetActiveItem()
         end
-		--屏蔽按键输入
+        --屏蔽按键输入
         BlockAllInput()
-		if this.private.TextInputIDtoStr[newid].ActiveItem then--屏蔽切换物品
+        if this.private.TextInputIDtoStr[newid].ActiveItem then --屏蔽切换物品
             UI.OnceCallOnExecute(function()
-				SetActiveItem(this.private.TextInputIDtoStr[newid].ActiveItem)
-			end)
-		end
+                SetActiveItem(this.private.TextInputIDtoStr[newid].ActiveItem)
+            end)
+        end
         if this.private.TextInputIDtoStr[newid].DelFr == nil then --如果在悬浮，就分配一个删除用的帧检测时间
             this.private.TextInputIDtoStr[newid].DelFr = 30
         else
@@ -1111,32 +1242,42 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
             end
         end
     elseif this.private.TextInputIDtoStr[newid].DelFr then --如果未悬浮就设为空
-		RestoreInput()
-		this.private.TextInputIDtoStr[newid].ActiveItem = nil
-		this.private.TextInputIDtoStr[newid].DelFr = nil
+        RestoreInput()
+        this.private.TextInputIDtoStr[newid].ActiveItem = nil
+        this.private.TextInputIDtoStr[newid].DelFr = nil
     end
+	
+	local MovePos = function ()
+        if InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL) then
+			local input = this.private.TextInputIDtoStr[newid].str
+			if InputIsKeyDown(Key_LEFT) then
+				this.private.TextInputPos[newid] = jump_to_previous_position(input, this.private.TextInputPos[newid])
+			else
+				this.private.TextInputPos[newid] = jump_to_next_position(input, this.private.TextInputPos[newid])
+			end
+		else
+			if InputIsKeyDown(Key_LEFT) then
+				this.private.TextInputPos[newid] = this.private.TextInputPos[newid] - 1
+			else
+				this.private.TextInputPos[newid] = this.private.TextInputPos[newid] + 1
+			end
+		end
+	end
+
 	if hover then
         if this.private.TextInputIDtoStr[newid].PosFr == nil then --如果在悬浮，就分配一个移动光标用的帧检测时间
             this.private.TextInputIDtoStr[newid].PosFr = 30
         end
-		if InputIsKeyDown(Key_LEFT) or InputIsKeyDown(Key_RIGHT) then --如果按了退格键
-			if this.private.TextInputIDtoStr[newid].PosFr == 30 then        --移除时也要重置光标显示
-                if InputIsKeyDown(Key_LEFT) then
-					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] - 1
-                else
-					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] + 1
-				end
+		if InputIsKeyDown(Key_LEFT) or InputIsKeyDown(Key_RIGHT) then --如果按了方向键
+			if this.private.TextInputIDtoStr[newid].PosFr == 30 then        --移动时也要重置光标显示
+				MovePos()
 				this.private.TextInputDrawPosTimer = 60
 			end
 			if this.private.TextInputIDtoStr[newid].PosFr ~= 0 then
 				this.private.TextInputIDtoStr[newid].PosFr = this.private.TextInputIDtoStr[newid].PosFr - 1
 			else --如果到了0
 				this.private.TextInputIDtoStr[newid].PosFr = 2--间隔两帧
-				if InputIsKeyDown(Key_LEFT) then
-					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] - 1
-                else
-					this.private.TextInputPos[newid] = this.private.TextInputPos[newid] + 1
-				end
+				MovePos()
 				this.private.TextInputDrawPosTimer = 60
 			end
 		else--如果不按就重置时间
@@ -1158,7 +1299,7 @@ function UI.TextInput(id, x, y, w, l, str, allowed_characters)
         for i = 1, #CharTable do
             ConcatChars = ConcatChars .. CharTable[i]                                   --拼接用于计算字符串长度
             StrWidth = GuiGetTextDimensions(this.public.gui, ConcatChars, 1) + 2        --2是偏移量
-            if mx > TIx and mx < TIx + StrWidth and my > TIy and my < TIy + height then --判断是否在范围内
+            if mx > TIx and mx < TIx + StrWidth then --判断是否在范围内，都悬浮状态了，不用判断y轴
                 SwitchPos = i
                 --print("Result:",i)
                 break --及时退出

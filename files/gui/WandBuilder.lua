@@ -132,7 +132,7 @@ local function NewSlider(id,x,y,text,value_min, value_max, value_default, value_
         if UI.UserData["PushFrBuilderID" .. id] == nil then --如果在悬浮，就分配一个帧检测时间
             UI.UserData["PushFrBuilderID" .. id] = 30
         else
-            if hasPush then                            --如果按了
+            if hasPush then                                        --如果按了
                 if UI.UserData["PushFrBuilderID" .. id] == 30 then --按的第一下
                     MoveSlider()
                 end
@@ -419,12 +419,12 @@ function WandBuilderCB(_, _, _, _, this_enable)
         GuiLayoutEnd(this.gui)
         GuiLayoutEnd(this.gui)
 	end)
-    UI.DrawScrollContainer("WandBuilder", false)
+    UI.DrawScrollContainer("WandBuilder", false, true)
 	
     local flag, wand = pcall(GetWand)
     if flag then
         local w, h = GuiGetImageDimensions(UI.gui, wand.sprite_file, 3)
 		GuiZSetForNextWidget(UI.gui,UI.GetZDeep())
-		GuiImage(UI.gui,UI.NewID("wand_build_preview_images"),20,234,wand.sprite_file,1,3,0)
+		GuiImage(UI.gui,UI.NewID("wand_build_preview_images"),20,UI.GetScrollHeight("WandBuilder") + UI.GetScrollY("WandBuilder") + 5,wand.sprite_file,1,3,0)
 	end
 end

@@ -604,8 +604,7 @@ function DrawWandContainer(wandEntity, spellData)
                 end
                 NewLine("$inventory_shuffle", shuffle)
                 NewLine("$inventory_actionspercast", wand.actions_per_round)
-                NewLine("$inventory_castdelay", SecondWithSign(wand.fire_rate_wait) .. "s(" .. wand.fire_rate_wait ..
-                    "f)")
+                NewLine("$inventory_castdelay", SecondWithSign(wand.fire_rate_wait) .. "s(" .. wand.fire_rate_wait .. "f)")
                 NewLine("$inventory_rechargetime", SecondWithSign(wand.reload_time) .. "s(" .. wand.reload_time .. "f)")
                 NewLine("$inventory_manamax", math.floor(wand.mana_max))
                 NewLine("$inventory_manachargespeed", math.floor(wand.mana_charge_speed))

@@ -103,6 +103,13 @@ mod_settings_version = 1
 mod_settings = 
 {
 	Setting({
+        id = "auto_update",
+		ui_name = "wand_editor_auto_update",
+		ui_description = "wand_editor_auto_update_tips",
+		value_default = false,
+        scope = MOD_SETTING_SCOPE_RUNTIME,
+    }),
+	Setting({
         id = "cache_spell_data",
 		ui_name = "wand_editor_no_spell_cache",
 		ui_description = "wand_editor_no_spell_cache_tip",

@@ -1,10 +1,12 @@
 /files/cppproject/WandEditorDll/.vs/
 /files/cppproject/WandEditorDll/WandEditorDll/
 /files/cppproject/stb-master
+/files/cppproject/miniz
 /cache
 /files/cppproject/rapidfuzz-cpp-3.0.5
 /files/cppproject/lua
 /files/module/WandEditorDll.lib
 /files/module/WandEditorDll.exp
+/files/module/debug/
 /files/biome_impl/wand_lab/reset
 /files/biome_impl/wand_lab/reset_xml

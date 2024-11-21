@@ -39,6 +39,15 @@
     <ClCompile Include="ImageLoad.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="LuaZip.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="minizc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaMemory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -63,6 +72,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ImageLoad.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaZip.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaMemory.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

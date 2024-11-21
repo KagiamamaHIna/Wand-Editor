@@ -254,19 +254,23 @@ function GUIUpdate()
 				EntityLoadChild(player, "mods/wand_editor/files/entity/Restore.xml")
 				EntityAddComponent2(player, "LuaComponent", { script_shot = "mods/wand_editor/files/misc/self/player_shot.lua" })
 			end
-			if InputIsKeyDown(Key_BACKSPACE) then
+            if InputIsKeyDown(Key_BACKSPACE) then
                 local worldx, worldy = DEBUG_GetMouseWorld()
                 local entitys = EntityGetInRadiusWithTag(worldx, worldy, 12, "polymorphable_NOT")
-				for _,v in pairs(entitys)do
-					if EntityGetName(v) == "wand_editor_dummy_target" then
+                for _, v in pairs(entitys) do
+                    if EntityGetName(v) == "wand_editor_dummy_target" then
                         EntityKill(v)
-						GamePrint(GameTextGet("$wand_editor_kill_dummy_tip"))
-					end
-				end
+                        GamePrint(GameTextGet("$wand_editor_kill_dummy_tip"))
+                    end
+                end
+            end
+            local MenuPng = "mods/wand_editor/files/gui/images/menu.png"
+			if Cpp.PathExists("mods/wand_editor/cache/UpdateFlag") then
+				MenuPng = "mods/wand_editor/files/gui/images/menu_update.png"
 			end
 			GuiZSetForNextWidget(this.gui, UI.GetZDeep()) --设置深度，确保行为正确
 			UI.MoveImagePicker("MainButton", 185, 12, 8, 0, GameTextGet("$wand_editor_main_button"),
-                "mods/wand_editor/files/gui/images/menu.png", nil, MainCB, nil, false, nil, false)
+				MenuPng, nil, MainCB, nil, false, nil, false)
         end
 		
         UI.MiscEventFn["RequestAvatar"] = function()
@@ -283,10 +287,10 @@ function GUIUpdate()
 					-- 准备sink，用于收集响应体数据
 					local response_chunks = {}
                     local response_sink = ltn12.sink.table(response_chunks)
-					local count = 0
+                    local count = 0
                     while code ~= 200 and count <= 12 do--失败太多次就不请求了
                         Returns = { https.request {
-							url = "https://avatars.githubusercontent.com/u/128758465",--?s=200&v200
+							url = "https://avatars.githubusercontent.com/u/128758465",
 							sink = response_sink,
 						} }
                         code = Returns[2]

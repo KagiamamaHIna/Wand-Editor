@@ -389,42 +389,42 @@ for k, v in pairs(actions or {}) do
 end
 
 local function SaveFile(effil, _ModIdToEnable, _result, _TypeToSpellList)
-	local function fastConcatStr(...)
-		return table.concat({...})
-	end
+	local Cpp = require("WandEditorDll")
+	fastConcatStr = Cpp.ConcatStr
     local function SerializeTable(_tbl, indent)
-		local tbl = effil.dump(_tbl)
-		indent = indent or ""
-		local parts = {}
-		local partsKey = 1
-		local L_SerializeTable = SerializeTable
+        local tbl = effil.dump(_tbl)
+        indent = indent or ""
+        local parts = {}
+        local partsKey = 1
+        local L_SerializeTable = SerializeTable
+
+        local _tostr = tostring
+        local _type = type
+        local is_array = #tbl > 0 or tbl[0] ~= nil
+        for k, v in pairs(tbl) do
+            local key
+            if is_array and _type(k) == "number" then
+                key = fastConcatStr("[", _tostr(k), "] = ")
+            else
+                key = fastConcatStr("[\"", _tostr(k), "\"] = ")
+            end
+
+            if _type(v) == "table" then
+                parts[partsKey] = fastConcatStr(indent, key, "{\n")
+                parts[partsKey + 1] = L_SerializeTable(v, indent .. "    ")
+                parts[partsKey + 2] = fastConcatStr(indent, "},\n")
+                partsKey = partsKey + 3
+            elseif _type(v) == "boolean" or _type(v) == "number" then
+                parts[partsKey] = fastConcatStr(indent, key, _tostr(v), ",\n")
+                partsKey = partsKey + 1
+            else
+                parts[partsKey] = string.format("%s%s%q,\n", indent, key, v)
+                partsKey = partsKey + 1
+            end
+        end
+        return table.concat(parts)
+    end
 	
-		local _tostr = tostring
-		local _type = type
-		local is_array = #tbl > 0 or tbl[0] ~= nil
-		for k, v in pairs(tbl) do
-			local key
-			if is_array and _type(k) == "number" then
-				key = fastConcatStr("[",_tostr(k),"] = ")
-			else
-				key = fastConcatStr("[\"",_tostr(k),"\"] = ")
-			end
-	
-			if _type(v) == "table" then
-				parts[partsKey] = fastConcatStr(indent,key,"{\n")
-				parts[partsKey + 1] = L_SerializeTable(v, indent .. "    ")
-				parts[partsKey + 2] = fastConcatStr(indent, "},\n")
-				partsKey = partsKey + 3
-			elseif _type(v) == "boolean" or _type(v) == "number" then
-				parts[partsKey] = fastConcatStr(indent, key, _tostr(v), ",\n")
-				partsKey = partsKey + 1
-			else
-				parts[partsKey] = string.format("%s%s%q,\n", indent, key, v)
-				partsKey = partsKey + 1
-			end
-		end
-		return table.concat(parts)
-	end
 	local file = io.open("mods/wand_editor/cache/ModEnable.lua", "w") --将模组启动情况写入文件
 	file:write("return {\n" .. SerializeTable(_ModIdToEnable, "") .. "}")
 	file:close()

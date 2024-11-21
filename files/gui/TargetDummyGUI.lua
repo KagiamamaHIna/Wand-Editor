@@ -228,6 +228,6 @@ function SpwanDummyCB(_, right_click, _, _, this_enable)
         GuiLayoutEnd(UI.gui)
     end)
 	if not UI.MiscEventFn["MoveDummyFn"] then
-		UI.DrawScrollContainer("SpwanDummyOptions", false)
+		UI.DrawScrollContainer("SpwanDummyOptions", false, true)
 	end
 end

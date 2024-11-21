@@ -344,6 +344,28 @@ function strip(s)
 	return result
 end
 
+---转换成字节字符串，比如1B，1KB，1MB
+---@param number integer
+---@param format string?
+---@return string
+function ToBytesString(number, format)
+    local KBSize = 1024
+    local MBSize = 1024 ^ 2
+    local GBSize = 1024 ^ 3
+	format = format or "%.2f"
+	local result
+	if number < KBSize then
+		result = tostring(number).. "B"
+    elseif number >= KBSize and number < MBSize then
+		result = string.format(format, number / KBSize) .. "KB"
+    elseif number >= MBSize and number < GBSize then
+		result = string.format(format, number / MBSize) .. "MB"
+	elseif number >= GBSize then
+		result = string.format(format, number / GBSize) .. "GB"
+	end
+	return result
+end
+
 ---根据分隔符分割字符串
 ---@param s string
 ---@param delim string
@@ -663,7 +685,7 @@ end
 ---@field rect_animation string
 ---@field sprite_pos Vec2
 ---@field __DepotPin string
----@field always_use_item_name_in_ui bool
+---@field always_use_item_name_in_ui boolean
 
 ---获得法杖数据
 ---@param entity integer EntityID

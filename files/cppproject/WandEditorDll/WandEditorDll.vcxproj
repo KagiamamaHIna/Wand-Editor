@@ -45,12 +45,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExternalIncludePath>..\lua\src;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\lua\src;..\stb-master;..\miniz</ExternalIncludePath>
     <OutDir>..\..\module\debug\</OutDir>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ExternalIncludePath>..\lua\src;..\stb-master;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\lua\src;..\stb-master;..\miniz</ExternalIncludePath>
     <OutDir>..\..\module\</OutDir>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
   </PropertyGroup>
@@ -63,7 +63,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>..\rapidfuzz-cpp-3.0.4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\rapidfuzz-cpp-3.0.5</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,9 +80,9 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>Default</LanguageStandard_C>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>..\rapidfuzz-cpp-3.0.5;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\rapidfuzz-cpp-3.0.5</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
@@ -102,9 +102,12 @@
     <ClCompile Include="fn.cpp" />
     <ClCompile Include="ImageLoad.cpp" />
     <ClCompile Include="LuaFilesApi.cpp" />
+    <ClCompile Include="LuaMemory.cpp" />
     <ClCompile Include="LuaRatioStr.cpp" />
     <ClCompile Include="LuaStandardLoad.cpp" />
+    <ClCompile Include="LuaZip.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="minizc.cpp" />
     <ClCompile Include="pinyin.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -114,9 +117,11 @@
     <ClInclude Include="breakpoint.h" />
     <ClInclude Include="fn.h" />
     <ClInclude Include="ImageLoad.h" />
+    <ClInclude Include="LuaMemory.h" />
     <ClInclude Include="LuaStandardLoad.h" />
     <ClInclude Include="LuaFilesApi.h" />
     <ClInclude Include="LuaRatioStr.h" />
+    <ClInclude Include="LuaZip.h" />
     <ClInclude Include="pinyin.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

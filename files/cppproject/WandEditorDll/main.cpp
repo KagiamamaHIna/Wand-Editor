@@ -9,6 +9,9 @@
 #include "LuaRatioStr.h"
 #include "lua.hpp"
 #include "ImageLoad.h"
+#include "LuaZip.h"
+#include "LuaMemory.h"
+#include "fn.h"
 
 namespace lua {
 	int lua_UTF8StringSub(lua_State* L) {
@@ -20,7 +23,7 @@ namespace lua {
 			return 1;
 		}
 		std::string result = "";
-		for (int i = pos1; i <= pos2; i++) {
+		for (int i = pos1; i <= pos2 && i < s1.size(); i++) {//安全检查
 			result += s1[i];
 		}
 		lua_pushstring(L, result.c_str());
@@ -107,6 +110,12 @@ namespace lua {
 		lua_pushnumber(L, system(command));
 		return 1;
 	}
+
+	int lua_ANSIToUTF8(lua_State* L) {
+		const char* str = luaL_checkstring(L, 1);
+		lua_pushstring(L, fn::GbkToUtf8(str).c_str());
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -118,7 +127,19 @@ static luaL_Reg luaLibs[] = {
 	{ "PathGetFileName", lua::lua_PathGetFileName},
 	{ "PathExists", lua::lua_PathExists},
 	{ "CreateDir", lua::lua_CreateDir},
+	{ "CreateDirs", lua::lua_CreateDirs},
 	{ "Rename", lua::lua_Rename},
+	{ "Remove", lua::lua_Remove},
+	{ "RemoveAll", lua::lua_RemoveAll},
+
+	{ "NewBoolPtr", lua::lua_NewBoolPtr},
+	{ "SetBoolPtrV", lua::lua_SetBoolPtrV},
+	{ "GetBoolPtrV", lua::lua_GetBoolPtrV},
+
+	{ "NewIntPtr", lua::lua_NewIntPtr},
+	{ "SetIntPtrV", lua::lua_SetIntPtrV},
+	{ "GetIntPtrV", lua::lua_GetIntPtrV},
+	{ "Free", lua::lua_Free},
 
 	{ "UTF8StringSize", lua::lua_UTF8StringSize},
 	{ "UTF8StringSub", lua::lua_UTF8StringSub},
@@ -137,7 +158,10 @@ static luaL_Reg luaLibs[] = {
 	{ "SetDllDirectory", lua::lua_SetDllDirectory},
 
 	{ "FlipImageLoadAndWrite", lua::lua_FlipImageLoadAndWrite},
+	{ "Uncompress", lua::lua_Uncompress},
 	{ "System", lua::lua_System},
+
+	{ "ANSIToUTF8" , lua::lua_ANSIToUTF8},
 
 	{ NULL, NULL }
 };

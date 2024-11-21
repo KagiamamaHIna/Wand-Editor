@@ -28,6 +28,11 @@ function Cpp.PathExists(path)end
 ---@return boolean
 function Cpp.CreateDir(path)end
 
+---递归的创建一个路径，返回的是 是否创建成功。这个可以创建嵌套路径
+---@param path string
+---@return boolean
+function Cpp.CreateDirs(path)end
+
 ---可以通过解析系统变量，返回一个绝对路径
 ---@param path string
 ---@return string
@@ -97,6 +102,16 @@ function Cpp.SetDllDirectory(str) end
 ---@return integer
 function Cpp.Rename(old_filename, new_filename)end
 
+---std::filesystem::remove的封装
+---@param path string
+---@return boolean
+function Cpp.Remove(path)end
+
+---std::filesystem::remove_all的封装
+---@param path string
+---@return number
+function Cpp.RemoveAll(path)end
+
 ---拼接字符串
 ---@param ... string
 ---@return string
@@ -111,3 +126,52 @@ function Cpp.FlipImageLoadAndWrite(FileStr,WritePath)end
 ---@param command string
 ---@return integer
 function Cpp.System(command)end
+
+---解压文件到指定路径，返回的是：是否解压成功
+---@param zip string
+---@param outputPath string
+---@return boolean
+function Cpp.Uncompress(zip, outputPath)end
+
+---@class BoolPTR lightuserdata
+
+---@class IntPTR lightuserdata
+
+---new一个bool指针，以lightuserdata的形式返回出来，如果不填写参数就不会初始化
+---@param value boolean?
+---@return BoolPTR
+function Cpp.NewBoolPtr(value)end
+
+---获取bool指针所指向的值
+---@param ptr BoolPTR
+---@return boolean
+function Cpp.GetBoolPtrV(ptr)end
+
+---设置bool指针所指向的值
+---@param ptr BoolPTR
+---@param value boolean
+function Cpp.SetBoolPtrV(ptr,value)end
+
+---new一个int指针，以lightuserdata的形式返回出来，如果不填写参数就不会初始化
+---@param value integer?
+---@return IntPTR
+function Cpp.NewIntPtr(value)end
+
+---获取int指针所指向的值
+---@param ptr IntPTR
+---@return integer
+function Cpp.GetIntPtrV(ptr)end
+
+---设置int指针所指向的值
+---@param ptr IntPTR
+---@param value integer
+function Cpp.SetIntPtrV(ptr,value)end
+
+---释放内存
+---@param ptr IntPTR|BoolPTR
+function Cpp.Free(ptr)end
+
+---把ANSI编码转成utf8
+---@param str string
+---@return string
+function Cpp.ANSIToUTF8(str)end
