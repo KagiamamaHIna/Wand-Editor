@@ -15,5 +15,6 @@ NoRewriteList = {
     "mods/wand_editor/.editorconfig",
     "mods/wand_editor/.gitignore",
     "mods/wand_editor/files/cppproject",
-	"mods/wand_editor/files/module/debug"
+    "mods/wand_editor/files/module/debug",
+	"mods/wand_editor/files/biome_impl/wand_lab/reset"
 }
