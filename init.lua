@@ -21,7 +21,7 @@ if flag and flag2 and flag3 then
 end
 local deldata
 if UpdateFlag then
-	local DelCode = ReadFileAll("mods/wand_editor/cache/PreDeletePaths.lua")
+    local DelCode = ReadFileAll("mods/wand_editor/cache/PreDeletePaths.lua")
     local updateCode = ReadFileAll("mods/wand_editor/cache/NewPaths.lua")
     deldata = loadstring(DelCode)()
     local updateData = loadstring(updateCode)()
@@ -29,16 +29,19 @@ if UpdateFlag then
         RewriteBinFile(updateData.O_File[k], v)
     end
 end
-dofile_once("mods/wand_editor/proxied_init.lua")--加载真正的init.lua
-if UpdateFlag then--移除多余文件
+dofile_once("mods/wand_editor/files/libs/unsafe.lua")
+if UpdateFlag then --移除多余文件
     for _, v in pairs(deldata) do
         Cpp.RemoveAll(v)
     end
-	Cpp.RemoveAll("mods/wand_editor/cache/UpdateFlag")
+    Cpp.RemoveAll("mods/wand_editor/cache/UpdateFlag")
     Cpp.RemoveAll("mods/wand_editor/cache/wand_editor")
     Cpp.RemoveAll("mods/wand_editor/cache/SpellsData.lua")
     Cpp.RemoveAll("mods/wand_editor/cache/TypeToSpellList.lua")
     Cpp.RemoveAll("mods/wand_editor/cache/ModEnable.lua")
     Cpp.RemoveAll("mods/wand_editor/cache/PreDeletePaths.lua")
-	Cpp.RemoveAll("mods/wand_editor/cache/NewPaths.lua")
+    Cpp.RemoveAll("mods/wand_editor/cache/NewPaths.lua")
 end
+
+dofile_once("mods/wand_editor/proxied_init.lua")--加载真正的init.lua
+
