@@ -21,13 +21,13 @@ static bool unzip_to_directory(const char* zip_filename, const char* output_dire
 		}
 
 		//创建输出文件路径
-		char output_path[MAX_PATH];
+		char output_path[sizeof(file_stat.m_filename)];
 		snprintf(output_path, sizeof(output_path), "%s/%s", output_directory, file_stat.m_filename);
 
 		//检查是否为目录
 		if (mz_zip_reader_is_file_a_directory(&zip_archive, i)) {
 			//创建目录
-			std::filesystem::create_directory(output_path);
+			std::filesystem::create_directories(output_path);
 		}
 		else {
 			//解压文件到指定路径
