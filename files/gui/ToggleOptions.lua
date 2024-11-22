@@ -473,21 +473,21 @@ UI.MiscEventFn["ListenerAutoUpdate"] = function()
         UI.MiscEventFn["AutoUpdate"] = nil
         UI.MiscEventFn["ListenerAutoUpdate"] = nil
     end
-	
+
     if GetPlayer() and UI.UserData["LinstenerUpdateStart"] == nil then
         UI.UserData["LinstenerUpdateStart"] = true
     end
 
-	--UI.UserData["DownloadStatus"] = "done"--调试用
-	--未知原因，疑似太早执行会造成主线程堵塞，然后卡至请求结束，缓一段时间到玩家生成就没有此现象
+    --UI.UserData["DownloadStatus"] = "done"--调试用
+    --未知原因，疑似太早执行会造成主线程堵塞，然后卡至请求结束，缓一段时间到玩家生成就没有此现象
     if not GetPlayer() and UI.UserData["LinstenerUpdateStart"] == nil and not ModSettingGet(ModID .. ".auto_update") then
-		if UI.MiscEventFn["AutoUpdate"] then
-			UI.MiscEventFn["AutoUpdate"] = nil
-		end
+        if UI.MiscEventFn["AutoUpdate"] then
+            UI.MiscEventFn["AutoUpdate"] = nil
+        end
         return
     end
     if UI.MiscEventFn["AutoUpdate"] == nil and ModSettingGet(ModID .. ".auto_update") then
-        UI.MiscEventFn["AutoUpdate"] = function()--增加检测更新的函数
+        UI.MiscEventFn["AutoUpdate"] = function() --增加检测更新的函数
             UpdateFn(true, false)
             --自动检测是否下载完成和是否需要解压
             UncompressNewZipFn()
@@ -496,7 +496,7 @@ UI.MiscEventFn["ListenerAutoUpdate"] = function()
         UI.MiscEventFn["AutoUpdate"] = nil
     end
 end
-Cpp.Uncompress(WriteUpdateFilePath, "mods/wand_editor/cache/")
+
 function ToggleOptionsCB(_, _, _, iy, this_enable)
     if not this_enable then
         return
