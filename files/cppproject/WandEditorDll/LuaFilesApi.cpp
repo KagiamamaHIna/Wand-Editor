@@ -106,12 +106,11 @@ namespace lua {
 			std::cerr << "not found file name\n";
 			return 0;
 		}
-		if (pos2 > pos) {
+		if (pos2 != -1 && pos2 > pos) {
 			pos = pos2;
 		}
 		//有结果
-		str = str.substr(pos + 1);
-		lua_pushstring(L, str.c_str());
+		lua_pushstring(L, str.substr(pos + 1).c_str());
 		return 1;
 	}
 
