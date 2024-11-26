@@ -99,7 +99,25 @@ if HasCahce and (not mustReload) then
 end
 --print("Init Spell Data")
 --需要重新加载
+
+local function GetModId(str)
+	local pos = string.find(str, "/")
+    local pos2 = string.find(str, "/", pos+1)
+	return string.sub(str,pos+1,pos2-1)
+end
+
 local result = {}
+local oriLua = Cpp.GetOriginalGunActionsLua()
+
+local Appends = ModLuaFileGetAppends("data/scripts/gun/gun_actions.lua")
+local AppendsModToFile = {}
+
+for _, v in pairs(Appends or {}) do
+	if AppendsModToFile[GetModId(v)] == nil then
+		AppendsModToFile[GetModId(v)] = {}
+	end
+	AppendsModToFile[GetModId(v)][#AppendsModToFile[GetModId(v)]+1] = ModTextFileGetContent(v)
+end
 
 local CurrentID = nil
 local hasProj = {}
@@ -341,23 +359,32 @@ for k, v in pairs(actions or {}) do
 	if result[v.id].c == nil then
 		result[v.id].c = {}
 	end
-	for ckey, cv in pairs(c) do
+	for ckey, cv in pairs(c or {}) do
 		result[v.id].c[ckey] = cv
 	end
 	if result[v.id].shot == nil then
 		result[v.id].shot = {}
 	end
     if not isAssign then
-		reflecting = false
+        reflecting = false
         pcall(v.action)
     else
         isReaction = true
-		reflecting = false
-		pcall(v.action)
+        reflecting = false
+        pcall(v.action)
     end
-    for shotkey, shotv in pairs(shot_effects()) do
-        result[v.id].shot[shotkey] = shotv
-    end
+    if shot_effects then
+        local flag, t = pcall(shot_effects)
+		if flag then
+			for shotkey, shotv in pairs(t) do
+				result[v.id].shot[shotkey] = shotv
+			end
+        else
+			for shotkey, shotv in pairs(shot_effects) do
+				result[v.id].shot[shotkey] = shotv
+			end
+		end
+	end
     isAssign = true
 	if c.extra_entities and c.extra_entities ~= "" then
         local extra_entities = split(c.extra_entities, ",")
@@ -386,6 +413,31 @@ for k, v in pairs(actions or {}) do
 	TableListener(shot_effects, ShotListener)
 
 	current_reload_time = 0
+end
+
+local function AppendsToString(str, appends)
+	return str.."\n"..appends
+end
+
+loadstring(oriLua)()
+
+for _,v in pairs(actions)do
+	if result[v.id] then
+		result[v.id].wand_editor_from = "Noita"
+	end
+end
+
+for k,v in pairs(AppendsModToFile)do
+    local dpOriLua = oriLua
+    for _, lua in pairs(v) do
+        dpOriLua = AppendsToString(dpOriLua, lua)
+    end
+	loadstring(dpOriLua)()
+	for _,v2 in pairs(actions)do
+		if result[v2.id] and result[v2.id].wand_editor_from == nil then
+			result[v2.id].wand_editor_from = k
+		end
+	end
 end
 
 local function SaveFile(effil, _ModIdToEnable, _result, _TypeToSpellList)

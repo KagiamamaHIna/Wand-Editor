@@ -175,3 +175,6 @@ function Cpp.Free(ptr)end
 ---@param str string
 ---@return string
 function Cpp.ANSIToUTF8(str)end
+
+---@return string
+function Cpp.GetOriginalGunActionsLua()end

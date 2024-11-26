@@ -48,6 +48,9 @@
     <ClCompile Include="LuaMemory.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ndata.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -78,6 +81,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="LuaMemory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ndata.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

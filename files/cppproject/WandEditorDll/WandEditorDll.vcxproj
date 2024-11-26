@@ -99,6 +99,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="breakpoint.cpp" />
+    <ClCompile Include="ndata.cpp" />
     <ClCompile Include="fn.cpp" />
     <ClCompile Include="ImageLoad.cpp" />
     <ClCompile Include="LuaFilesApi.cpp" />
@@ -115,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="breakpoint.h" />
+    <ClInclude Include="ndata.h" />
     <ClInclude Include="fn.h" />
     <ClInclude Include="ImageLoad.h" />
     <ClInclude Include="LuaMemory.h" />

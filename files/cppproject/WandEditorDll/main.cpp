@@ -12,6 +12,7 @@
 #include "LuaZip.h"
 #include "LuaMemory.h"
 #include "fn.h"
+#include "ndata.h"
 
 namespace lua {
 	int lua_UTF8StringSub(lua_State* L) {
@@ -116,6 +117,12 @@ namespace lua {
 		lua_pushstring(L, fn::GbkToUtf8(str).c_str());
 		return 1;
 	}
+
+	int lua_GetOriginalGunActionsLua(lua_State* L) {
+		ndata::DataWak data("data/data.wak");
+		lua_pushstring(L, ndata::VecU8ToStr(data["data/scripts/gun/gun_actions.lua"]).c_str());
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -162,6 +169,8 @@ static luaL_Reg luaLibs[] = {
 	{ "System", lua::lua_System},
 
 	{ "ANSIToUTF8" , lua::lua_ANSIToUTF8},
+
+	{ "GetOriginalGunActionsLua", lua::lua_GetOriginalGunActionsLua},
 
 	{ NULL, NULL }
 };

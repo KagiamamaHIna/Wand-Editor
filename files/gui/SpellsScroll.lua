@@ -202,8 +202,15 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
             local score = 0
 			for _,lowerSearch in pairs(SearchList)do
                 local TempScore = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].name)), lowerSearch) --大小写不敏感
-				if TempScore > score then
-					score = TempScore
+                if TempScore > score then
+                    score = TempScore
+                end
+                if string.byte(lowerSearch, 1, 1) == string.byte("@") then
+					local ModIdSearch = string.sub(lowerSearch,2)
+					local ModIdScore = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].wand_editor_from or "?")), ModIdSearch)
+					if ModIdScore > score then
+						score = ModIdScore
+					end
 				end
 				local IDScore = 0
 				if IDSearchMode then
@@ -374,6 +381,18 @@ local SkipDrawMoreText = {
 	["DAMAGE_RANDOM"] = true,
 }
 
+local DrawLastText = function (LastText, cb)
+	GuiLayoutAddVerticalSpacing(UI.gui, 5)
+	local spaceX = GuiGetTextDimensions(UI.gui, LastText)
+	GuiText(UI.gui, spaceX, 0, " ")
+	local _, _, _, x, y = GuiGetPreviousWidgetInfo(UI.gui)
+    GuiOptionsAddForNextWidget(UI.gui, GUI_OPTION.Layout_NoLayouting)
+	if cb then
+		cb()
+	end
+	GuiText(UI.gui, x - spaceX, y, LastText)
+end
+
 ---用于绘制法术文本
 ---@param this table
 ---@param id string
@@ -419,7 +438,12 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
 	NewLine("$inventory_manadrain", tostring(idata.mana))--耗蓝
 
     if SkipDrawMoreText[id] then
-        GuiLayoutEnd(this.gui)
+		DrawLastText(idata.wand_editor_from or "?",function ()
+			GuiRGBAColorSetForNextWidget(this.gui, 72, 209, 204, 255)
+		end)
+		if LastText then
+			DrawLastText(LastText)
+		end
 		return
     end
 	
@@ -560,14 +584,12 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
     if idata.c.damage_electricity_add ~= 0 then --雷电伤害修正
         NewLine("$inventory_mod_damage_electric", NumToWithSignStr(idata.c.damage_electricity_add * 25))
     end
+	DrawLastText(idata.wand_editor_from or "?",function ()
+		GuiRGBAColorSetForNextWidget(this.gui, 72, 209, 204, 255)
+	end)
     if LastText then
-        GuiLayoutAddVerticalSpacing(UI.gui, 5)
-		local spaceX = GuiGetTextDimensions(UI.gui,LastText)
-		GuiText(UI.gui, spaceX, 0, " ")
-		local _,_,_,x,y = GuiGetPreviousWidgetInfo(UI.gui)
-		GuiOptionsAddForNextWidget(UI.gui,GUI_OPTION.Layout_NoLayouting)
-        GuiText(UI.gui, x-spaceX, y, LastText)
-	end
+		DrawLastText(LastText)
+    end
 end
 
 local LastHistoryTable = {}
