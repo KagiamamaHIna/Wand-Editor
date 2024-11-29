@@ -90,9 +90,24 @@ local function Setting(t)
     end)
     return t
 end
+
 local function GetTextOrKey(key)
     local result = GetText(key)
     return result or key
+end
+
+local function ValueListInit(t)
+    TableListener(t, function(key, value)
+        return GetTextOrKey(value)
+    end)
+    return t
+end
+
+local function ValueList(t)
+	for k,v in pairs(t)do
+		t[k] = ValueListInit(v)
+	end
+	return t
 end
 
 local IKnowWhatImDoing_wand_editor_reset_btn_pos = false
@@ -107,6 +122,17 @@ mod_settings =
 		ui_name = "wand_editor_auto_update",
 		ui_description = "wand_editor_auto_update_tips",
 		value_default = false,
+        scope = MOD_SETTING_SCOPE_RUNTIME,
+    }),
+	Setting({
+        id = "spell_mod_id_or_name",
+		ui_name = "wand_editor_spell_mod_id_or_name",
+        value_default = "name",
+        values = ValueList({
+            { "name", "wand_editor_spell_mod_id_or_name_only_name" },
+            { "id", "wand_editor_spell_mod_id_or_name_only_id" },
+            { "all", "wand_editor_spell_mod_id_or_name_all" },
+		}),
         scope = MOD_SETTING_SCOPE_RUNTIME,
     }),
 	Setting({

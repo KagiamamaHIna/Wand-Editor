@@ -208,9 +208,13 @@ function SearchSpell(this, spellData, TypeToSpellList, SpellDrawType)
                 if string.byte(lowerSearch, 1, 1) == string.byte("@") then
 					local ModIdSearch = string.sub(lowerSearch,2)
 					local ModIdScore = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].wand_editor_from or "?")), ModIdSearch)
+                    if ModIdScore > score then
+                        score = ModIdScore
+                    end
+					ModIdScore = UesSearchRatio(string.lower(GameTextGetTranslatedOrNot(spellData[v].wand_editor_from_id or "?")), ModIdSearch)
 					if ModIdScore > score then
-						score = ModIdScore
-					end
+                        score = ModIdScore
+                    end
 				end
 				local IDScore = 0
 				if IDSearchMode then
@@ -435,9 +439,18 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
     end
 	
 	NewLine("$inventory_manadrain", tostring(idata.mana))--耗蓝
-
+    local DrawIDText
+	local DrawIDSetting = ModSettingGet(ModID..".spell_mod_id_or_name")
+	if DrawIDSetting == "name" then
+        DrawIDText = idata.wand_editor_from
+    elseif DrawIDSetting == "id" then
+        DrawIDText = idata.wand_editor_from_id
+    elseif DrawIDSetting == "all" and idata.wand_editor_from and idata.wand_editor_from_id then
+		DrawIDText = "ID:"..idata.wand_editor_from_id.." "..GameTextGetTranslatedOrNot("$wand_editor_spell_name")..":"..idata.wand_editor_from
+	end
+	DrawIDText = DrawIDText or "?"
     if SkipDrawMoreText[id] then
-		DrawLastText(idata.wand_editor_from or "?",function ()
+		DrawLastText(DrawIDText,function ()
 			GuiRGBAColorSetForNextWidget(this.gui, 72, 209, 204, 255)
 		end)
 		if LastText then
@@ -583,7 +596,7 @@ function HoverDarwSpellText(this, id, idata, Uses, LastText)
     if idata.c.damage_electricity_add ~= 0 then --雷电伤害修正
         NewLine("$inventory_mod_damage_electric", NumToWithSignStr(idata.c.damage_electricity_add * 25))
     end
-	DrawLastText(idata.wand_editor_from or "?",function ()
+	DrawLastText(DrawIDText,function ()
 		GuiRGBAColorSetForNextWidget(this.gui, 72, 209, 204, 255)
 	end)
     if LastText then

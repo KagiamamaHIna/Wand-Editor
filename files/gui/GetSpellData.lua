@@ -447,7 +447,8 @@ loadstring(oriLua)()
 
 for _,v in pairs(actions)do
 	if result[v.id] then
-		result[v.id].wand_editor_from = "Noita"
+        result[v.id].wand_editor_from = "Noita"
+		result[v.id].wand_editor_from_id = "Noita"
 	end
 end
 
@@ -459,7 +460,8 @@ for k,v in pairs(AppendsModToFile)do
 	loadstring(dpOriLua)()
 	for _,v2 in pairs(actions)do
 		if result[v2.id] and result[v2.id].wand_editor_from == nil then
-			result[v2.id].wand_editor_from = ModIDToName[k]
+            result[v2.id].wand_editor_from = ModIDToName[k]
+			result[v2.id].wand_editor_from_id = k
 		end
 	end
 end

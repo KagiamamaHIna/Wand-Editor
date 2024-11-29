@@ -198,3 +198,8 @@ wand_editor_real_unlimited_spells_tips,All spells will be unlimited,,,,,,,,所�
 wand_editor_auto_update,Automatic Updates Mod (Experimental),,,,,,,,自动更新模组(实验性),,,,,,
 wand_editor_auto_update_tips,"There is no guarantee that this feature will work stably at this time,\n so turn it on with caution!",,,,,,,,目前不能保证这个功能能稳定运行，谨慎开启,,,,,,
 wand_editor_auto_update_done, Restart the game to finish update,,,,,,,, 重启游戏以完成更新,,,,,,
+wand_editor_spell_mod_id_or_name,Spell affiliation mod display,,,,,,,,法术所属模组显示,,,,,,
+wand_editor_spell_mod_id_or_name_only_name,Mod name only,,,,,,,,只显示模组名字,,,,,,
+wand_editor_spell_mod_id_or_name_only_id,Mod id only,,,,,,,,只显示模组id,,,,,,
+wand_editor_spell_mod_id_or_name_all,Mod id and Mod name,,,,,,,,id和模组名字一起显示,,,,,,
+wand_editor_spell_name,Name,,,,,,,,名字,,,,,,
