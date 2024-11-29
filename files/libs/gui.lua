@@ -666,7 +666,7 @@ function UI.CanMove(id, s_x, s_y, ButtonCallBack, AlwaysCallBack, HoverUseCallBa
 
 		--暂停判断一段时间
 		this.private.NextFrNoClick = true
-		this.private.NextFrClick = 12
+		this.private.NextFrClick = 10
 		this.private.FirstEventFn["NextFrNoClick"] = function()
 			if this.private.NextFrClick == 0 then
 				this.private.NextFrNoClick = false

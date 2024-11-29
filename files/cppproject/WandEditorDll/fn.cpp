@@ -117,4 +117,38 @@ namespace fn {
 		CloseClipboard();
 		return result;
 	}
+
+	std::string GetRegistryValue(HKEY rootKey, const std::string& subKey, const std::string& valueName) {
+		HKEY hKey;
+		DWORD valueLength = 0;
+		DWORD valueType;
+
+		//打开注册表键
+		if (RegOpenKeyExA(rootKey, subKey.c_str(), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+			//第一次调用 获取值的长度
+			if (RegQueryValueExA(hKey, valueName.c_str(), nullptr, &valueType, nullptr, &valueLength) == ERROR_SUCCESS) {
+				//分配缓冲区
+				std::string result(valueLength - 1, '\0');
+				//第二次调用 实际获取值
+				if (RegQueryValueExA(hKey, valueName.c_str(), nullptr, &valueType, LPBYTE(result.data()), &valueLength) == ERROR_SUCCESS) {
+					//关闭注册表键
+					RegCloseKey(hKey);
+					return result;
+				}
+				else {
+					std::cerr << "WandEditor:Failed to query value: " << valueName << std::endl;
+				}
+			}
+			else {
+				std::cerr << "WandEditor:Failed to retrieve the length of value: " << valueName << std::endl;
+			}
+			//关闭注册表键
+			RegCloseKey(hKey);
+		}
+		else {
+			std::cerr << "WandEditor:Failed to open registry key: " << subKey << std::endl;
+		}
+
+		return "";
+	}
 }

@@ -333,8 +333,7 @@ function SpellDepotClickCB(_, right_click, _, _, depot_enable)
 		wandEditBoxText,"mods/wand_editor/files/gui/images/wand_container.png", nil, WandContainerClickCB,
 		nil, true, true, true)
 
-	local DrawSpellList, InputType = SearchSpell(UI, spellData, TypeToSpellList,
-		SpellDrawType)
+	local DrawSpellList, InputType = SearchSpell(UI, spellData, TypeToSpellList, SpellDrawType)
 	--绘制容器
 	DrawSpellContainer(UI, spellData, DrawSpellList, InputType)
 	for i, v in pairs(TypeList) do     --绘制左边选择类型按钮

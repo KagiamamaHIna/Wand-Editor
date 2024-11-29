@@ -123,6 +123,17 @@ namespace lua {
 		lua_pushstring(L, ndata::VecU8ToStr(data["data/scripts/gun/gun_actions.lua"]).c_str());
 		return 1;
 	}
+
+	int lua_RegLMGetValue(lua_State* L) {
+		const char* key = luaL_checkstring(L, 1);
+		const char* valuekey = luaL_checkstring(L, 2);
+		std::string result = fn::GetRegistryValue(HKEY_LOCAL_MACHINE, key, valuekey);
+		if (result == "") {
+			return 0;
+		}
+		lua_pushstring(L, result.c_str());
+		return 1;
+	}
 }
 
 //提供给lua的函数
@@ -167,6 +178,7 @@ static luaL_Reg luaLibs[] = {
 	{ "FlipImageLoadAndWrite", lua::lua_FlipImageLoadAndWrite},
 	{ "Uncompress", lua::lua_Uncompress},
 	{ "System", lua::lua_System},
+	{ "RegLMGetValue", lua::lua_RegLMGetValue},
 
 	{ "ANSIToUTF8" , lua::lua_ANSIToUTF8},
 

@@ -423,7 +423,6 @@ function WandBuilderCB(_, _, _, _, this_enable)
 	
     local flag, wand = pcall(GetWand)
     if flag then
-        local w, h = GuiGetImageDimensions(UI.gui, wand.sprite_file, 3)
 		GuiZSetForNextWidget(UI.gui,UI.GetZDeep())
 		GuiImage(UI.gui,UI.NewID("wand_build_preview_images"),20,UI.GetScrollHeight("WandBuilder") + UI.GetScrollY("WandBuilder") + 5,wand.sprite_file,1,3,0)
 	end

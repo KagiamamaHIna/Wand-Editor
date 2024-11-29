@@ -176,5 +176,12 @@ function Cpp.Free(ptr)end
 ---@return string
 function Cpp.ANSIToUTF8(str)end
 
+---解包data并返回gun_actions.lua的内容
 ---@return string
 function Cpp.GetOriginalGunActionsLua()end
+
+---从HKEY_LOCAL_MACHINE前缀的注册表的 key + valueKey 的内容中获取数据，如果获取失败或值为空则返回nil
+---@param key string
+---@param valueKey string
+---@return string|nil
+function Cpp.RegLMGetValue(key, valueKey)end

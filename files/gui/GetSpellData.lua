@@ -109,14 +109,38 @@ end
 local result = {}
 local oriLua = Cpp.GetOriginalGunActionsLua()
 
+local mod_config_text = ReadFileAll(SavePath .. "save00/mod_config.xml")
+local __Nxml = dofile_once("mods/wand_editor/files/libs/nxml.lua")
+local ModConfig = __Nxml.parse(mod_config_text)
+local ModIDToSteamID = {}
+for _, v in pairs(ModConfig.children) do
+    if v.name == "Mod" then
+        ModIDToSteamID[v.attr.name] = v.attr.workshop_item_id
+    end
+end
+
 local Appends = ModLuaFileGetAppends("data/scripts/gun/gun_actions.lua")
 local AppendsModToFile = {}
+local ModIDToName = {}
+local SteamPath = Cpp.RegLMGetValue("SOFTWARE\\WOW6432Node\\Valve\\Steam\\NSIS", "Path")
 
 for _, v in pairs(Appends or {}) do
-	if AppendsModToFile[GetModId(v)] == nil then
-		AppendsModToFile[GetModId(v)] = {}
+	local modid = GetModId(v)
+	if AppendsModToFile[modid] == nil then
+		AppendsModToFile[modid] = {}
 	end
-	AppendsModToFile[GetModId(v)][#AppendsModToFile[GetModId(v)]+1] = ModTextFileGetContent(v)
+    AppendsModToFile[modid][#AppendsModToFile[modid] + 1] = ModTextFileGetContent(v)
+	local ModXml
+	if ModIDToSteamID[modid] == "0" then--本地模组
+        ModXml = __Nxml.parse(ReadFileAll("mods/" .. modid .. "/mod.xml"))
+    elseif SteamPath then--创意工坊模组
+		ModXml = __Nxml.parse(ReadFileAll(SteamPath .."/steamapps/workshop/content/881100/"..ModIDToSteamID[modid].."/mod.xml"))
+	end
+	if ModXml then
+		ModIDToName[modid] = ModXml.attr.name
+    else
+		ModIDToName[modid] = modid--假设获取失败(SteamPath为空)
+	end
 end
 
 local CurrentID = nil
@@ -435,7 +459,7 @@ for k,v in pairs(AppendsModToFile)do
 	loadstring(dpOriLua)()
 	for _,v2 in pairs(actions)do
 		if result[v2.id] and result[v2.id].wand_editor_from == nil then
-			result[v2.id].wand_editor_from = k
+			result[v2.id].wand_editor_from = ModIDToName[k]
 		end
 	end
 end
