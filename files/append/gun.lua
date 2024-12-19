@@ -14,7 +14,7 @@ function draw_shot(...)--禁用施法
     if ModSettingGet("wand_editor" .. "DisableProj") then
         return
     end
-	__wand_editor_draw_shot(...)
+	return __wand_editor_draw_shot(...)
 end
 
 local __wand_editor__play_permanent_card = _play_permanent_card
@@ -24,7 +24,7 @@ function _play_permanent_card(...)--禁用施法
 		gun.reload_time = 0
         return
     end
-	__wand_editor__play_permanent_card(...)
+	return __wand_editor__play_permanent_card(...)
 end
 
 local __wand_editor_StartReload= StartReload
@@ -33,22 +33,24 @@ function StartReload(...)
     if ModSettingGet("wand_editor" .. "DisableProj") then
         return
     end
-	__wand_editor_StartReload(...)
+	return __wand_editor_StartReload(...)
 end
+
 
 local __wand_editor_draw_action = draw_action
 
-function draw_action(instant_reload_if_empty)
-	local Enable = ModSettingGet("wand_editor" .. "SpellInfMana") 
-	local LastMana
-    if Enable then
+function draw_action(...)
+	local __wand_editor_Enable = ModSettingGet("wand_editor" .. "SpellInfMana")
+	local __wand_editor_LastMana
+    if __wand_editor_Enable then
         if #deck > 0 then
             deck[1].mana = 0
         end
-		LastMana = mana
+		__wand_editor_LastMana = mana
     end
-    __wand_editor_draw_action(instant_reload_if_empty)
+    local result = {__wand_editor_draw_action(...)}
 	if Enable then
 		mana = LastMana
 	end
+	return unpack(result)
 end
