@@ -354,6 +354,12 @@ local TypeToSpellListCount = {}
 
 local TypeToSpellList = {}
 TypeToSpellList.AllSpells = {}
+
+local old_GlobalsSetValue = GlobalsSetValue
+GlobalsSetValue = function ()
+	
+end
+
 for k, v in pairs(actions or {}) do
     isReaction = false
 	reflecting = true
@@ -438,7 +444,7 @@ for k, v in pairs(actions or {}) do
 
 	current_reload_time = 0
 end
-
+GlobalsSetValue = old_GlobalsSetValue
 local function AppendsToString(str, appends)
 	return str.."\n"..appends
 end
