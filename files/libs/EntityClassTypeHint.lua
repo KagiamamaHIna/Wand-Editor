@@ -1,0 +1,3429 @@
+---@class NoitaCompTo
+---@field AIAttackComponent AIAttackComponentClass[]
+---@field AIComponent AIComponentClass[]
+---@field AbilityComponent AbilityComponentClass[]
+---@field AdvancedFishAIComponent AdvancedFishAIComponentClass[]
+---@field AltarComponent AltarComponentClass[]
+---@field AnimalAIComponent AnimalAIComponentClass[]
+---@field ArcComponent ArcComponentClass[]
+---@field AreaDamageComponent AreaDamageComponentClass[]
+---@field AttachToEntityComponent AttachToEntityComponentClass[]
+---@field AudioComponent AudioComponentClass[]
+---@field AudioListenerComponent AudioListenerComponentClass[]
+---@field AudioLoopComponent AudioLoopComponentClass[]
+---@field BiomeTrackerComponent BiomeTrackerComponentClass[]
+---@field BlackHoleComponent BlackHoleComponentClass[]
+---@field BookComponent BookComponentClass[]
+---@field BossDragonComponent BossDragonComponentClass[]
+---@field BossHealthBarComponent BossHealthBarComponentClass[]
+---@field CameraBoundComponent CameraBoundComponentClass[]
+---@field CardinalMovementComponent CardinalMovementComponentClass[]
+---@field CellEaterComponent CellEaterComponentClass[]
+---@field CharacterCollisionComponent CharacterCollisionComponentClass[]
+---@field CharacterDataComponent CharacterDataComponentClass[]
+---@field CharacterPlatformingComponent CharacterPlatformingComponentClass[]
+---@field CharacterStatsComponent CharacterStatsComponentClass[]
+---@field CollisionTriggerComponent CollisionTriggerComponentClass[]
+---@field ConsumableTeleportComponent ConsumableTeleportComponentClass[]
+---@field ControllerGoombaAIComponent ControllerGoombaAIComponentClass[]
+---@field ControlsComponent ControlsComponentClass[]
+---@field CrawlerAnimalComponent CrawlerAnimalComponentClass[]
+---@field CutThroughWorldDoneHereComponent CutThroughWorldDoneHereComponentClass[]
+---@field DamageModelComponent DamageModelComponentClass[]
+---@field DamageNearbyEntitiesComponent DamageNearbyEntitiesComponentClass[]
+---@field DebugFollowMouseComponent DebugFollowMouseComponentClass[]
+---@field DebugLogMessagesComponent DebugLogMessagesComponentClass[]
+---@field DebugSpatialVisualizerComponent DebugSpatialVisualizerComponentClass[]
+---@field DieIfSpeedBelowComponent DieIfSpeedBelowComponentClass[]
+---@field DroneLauncherComponent DroneLauncherComponentClass[]
+---@field DrugEffectComponent DrugEffectComponentClass[]
+---@field DrugEffectModifierComponent DrugEffectModifierComponentClass[]
+---@field ElectricChargeComponent ElectricChargeComponentClass[]
+---@field ElectricityComponent ElectricityComponentClass[]
+---@field ElectricityReceiverComponent ElectricityReceiverComponentClass[]
+---@field ElectricitySourceComponent ElectricitySourceComponentClass[]
+---@field EndingMcGuffinComponent EndingMcGuffinComponentClass[]
+---@field EnergyShieldComponent EnergyShieldComponentClass[]
+---@field ExplodeOnDamageComponent ExplodeOnDamageComponentClass[]
+---@field ExplosionComponent ExplosionComponentClass[]
+---@field FishAIComponent FishAIComponentClass[]
+---@field FlyingComponent FlyingComponentClass[]
+---@field FogOfWarRadiusComponent FogOfWarRadiusComponentClass[]
+---@field FogOfWarRemoverComponent FogOfWarRemoverComponentClass[]
+---@field GameAreaEffectComponent GameAreaEffectComponentClass[]
+---@field GameEffectComponent GameEffectComponentClass[]
+---@field GameLogComponent GameLogComponentClass[]
+---@field GameStatsComponent GameStatsComponentClass[]
+---@field GasBubbleComponent GasBubbleComponentClass[]
+---@field GenomeDataComponent GenomeDataComponentClass[]
+---@field GhostComponent GhostComponentClass[]
+---@field GodInfoComponent GodInfoComponentClass[]
+---@field GunComponent GunComponentClass[]
+---@field HealthBarComponent HealthBarComponentClass[]
+---@field HitEffectComponent HitEffectComponentClass[]
+---@field HitboxComponent HitboxComponentClass[]
+---@field HomingComponent HomingComponentClass[]
+---@field HotspotComponent HotspotComponentClass[]
+---@field IKLimbAttackerComponent IKLimbAttackerComponentClass[]
+---@field IKLimbComponent IKLimbComponentClass[]
+---@field IKLimbWalkerComponent IKLimbWalkerComponentClass[]
+---@field IKLimbsAnimatorComponent IKLimbsAnimatorComponentClass[]
+---@field IngestionComponent IngestionComponentClass[]
+---@field InheritTransformComponent InheritTransformComponentClass[]
+---@field InteractableComponent InteractableComponentClass[]
+---@field Inventory2Component Inventory2ComponentClass[]
+---@field InventoryComponent InventoryComponentClass[]
+---@field InventoryGuiComponent InventoryGuiComponentClass[]
+---@field ItemAIKnowledgeComponent ItemAIKnowledgeComponentClass[]
+---@field ItemActionComponent ItemActionComponentClass[]
+---@field ItemAlchemyComponent ItemAlchemyComponentClass[]
+---@field ItemChestComponent ItemChestComponentClass[]
+---@field ItemComponent ItemComponentClass[]
+---@field ItemCostComponent ItemCostComponentClass[]
+---@field ItemPickUpperComponent ItemPickUpperComponentClass[]
+---@field ItemRechargeNearGroundComponent ItemRechargeNearGroundComponentClass[]
+---@field ItemStashComponent ItemStashComponentClass[]
+---@field KickComponent KickComponentClass[]
+---@field LaserEmitterComponent LaserEmitterComponentClass[]
+---@field LevitationComponent LevitationComponentClass[]
+---@field LifetimeComponent LifetimeComponentClass[]
+---@field LightComponent LightComponentClass[]
+---@field LightningComponent LightningComponentClass[]
+---@field LimbBossComponent LimbBossComponentClass[]
+---@field LiquidDisplacerComponent LiquidDisplacerComponentClass[]
+---@field LoadEntitiesComponent LoadEntitiesComponentClass[]
+---@field LocationMarkerComponent LocationMarkerComponentClass[]
+---@field LooseGroundComponent LooseGroundComponentClass[]
+---@field LuaComponent LuaComponentClass[]
+---@field MagicConvertMaterialComponent MagicConvertMaterialComponentClass[]
+---@field MagicXRayComponent MagicXRayComponentClass[]
+---@field ManaReloaderComponent ManaReloaderComponentClass[]
+---@field MaterialAreaCheckerComponent MaterialAreaCheckerComponentClass[]
+---@field MaterialInventoryComponent MaterialInventoryComponentClass[]
+---@field MaterialSeaSpawnerComponent MaterialSeaSpawnerComponentClass[]
+---@field MaterialSuckerComponent MaterialSuckerComponentClass[]
+---@field MoveToSurfaceOnCreateComponent MoveToSurfaceOnCreateComponentClass[]
+---@field MusicEnergyAffectorComponent MusicEnergyAffectorComponentClass[]
+---@field NinjaRopeComponent NinjaRopeComponentClass[]
+---@field NullDamageComponent NullDamageComponentClass[]
+---@field OrbComponent OrbComponentClass[]
+---@field ParticleEmitterComponent ParticleEmitterComponentClass[]
+---@field PathFindingComponent PathFindingComponentClass[]
+---@field PathFindingGridMarkerComponent PathFindingGridMarkerComponentClass[]
+---@field PhysicsAIComponent PhysicsAIComponentClass[]
+---@field PhysicsBody2Component PhysicsBody2ComponentClass[]
+---@field PhysicsBodyCollisionDamageComponent PhysicsBodyCollisionDamageComponentClass[]
+---@field PhysicsBodyComponent PhysicsBodyComponentClass[]
+---@field PhysicsImageShapeComponent PhysicsImageShapeComponentClass[]
+---@field PhysicsJoint2Component PhysicsJoint2ComponentClass[]
+---@field PhysicsJoint2MutatorComponent PhysicsJoint2MutatorComponentClass[]
+---@field PhysicsJointComponent PhysicsJointComponentClass[]
+---@field PhysicsKeepInWorldComponent PhysicsKeepInWorldComponentClass[]
+---@field PhysicsPickUpComponent PhysicsPickUpComponentClass[]
+---@field PhysicsRagdollComponent PhysicsRagdollComponentClass[]
+---@field PhysicsShapeComponent PhysicsShapeComponentClass[]
+---@field PhysicsThrowableComponent PhysicsThrowableComponentClass[]
+---@field PixelSceneComponent PixelSceneComponentClass[]
+---@field PixelSpriteComponent PixelSpriteComponentClass[]
+---@field PlatformShooterPlayerComponent PlatformShooterPlayerComponentClass[]
+---@field PlayerCollisionComponent PlayerCollisionComponentClass[]
+---@field PlayerStatsComponent PlayerStatsComponentClass[]
+---@field PositionSeedComponent PositionSeedComponentClass[]
+---@field PotionComponent PotionComponentClass[]
+---@field PressurePlateComponent PressurePlateComponentClass[]
+---@field ProjectileComponent ProjectileComponentClass[]
+---@field RotateTowardsComponent RotateTowardsComponentClass[]
+---@field SetLightAlphaFromVelocityComponent SetLightAlphaFromVelocityComponentClass[]
+---@field SetStartVelocityComponent SetStartVelocityComponentClass[]
+---@field ShotEffectComponent ShotEffectComponentClass[]
+---@field SimplePhysicsComponent SimplePhysicsComponentClass[]
+---@field SineWaveComponent SineWaveComponentClass[]
+---@field SpriteAnimatorComponent SpriteAnimatorComponentClass[]
+---@field SpriteComponent SpriteComponentClass[]
+---@field SpriteOffsetAnimatorComponent SpriteOffsetAnimatorComponentClass[]
+---@field SpriteParticleEmitterComponent SpriteParticleEmitterComponentClass[]
+---@field SpriteStainsComponent SpriteStainsComponentClass[]
+---@field StatusEffectDataComponent StatusEffectDataComponentClass[]
+---@field StreamingKeepAliveComponent StreamingKeepAliveComponentClass[]
+---@field TelekinesisComponent TelekinesisComponentClass[]
+---@field TeleportComponent TeleportComponentClass[]
+---@field TeleportProjectileComponent TeleportProjectileComponentClass[]
+---@field TextLogComponent TextLogComponentClass[]
+---@field TorchComponent TorchComponentClass[]
+---@field UIIconComponent UIIconComponentClass[]
+---@field UIInfoComponent UIInfoComponentClass[]
+---@field VariableStorageComponent VariableStorageComponentClass[]
+---@field VelocityComponent VelocityComponentClass[]
+---@field VerletPhysicsComponent VerletPhysicsComponentClass[]
+---@field VerletWeaponComponent VerletWeaponComponentClass[]
+---@field VerletWorldJointComponent VerletWorldJointComponentClass[]
+---@field WalletComponent WalletComponentClass[]
+---@field WalletValuableComponent WalletValuableComponentClass[]
+---@field WorldStateComponent WorldStateComponentClass[]
+---@field WormAIComponent WormAIComponentClass[]
+---@field WormAttractorComponent WormAttractorComponentClass[]
+---@field WormComponent WormComponentClass[]
+---@field WormPlayerComponent WormPlayerComponentClass[]
+
+---@class AIAttackComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AIAttackComponent
+
+---@class AIAttackComponent
+---@field use_probability integer Members<br>---<br>The probability for using this attack if it's otherwise possible
+---@field min_distance number Members<br>---<br>The minimum distance from enemy at which we can perform this attack.
+---@field max_distance number Members<br>---<br>The maximum distance from enemy at which we can perform this attack.
+---@field angular_range_deg number Members<br>---<br>When looking for threats/prey this is our field of view around the X axis. 90 means we scan the whole 180 degrees around the X axis, to the left and right.
+---@field state_duration_frames integer Members<br>---<br>How long do we stay in the attack state, before other states are allowed?
+---@field frames_between integer Members<br>---<br>The minimum number of frames we wait between these attacks
+---@field frames_between_global integer Members<br>---<br>The minimum number of frames we wait after this attack before doing any other ranged attack
+---@field animation_name string Members<br>---<br>The animation to play when performing this attack
+---@field attack_landing_ranged_enabled boolean Members<br>---<br>If 1, we try to land before doing the attack, if there's ground near nearby under us
+---@field attack_ranged_action_frame integer Members<br>---<br>The frame of the 'attack_ranged' animation during which the ranged attack actually occurs
+---@field attack_ranged_offset_x number Members<br>---<br>'attack_ranged_entity_file' is created here when performing a ranged attack
+---@field attack_ranged_offset_y number Members<br>---<br>'attack_ranged_entity_file' is created here when performing a ranged attack
+---@field attack_ranged_root_offset_x number Members
+---@field attack_ranged_root_offset_y number Members
+---@field attack_ranged_use_message boolean Members<br>---<br>If 1, we do ranged attacks by sending a Message_UseItem
+---@field attack_ranged_predict boolean Members<br>---<br>If 1, we attempt to predict target movement and shoot accordingly
+---@field attack_ranged_entity_file string Members<br>---<br>File to projectile entity that is created when performing a ranged attack
+---@field attack_ranged_entity_count_min integer Members<br>---<br>Minimum number of projectiles shot when performing a ranged attack
+---@field attack_ranged_entity_count_max integer Members<br>---<br>Maximum number of projectiles shot when performing a ranged attack
+---@field attack_ranged_use_laser_sight boolean Members<br>---<br>If 1, we draw a laser sight to our target. Requires entity to have a sprite with tag 'laser_sight'
+---@field attack_ranged_aim_rotation_enabled boolean Members<br>---<br>If 1, we use a laser sight
+---@field attack_ranged_aim_rotation_speed number Members<br>---<br>How fast can we rotate our aim to track targets
+---@field attack_ranged_aim_rotation_shooting_ok_angle_deg number Members<br>---<br>If our aim is closer than this to the target we shoot
+---@field mRangedAttackCurrentAimAngle number Privates<br>---<br>which direction does our gun currently point at, physically saying?
+---@field mNextFrameUsable integer Privates
+
+---@class AIComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AIComponent
+
+---@class AIComponent
+---@field TEMP_TEMP_TEMP number Members
+---@field data unsupported Privates
+
+---@class AbilityComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AbilityComponent
+
+---@class AbilityComponent
+---@field cooldown_frames integer Members
+---@field entity_file string Members<br>---<br>the projectile entity file
+---@field sprite_file string Members
+---@field entity_count integer Members
+---@field never_reload boolean Members
+---@field reload_time_frames integer Members
+---@field mana number Members
+---@field mana_max number Members
+---@field mana_charge_speed number Members
+---@field rotate_in_hand boolean Members
+---@field rotate_in_hand_amount number Members<br>---<br>[0-1], how much does the item rotate related to the actual aiming angle
+---@field rotate_hand_amount number Members<br>---<br>[0-1], how much does hand sprite rotate related to the actual aiming angle
+---@field fast_projectile boolean Members<br>---<br>if 1, then the velocity of the bullet is increased quite a bit. Lightning requires this
+---@field swim_propel_amount number Members
+---@field max_charged_actions integer Members
+---@field charge_wait_frames integer Members
+---@field item_recoil_recovery_speed number Members<br>---<br>How quickly does the item return to resting state after getting recoil
+---@field item_recoil_max number Members<br>---<br>Maximum distance moved by recoil
+---@field item_recoil_offset_coeff number Members<br>---<br>Item distance moved by recoil = mItemRecoil * item_recoil_offset_coeff
+---@field item_recoil_rotation_coeff number Members<br>---<br>Item rotation by recoil = mItemRecoil * item_recoil_rotation_coeff
+---@field base_item_file string Members<br>---<br>when dropping / throwing the item, this is the base_item that we add the ability component to
+---@field use_entity_file_as_projectile_info_proxy boolean Members
+---@field click_to_use boolean Members
+---@field stat_times_player_has_shot integer Members<br>---<br>used to track how many times player has shot this 'ability'
+---@field stat_times_player_has_edited integer Members<br>---<br>used to track how many times this has been edited
+---@field shooting_reduces_amount_in_inventory boolean Members
+---@field throw_as_item boolean Members
+---@field simulate_throw_as_item boolean Members<br>---<br>If 1, the item will be work as normal ability, but throwing animation is played by the user
+---@field max_amount_in_inventory integer Members
+---@field amount_in_inventory integer Members
+---@field drop_as_item_on_death boolean Members
+---@field ui_name string Members<br>---<br>way to name the weapons
+---@field use_gun_script boolean Members<br>---<br>If 1, the default ability behaviour is replaced with one that uses the lua gun system.
+---@field is_petris_gun boolean Members<br>---<br>if 1, TODO( PETRI)
+---@field gun_level integer Members<br>---<br>the level of the wand, set in gun_procedural.lua
+---@field add_these_child_actions string Members<br>---<br>e.g. 'bullet,bullet,damage' ... actions are parsed into a string. These are added as actual entities when the item is initialized
+---@field current_slot_durability integer Members<br>---<br>After this many slots the last slot of the gun is removed. -1 means not initialized/infinite.
+---@field slot_consumption_function unsupported Members<br>---<br>Name of the lua function in 'gun.lua' that is called to calculate durability of the last slot in the gun
+---@field mNextFrameUsable integer Members<br>---<br>hax, don't touch!
+---@field mCastDelayStartFrame integer Members<br>---<br>hax, don't touch!
+---@field mReloadFramesLeft integer Members<br>---<br>hax, don't touch!
+---@field mReloadNextFrameUsable integer Members<br>---<br>hax, don't touch!
+---@field mChargeCount integer Members<br>---<br>hax, don't touch!
+---@field mIsInitialized boolean Members
+---@field gun_config unsupported Objects<br>---<br>Constants for gun script
+---@field gunaction_config unsupported Objects<br>---<br>Constants for gun script
+---@field mAmmoLeft integer Privates
+---@field mNextChargeFrame integer Privates
+---@field mItemRecoil number Privates
+
+---@class AdvancedFishAIComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AdvancedFishAIComponent
+
+---@class AdvancedFishAIComponent
+---@field move_check_range_min number Members
+---@field move_check_range_max number Members
+---@field flock boolean Privates
+---@field avoid_predators boolean Privates
+---@field mHasTargetDirection boolean Privates
+---@field mTargetPos unsupported Privates
+---@field mTargetVec unsupported Privates
+---@field mLastFramesMovementAreaMin unsupported Privates
+---@field mLastFramesMovementAreaMax unsupported Privates
+---@field mNumFailedTargetSearches unsupported Privates
+---@field mNextFrameCheckAreWeStuck integer Privates
+---@field mNextFrameCheckFlockWants integer Privates
+---@field mNextFramePredatorAvoidance integer Privates
+---@field mScared number Privates
+---@field mWantsToBeInFlock boolean Privates
+
+---@class AltarComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AltarComponent
+
+---@class AltarComponent
+---@field recognized_entity_tags string Members
+---@field uses_remaining integer Members
+---@field good_fx_material integer Custom data types<br>---<br>String name of material for particles emitted on successful sacrifice
+---@field neutral_fx_material integer Custom data types<br>---<br>String name of material for particles emitted on successful sacrifice
+---@field evil_fx_material integer Custom data types<br>---<br>String name of material for particles emitted on successful sacrifice
+---@field m_recognized_entity_tags unsupported Privates
+---@field m_recognized_entity_tags_count unsupported Privates
+---@field m_current_entity_tags unsupported Privates
+
+---@class AnimalAIComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AnimalAIComponent
+
+---@class AnimalAIComponent
+---@field ai_state integer Members<br>---<br>Current state of ai, defines what the animal is doing
+---@field ai_state_timer integer Members<br>---<br>If not 0, then we wait till this frame to pop current state from our state stack
+---@field keep_state_alive_when_enabled boolean Members<br>---<br>if 1, will ensure state timer keeps current state alive for a while when Component is Enabled
+---@field preferred_job string Members<br>---<br>We always do this job, unless interrupted (i.e. by taking fire damage)
+---@field escape_if_damaged_probability integer Members<br>---<br>the chance of escaping if someone damages us. only works if 'can_fly = 0 '
+---@field attack_if_damaged_probability integer Members<br>---<br>the chance of counter-attacking if someone damages us, and we didn't escape
+---@field eye_offset_x integer Members<br>---<br>We cast rays from our position + eye_offset to check if we can see something
+---@field eye_offset_y integer Members<br>---<br>We cast rays from our position + eye_offset to check if we can see something
+---@field attack_only_if_attacked boolean Members<br>---<br>If 1, we never attack anyone unless attacked before by someone
+---@field dont_counter_attack_own_herd boolean Members<br>---<br>If 1, we don't attack members of our herd even if they accidentally attack us
+---@field creature_detection_range_x number Members<br>---<br>When looking for threats/prey this is the max distance from us on the X axis we scan
+---@field creature_detection_range_y number Members<br>---<br>When looking for threats/prey this is the max distance from us on the Y axis we scan
+---@field creature_detection_angular_range_deg number Members<br>---<br>When looking for threats/prey this is our field of view around the X axis. 90 means we scan the whole 180 degrees around the X axis, to the left and right
+---@field creature_detection_check_every_x_frames integer Members<br>---<br>Checks for threats/prey take place at least this many frames apart from each other
+---@field max_distance_to_cam_to_start_hunting number Members<br>---<br>JobDefault idles before we've been once at least this close to the camera
+---@field pathfinding_max_depth_no_target integer Members<br>---<br>The maximum depth (in nodes) path search use when we have not found prey yet
+---@field pathfinding_max_depth_has_target integer Members<br>---<br>The maximum depth (in nodes) path search use when we have found prey
+---@field aggressiveness_min number Members<br>---<br>what's the initial random aggressiveness of this creature
+---@field aggressiveness_max number Members<br>---<br>what's the initial random aggressiveness of this creature
+---@field tries_to_ranged_attack_friends boolean Members<br>---<br>if 1, the AI tries to attack whoever it considers a friend based on herd_ids, CHARMED and BERSERK status etc. useful e.g. for healers.
+---@field attack_melee_enabled boolean Members<br>---<br>If 1, and melee attack has been configured, we can perform melee attacks
+---@field attack_dash_enabled boolean Members<br>---<br>If 1, and dash attack has been configured, we can perform dash attacks (a long-distance melee attack where we dash towards the enemy)
+---@field attack_landing_ranged_enabled boolean Members<br>---<br>If 1, and ranged attack has been configured, we can perform ranged attacks
+---@field attack_ranged_enabled boolean Members<br>---<br>If 1, and ranged attack has been configured, we can perform ranged attacks
+---@field attack_knockback_multiplier number Members<br>---<br>If not 0, melee and dash attacks cause knockback to target
+---@field is_static_turret boolean Members<br>---<br>If 1, we can only attack in one fixed direction
+---@field attack_melee_max_distance integer Members<br>---<br>Maximum distance at which we can perform a melee attack
+---@field attack_melee_action_frame integer Members<br>---<br>The animation frame during which the melee attack damage is inflicted and visual effects are created
+---@field attack_melee_frames_between integer Members<br>---<br>The minimum number of frames we wait between melee attacks
+---@field attack_melee_damage_min number Members<br>---<br>Melee attack damage inclusive minimum amount. The damage is randomized between melee attack_damage_min and attack_melee_damage_max
+---@field attack_melee_damage_max number Members<br>---<br>Melee attack damage inclusive maximum amount. The damage is randomized between melee attack_damage_min and attack_melee_damage_max
+---@field attack_melee_impulse_vector_x number Members<br>---<br>The x component of the impulse that is applied to damaged entities
+---@field attack_melee_impulse_vector_y number Members<br>---<br>The y component of the impulse that is applied to damaged entities
+---@field attack_melee_impulse_multiplier number Members<br>---<br>A multiplier applied to attack_melee_impulse
+---@field attack_melee_offset_x number Members<br>---<br>Melee attack particle effects are created here
+---@field attack_melee_offset_y number Members<br>---<br>Melee attack particle effects are created here
+---@field attack_melee_finish_enabled boolean Members<br>---<br>If 1, we perform a finishing move when our attack would kill the target using the 'attack_finish' animation
+---@field attack_melee_finish_action_frame integer Members<br>---<br>The animation frame during which the melee attack finishing move damage is inflicted and visual effects are created
+---@field attack_dash_distance number Members<br>---<br>The maximum distance from enemy at which we can perform a dash attack. If a normal melee attack is possible we always do that instead
+---@field attack_dash_frames_between integer Members<br>---<br>The minimum number of frames we wait between dash attacks
+---@field attack_dash_damage number Members<br>---<br>The amount of damage inflicted by the dash attack
+---@field attack_dash_speed number Members<br>---<br>The speed at which we dash
+---@field attack_dash_lob number Members<br>---<br>The smaller this value is the more curved our dash attack trajectory is
+---@field attack_ranged_min_distance number Members<br>---<br>The minimum distance from enemy at which we can perform a ranged attack.
+---@field attack_ranged_max_distance number Members<br>---<br>The maximum distance from enemy at which we can perform a ranged attack.
+---@field attack_ranged_action_frame integer Members<br>---<br>The frame of the 'attack_ranged' animation during which the ranged attack actually occurs
+---@field attack_ranged_offset_x number Members<br>---<br>'attack_ranged_entity_file' is created here when performing a ranged attack
+---@field attack_ranged_offset_y number Members<br>---<br>'attack_ranged_entity_file' is created here when performing a ranged attack
+---@field attack_ranged_use_message boolean Members<br>---<br>If 1, we do ranged attacks by sending a Message_UseItem
+---@field attack_ranged_predict boolean Members<br>---<br>If 1, we attempt to predict target movement and shoot accordingly
+---@field attack_ranged_entity_file string Members<br>---<br>File to projectile entity that is created when performing a ranged attack
+---@field attack_ranged_entity_count_min integer Members<br>---<br>Minimum number of projectiles shot when performing a ranged attack
+---@field attack_ranged_entity_count_max integer Members<br>---<br>Maximum number of projectiles shot when performing a ranged attack
+---@field attack_ranged_use_laser_sight boolean Members<br>---<br>If 1, we draw a laser sight to our target. Requires entity to have a sprite with tag 'laser_sight'
+---@field attack_ranged_laser_sight_beam_kind boolean Members<br>---<br>0 = red, 1 = blue 
+---@field attack_ranged_aim_rotation_enabled boolean Members
+---@field attack_ranged_aim_rotation_speed number Members
+---@field attack_ranged_aim_rotation_shooting_ok_angle_deg number Members
+---@field attack_ranged_state_duration_frames integer Members<br>---<br>How long do we stay in the attack state, before other states are allowed?
+---@field hide_from_prey boolean Members<br>---<br>If 1, we attempt to hide from our target after a succesful attack
+---@field hide_from_prey_target_distance number Members<br>---<br>The minimum distance from our target where we should move when hiding
+---@field hide_from_prey_time integer Members<br>---<br>The number of frames we spend hiding and staying hiding
+---@field food_eating_create_particles boolean Members<br>---<br>If 1, we replace eaten cells with particles made of this material
+---@field eating_area_radius_x integer Members<br>---<br>1/2 width of the area from which we eat food
+---@field eating_area_radius_y integer Members<br>---<br>1/2 height of the area from which we eat food
+---@field mouth_offset_x integer Members<br>---<br>The center of the area from which we eat food
+---@field mouth_offset_y integer Members<br>---<br>The center of the area from which we eat food
+---@field defecates_and_pees boolean Members<br>---<br>If 1, we occasionally take a leak or a dump
+---@field butt_offset_x integer Members<br>---<br>Bodily wastes are created here
+---@field butt_offset_y integer Members<br>---<br>Bodily wastes are created here
+---@field pee_velocity_x number Members<br>---<br>The velocity at which our piss gets shot
+---@field pee_velocity_y number Members<br>---<br>The velocity at which our piss gets shot
+---@field needs_food boolean Members<br>---<br>If 1, we stop to eat if we encounter 'food_material' cells
+---@field sense_creatures boolean Members<br>---<br>If 1, we occasionally search our surroundings for prey and threats
+---@field sense_creatures_through_walls boolean Members<br>---<br>If 1, will see creatures even if the wall raycast fails
+---@field can_fly boolean Members<br>---<br>If 1, we can fly. Please set 'PathFindingComponent.can_fly' to 1 as well if this is 1
+---@field can_walk boolean Members<br>---<br>If 1, we can walk. Please set 'PathFindingComponent.can_walk' to 1 as well if this is 1
+---@field path_distance_to_target_node_to_turn_around integer Members<br>---<br>If we're further than this from target path finding node on the X-axis we turn to face it
+---@field path_cleanup_explosion_radius number Members<br>---<br>If we get stuck on ground we create an explosion this big to clear our surroundings a bit
+---@field max_distance_to_move_from_home number Members
+---@field attack_melee_finish_config_explosion unsupported Objects<br>---<br>If we have explosion, it's the setup for it
+---@field attack_ranged_frames_between integer Custom data types<br>---<br>The minimum number of frames we wait between ranged attacks
+---@field food_material integer Custom data types<br>---<br>The cell material we eat if encountering said material and 'needs_food' is 1
+---@field food_particle_effect_material integer Custom data types<br>---<br>We create particles made of this material when eating if 'food_eating_create_particles' is 1
+---@field mAggression number Custom data types<br>---<br>the greater this value the more likely we're to attack creatures from other herds
+---@field mAiStateStack unsupported Privates<br>---<br>a stack of actions and times they take, we can push new actions to the front and pop them from there
+---@field mAiStateLastSwitchFrame integer Privates<br>---<br>when was the last time we switched a state
+---@field mAiStatePrev integer Privates<br>---<br>previous AI state
+---@field mCreatureDetectionNextCheck integer Privates<br>---<br>threat/prey check, next time we check for threat/prey
+---@field mGreatestThreat integer Privates<br>---<br>the entity we consider to be our greatest threat
+---@field mGreatestPrey integer Privates<br>---<br>the entity we consider to be our most important prey
+---@field mSelectedMultiAttack integer Privates<br>---<br>which AIAttackComponent attack are we using?
+---@field mHasFoundPrey boolean Privates<br>---<br>1, if we have ever found prey
+---@field mHasBeenAttackedByPlayer boolean Privates<br>---<br>1, if we have been ever attacked
+---@field mHasStartedAttacking boolean Privates<br>---<br>1, if we have ever started attacking anyone
+---@field mNearbyFoodCount integer Privates<br>---<br>amount of 'food_material' near us
+---@field mEatNextFrame integer Privates<br>---<br>next frame we can eat
+---@field mEatTime integer Privates<br>---<br>time we've been constantly eating
+---@field mFrameNextGiveUp integer Privates<br>---<br>next frame we consider ourselves to be stuck
+---@field mLastFramesMovementAreaMin unsupported Privates<br>---<br>AABB min of the area where we've been since the last time we got stuck
+---@field mLastFramesMovementAreaMax unsupported Privates<br>---<br>AABB max of the area where we've been since the last time we got stuck
+---@field mFoodMaterialId integer Privates<br>---<br>cached id of 'food_material'
+---@field mFoodParticleEffectMaterialId integer Privates<br>---<br>cached id of 'food_particle_effect_material'
+---@field mNextJumpLob number Privates<br>---<br>we use this for next jump
+---@field mNextJumpTarget unsupported Privates<br>---<br>we use this for next jump
+---@field mNextJumpHasVelocity boolean Privates<br>---<br>we use this for next jump
+---@field mLastFrameJumped integer Privates<br>---<br>previous frame we launched into a jump
+---@field mFramesWithoutTarget integer Privates
+---@field mLastFrameCanDamageOwnHerd integer Privates
+---@field mHomePosition unsupported Privates<br>---<br>where our home is located
+---@field mLastFrameAttackWasDone integer Privates<br>---<br>when was the last time we did an attack (not necessarily did damage to anyone though)
+---@field mNextFrameCanCallFriend integer Privates
+---@field mNextFrameRespondFriend integer Privates
+---@field mHasNoticedPlayer boolean Privates<br>---<br>if 1, we have noticed player or player projectile
+---@field mRangedAttackCurrentAimAngle number Privates<br>---<br>which direction does our gun currently point at, physically saying?
+---@field mRangedAttackNextFrame integer Privates<br>---<br>next frame we can perform a ranged attack
+---@field mMeleeAttackNextFrame integer Privates<br>---<br>next frame we can perform a melee attack
+---@field mNextMeleeAttackDamage number Privates<br>---<br>the amount of damage our next melee attack will cause. used by finishing move logic
+---@field mMeleeAttacking boolean Privates<br>---<br>1, if we're doing a melee attack
+---@field mMeleeAttackDashNextFrame integer Privates<br>---<br>the next frame we can perform a melee attack
+---@field mCurrentJob unsupported Privates<br>---<br>info about our current job. sorta legacy and could be simplified because the RTS logic is not used anywhere but doesn't have much overhead either.
+
+---@class ArcComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ArcComponent
+
+---@class ArcComponent
+---@field lifetime integer Members<br>---<br>remaining number of frames the arc exists
+---@field type unsupported Custom data types<br>---<br>which implementation the arc should use
+---@field material integer Custom data types<br>---<br>string name for the material the arc is made of
+---@field mArcTarget integer Privates<br>---<br>if 'mArcTarget' points to an existing entity a lighting arc will be created between this entity and 'mArcTarget'
+
+---@class AreaDamageComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AreaDamageComponent
+
+---@class AreaDamageComponent
+---@field circle_radius number Members<br>---<br>if > 0, will only damage entities inside the aabb rectangle which are closer than 'circle_radius' to the aabb center.
+---@field damage_per_frame number Members
+---@field update_every_n_frame integer Members
+---@field entity_responsible integer Members<br>---<br>if NULL, will try to figure out who to blame
+---@field death_cause string Members
+---@field entities_with_tag string Members<br>---<br>damage entities with this tag
+---@field aabb_min unsupported Custom data types
+---@field aabb_max unsupported Custom data types
+---@field damage_type unsupported Custom data types<br>---<br>the damage type
+
+---@class AttachToEntityComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AttachToEntityComponent
+
+---@class AttachToEntityComponent
+---@field only_position boolean Members<br>---<br>if 1, we only inherit position. it is calculated as follows: target_position + target_offset * target_scale
+---@field target_hotspot_tag string Members<br>---<br>if set, we apply the offset of target HotSpot with this tag
+---@field target_sprite_id integer Members<br>---<br>if >= 0, the Nth sprite transform in target entity is inherited
+---@field rotate_based_on_x_scale boolean Members<br>---<br>if 1, the rotation is set to 0 deg if scale >= 0 else to 180 deg
+---@field destroy_component_when_target_is_gone boolean Members<br>---<br>should probably be on by default
+---@field Transform unsupported Custom data types
+---@field target integer Privates<br>---<br>EntityID of the entity we're attached to. This will fail after save/load, unfortunately
+---@field mUpdateFrame integer Privates
+
+---@class AudioComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AudioComponent
+
+---@class AudioComponent
+---@field file string Members
+---@field event_root string Members
+---@field audio_physics_material string Members
+---@field set_latest_event_position boolean Members
+---@field remove_latest_event_on_destroyed boolean Members
+---@field send_message_on_event_dead boolean Members
+---@field play_only_if_visible boolean Members<br>---<br>plays sounds only if entity position is on screen and not covered by fog of war
+---@field m_audio_physics_material integer Privates
+---@field m_latest_source unsupported Privates
+
+---@class AudioListenerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AudioListenerComponent
+
+---@class AudioListenerComponent
+---@field z number Members
+
+---@class AudioLoopComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr AudioLoopComponent
+
+---@class AudioLoopComponent
+---@field file string Members
+---@field event_name string Members
+---@field auto_play boolean Members
+---@field auto_play_if_enabled boolean Members
+---@field play_on_component_enable boolean Members
+---@field calculate_material_lowpass boolean Members
+---@field set_speed_parameter boolean Members
+---@field set_speed_parameter_only_based_on_x_movement boolean Members
+---@field set_speed_parameter_only_based_on_y_movement boolean Members
+---@field volume_autofade_speed number Members
+---@field m_volume number Privates
+---@field m_intensity number Privates
+---@field m_intensity2 number Privates
+---@field m_source unsupported Privates
+---@field m_frame_created integer Privates
+
+---@class BiomeTrackerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr BiomeTrackerComponent
+
+---@class BiomeTrackerComponent
+---@field limit_to_every_n_frame integer Members<br>---<br>if > 1, we will only check the biome every n frames
+---@field unsafe_current_biome unsupported Privates<br>---<br>DO NOT ACCESS, since this can be in valid
+---@field current_biome_name string Privates<br>---<br>used to track in which biome we are at
+
+---@class BlackHoleComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr BlackHoleComponent
+
+---@class BlackHoleComponent
+---@field radius number Members
+---@field particle_attractor_force number Members
+---@field damage_probability number Members
+---@field damage_amount number Members
+---@field m_particle_attractor_id unsupported Privates
+
+---@class BookComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr BookComponent
+
+---@class BookComponent
+---@field TEMP_TEMPY number Members
+---@field TEMP_TEMP_TEMP number Members
+
+---@class BossDragonComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr BossDragonComponent
+
+---@class BossDragonComponent
+---@field speed number Members
+---@field speed_hunt number Members
+---@field acceleration number Members
+---@field direction_adjust_speed number Members
+---@field direction_adjust_speed_hunt number Members
+---@field gravity number Members
+---@field tail_gravity number Members
+---@field part_distance number Members
+---@field ground_check_offset integer Members
+---@field eat_ground_radius number Members
+---@field eat_ground boolean Members<br>---<br>does the worm destroy the ground it moves through or not?
+---@field hitbox_radius number Members
+---@field bite_damage number Members<br>---<br>how much damage does this do when it hits an entity
+---@field target_kill_radius number Members
+---@field target_kill_ragdoll_force number Members
+---@field hunt_box_radius number Members
+---@field random_target_box_radius number Members
+---@field new_hunt_target_check_every integer Members
+---@field new_random_target_check_every integer Members
+---@field jump_cam_shake number Members
+---@field jump_cam_shake_distance number Members
+---@field eat_anim_wait_mult number Members
+---@field projectile_1 string Members
+---@field projectile_1_count integer Members
+---@field projectile_2 string Members
+---@field projectile_2_count integer Members
+---@field ragdoll_filename string Members
+---@field mTargetEntityId integer Privates
+---@field mTargetVec unsupported Privates
+---@field mGravVelocity number Privates
+---@field mSpeed number Privates
+---@field mRandomTarget unsupported Privates
+---@field mLastLivingTargetPos unsupported Privates
+---@field mNextTargetCheckFrame integer Privates
+---@field mNextHuntTargetCheckFrame integer Privates
+---@field mOnGroundPrev boolean Privates
+---@field mMaterialIdPrev integer Privates
+---@field mPhase integer Privates
+---@field mNextPhaseSwitchTime integer Privates
+---@field mPartDistance number Privates
+---@field mIsInitialized boolean Privates
+
+---@class BossHealthBarComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr BossHealthBarComponent
+
+---@class BossHealthBarComponent
+---@field gui boolean Members
+---@field gui_special_final_boss boolean Members
+---@field in_world boolean Members
+---@field gui_max_distance_visible number Members
+---@field mOldSpritesDestroyed boolean Privates
+
+---@class CameraBoundComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CameraBoundComponent
+
+---@class CameraBoundComponent
+---@field enabled boolean Members<br>---<br>If enabled, kills this component if it's outside the camera distance
+---@field distance number Members<br>---<br>Distance in pixels from the center of camera, if outside this distance the entity is destroyed
+---@field distance_border number Members<br>---<br>Offset towards camera in pixels from 'distance' where the entity is respawned if it was frozen
+---@field max_count integer Members<br>---<br>If more than 'max_count' entities of this type exist the one furthest from camera is destroyed
+---@field freeze_on_distance_kill boolean Members<br>---<br>If true and the entity went too far - this entity will be stored so we can later respawn it where it was destroyed because it got too far from the camera?
+---@field freeze_on_max_count_kill boolean Members<br>---<br>If true and the entity was one too many of its kind - this entity will be stored so we can later respawn it where it was destroyed because it got too far from the camera?
+
+---@class CardinalMovementComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CardinalMovementComponent
+
+---@class CardinalMovementComponent
+---@field horizontal_movement boolean Members<br>---<br>allow horizontal movement
+---@field vertical_movement boolean Members<br>---<br>allow vertical movement
+---@field intercardinal_movement boolean Members<br>---<br>allow intercardinal movement
+---@field mPrevPos unsupported Privates
+
+---@class CellEaterComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CellEaterComponent
+
+---@class CellEaterComponent
+---@field radius number Members
+---@field eat_probability integer Members
+---@field only_stain boolean Members
+---@field eat_dynamic_physics_bodies boolean Members
+---@field limited_materials boolean Members<br>---<br>if true, will only eat the materials defined in material_list
+---@field ignored_material_tag string Members<br>---<br>if set, will not eat any materials with this tag. please note that this lowers the performance of cell eating by some amount.
+---@field ignored_material integer Custom data types<br>---<br>String name of a material that shouldn't be eaten by the component
+---@field materials unsupported Custom data types<br>---<br>is a list of accepted materials sorted
+
+---@class CharacterCollisionComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CharacterCollisionComponent
+
+---@class CharacterCollisionComponent
+---@field getting_crushed_threshold integer Members
+---@field moving_up_before_getting_crushed_threshold integer Members
+---@field getting_crushed_counter integer Privates<br>---<br>1.12.2018 - Is this still used?
+---@field stuck_in_ground_counter integer Privates<br>---<br>used this mostly for player to figure out if it's stuck in ground
+---@field mCollidedHorizontally boolean Privates
+
+---@class CharacterDataComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CharacterDataComponent
+
+---@class CharacterDataComponent
+---@field platforming_type integer Members<br>---<br>0 = oldest, 1 = newer, 2 = safest
+---@field mass number Members<br>---<br>1.0 = approx. mass of player
+---@field buoyancy_check_offset_y integer Members
+---@field liquid_velocity_coeff number Members<br>---<br>how much do liquids move this character. e.g. when standing in a flowing river
+---@field gravity number Members
+---@field fly_recharge_spd number Members
+---@field fly_recharge_spd_ground number Members
+---@field flying_needs_recharge boolean Members<br>---<br>const variable... player has this as true
+---@field flying_in_air_wait_frames integer Members<br>---<br>to fix the tap tap tap flying cheese, we wait this many frames before recharging in air
+---@field flying_recharge_removal_frames integer Members<br>---<br>another fix to the tap tap - this is how many frames from pressing down up we'll remove fly charge
+---@field climb_over_y integer Members
+---@field check_collision_max_size_x integer Members
+---@field check_collision_max_size_y integer Members
+---@field is_on_ground boolean Members
+---@field is_on_slippery_ground boolean Members
+---@field ground_stickyness number Members
+---@field effect_hit_ground boolean Members
+---@field eff_hg_damage_min integer Members<br>---<br>if we want to damage ground when hitting it... this is the place
+---@field eff_hg_damage_max integer Members<br>---<br>if we want to damage ground when hitting it... this is the place
+---@field eff_hg_position_x number Members
+---@field eff_hg_position_y number Members
+---@field eff_hg_size_x number Members
+---@field eff_hg_size_y number Members
+---@field eff_hg_velocity_min_x number Members
+---@field eff_hg_velocity_max_x number Members
+---@field eff_hg_velocity_min_y number Members
+---@field eff_hg_velocity_max_y number Members
+---@field eff_hg_offset_y number Members
+---@field eff_hg_update_box2d boolean Members<br>---<br>if true, will move physics bodies that it hits
+---@field eff_hg_b2force_multiplier number Members<br>---<br>multiplies the velocity with this...
+---@field destroy_ground number Members<br>---<br>how much damage do we do the ground when land on it
+---@field send_transform_update_message boolean Members<br>---<br>if 1, will send Message_TransformUpdated to updated entities and their children when the component is processed by PlayerCollisionSystem or CharacterCollisionSystem
+---@field dont_update_velocity_and_xform boolean Members<br>---<br>might be useful if you want to use CharacterCollisionSystem to only update on_ground status
+---@field mFlyingTimeLeft number Members<br>---<br>How much flying energy do we have left? - NOTE( Petri ): 1.3.2023 - This used to be a private variable. It was changed to fix the save/load infinite flying bug.
+---@field collision_aabb_min_x number Custom data types
+---@field collision_aabb_max_x number Custom data types
+---@field collision_aabb_min_y number Custom data types
+---@field collision_aabb_max_y number Custom data types
+---@field fly_time_max number Custom data types<br>---<br>how much flying energy + 
+---@field mFramesOnGround integer Privates
+---@field mLastFrameOnGround integer Privates
+---@field mVelocity unsupported Privates
+---@field mCollidedHorizontally boolean Privates<br>---<br>moved this here from CharacterCollisionComponent - since that is multithreaded and we needed a non multithreaded version
+
+---@class CharacterPlatformingComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CharacterPlatformingComponent
+
+---@class CharacterPlatformingComponent
+---@field jump_velocity_x number Members
+---@field jump_velocity_y number Members
+---@field jump_keydown_buffer integer Members
+---@field fly_speed_mult number Members<br>---<br>AI stuff
+---@field fly_speed_change_spd number Members<br>---<br>player
+---@field fly_model_player boolean Members<br>---<br>if true, uses player fly model
+---@field fly_smooth_y boolean Members<br>---<br>if true, smooths out the AI fly model
+---@field accel_x number Members
+---@field accel_x_air number Members
+---@field pixel_gravity number Members
+---@field swim_idle_buoyancy_coeff number Members
+---@field swim_down_buoyancy_coeff number Members
+---@field swim_up_buoyancy_coeff number Members
+---@field swim_drag number Members<br>---<br>when in water velocity *= swim_drag
+---@field swim_extra_horizontal_drag number Members<br>---<br>when in water velocity.x *= swim_extra_horizontal_drag
+---@field mouse_look boolean Members
+---@field mouse_look_buffer number Members
+---@field keyboard_look boolean Members<br>---<br>if true, turns based on if left or right has been pressed down
+---@field turning_buffer number Members
+---@field animation_to_play string Members
+---@field animation_to_play_next string Members
+---@field run_animation_velocity_switching_threshold number Members
+---@field run_animation_velocity_switching_enabled boolean Members
+---@field turn_animation_frames_between integer Members
+---@field precision_jumping_max_duration_frames integer Members<br>---<br>maximum duration of precision jump or knockback. -1 = infinite
+---@field audio_liquid_splash_intensity number Members
+---@field velocity_min_x number Custom data types
+---@field velocity_max_x number Custom data types
+---@field velocity_min_y number Custom data types
+---@field velocity_max_y number Custom data types
+---@field run_velocity number Custom data types
+---@field fly_velocity_x number Custom data types
+---@field fly_speed_max_up number Custom data types
+---@field fly_speed_max_down number Custom data types
+---@field mExAnimationPos unsupported Privates
+---@field mFramesInAirCounter integer Privates
+---@field mIsPrecisionJumping boolean Privates
+---@field mPrecisionJumpingTime integer Privates
+---@field mPrecisionJumpingSpeedX number Privates
+---@field mPrecisionJumpingTimeLeft integer Privates
+---@field mFlyThrottle number Privates
+---@field mSmoothedFlyingTargetY number Privates
+---@field mJetpackEmitting integer Privates<br>---<br>-1 = undefined, 0 = not emitting, 1 = emitting
+---@field mNextTurnAnimationFrame integer Privates
+---@field mFramesNotSwimming integer Privates<br>---<br>0 = currently swimming
+---@field mFramesSwimming integer Privates<br>---<br>0 = not currently swimming
+---@field mShouldCrouch boolean Privates
+---@field mShouldCrouchPrev boolean Privates
+---@field mLastPostureSwitchFrame integer Privates
+---@field mLookOverrideLastFrame integer Privates
+---@field mLookOverrideDirection integer Privates
+
+---@class CharacterStatsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CharacterStatsComponent
+
+---@class CharacterStatsComponent
+---@field stats unsupported Privates
+
+---@class CollisionTriggerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CollisionTriggerComponent
+
+---@class CollisionTriggerComponent
+---@field width number Members
+---@field height number Members
+---@field radius number Members
+---@field required_tag string Members
+---@field remove_component_when_triggered boolean Members
+---@field destroy_this_entity_when_triggered boolean Members
+---@field timer_for_destruction integer Members
+---@field self_trigger boolean Members<br>---<br>if true, the shooter can trigger it
+---@field skip_self_frames integer Members<br>---<br>skips checks against self during these frames
+---@field mTimer integer Privates
+
+---@class ConsumableTeleportComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ConsumableTeleportComponent
+
+---@class ConsumableTeleportComponent
+---@field create_other_end boolean Members
+---@field is_at_home boolean Members
+---@field collision_radius number Members
+---@field target_id unsupported Members
+---@field id unsupported Members
+---@field mNextUsableFrame integer Members
+---@field mHasOtherEnd boolean Members
+---@field target_location unsupported Custom data types
+
+---@class ControllerGoombaAIComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ControllerGoombaAIComponent
+
+---@class ControllerGoombaAIComponent
+---@field auto_turn_around_enabled boolean Members<br>---<br>disable this if you don't want creature to 'look around', while standing still
+---@field wait_to_turn_around integer Members
+---@field wall_hit_wait integer Members
+---@field check_wall_detection boolean Members
+---@field wall_detection_aabb_min_x number Members
+---@field wall_detection_aabb_max_x number Members
+---@field wall_detection_aabb_min_y number Members
+---@field wall_detection_aabb_max_y number Members
+---@field check_floor_detection boolean Members
+---@field floor_detection_aabb_min_x number Members
+---@field floor_detection_aabb_max_x number Members
+---@field floor_detection_aabb_min_y number Members
+---@field floor_detection_aabb_max_y number Members
+---@field mChangingDirectionCounter integer Privates
+
+---@class ControlsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ControlsComponent
+
+---@class ControlsComponent
+---@field polymorph_hax boolean Members
+---@field polymorph_next_attack_frame integer Members
+---@field enabled boolean Members
+---@field gamepad_indirect_aiming_enabled boolean Members
+---@field gamepad_fire_on_thumbstick_extend boolean Members
+---@field gamepad_fire_on_thumbstick_extend_threshold number Members
+---@field mButtonDownFire boolean Privates
+---@field mButtonFrameFire integer Privates
+---@field mButtonLastFrameFire integer Privates
+---@field mButtonDownFire2 boolean Privates
+---@field mButtonFrameFire2 integer Privates
+---@field mButtonDownAction boolean Privates
+---@field mButtonFrameAction integer Privates
+---@field mButtonDownThrow boolean Privates
+---@field mButtonFrameThrow integer Privates
+---@field mButtonDownInteract boolean Privates
+---@field mButtonFrameInteract integer Privates
+---@field mButtonDownLeft boolean Privates
+---@field mButtonFrameLeft integer Privates
+---@field mButtonDownRight boolean Privates
+---@field mButtonFrameRight integer Privates
+---@field mButtonDownUp boolean Privates
+---@field mButtonFrameUp integer Privates
+---@field mButtonDownDown boolean Privates
+---@field mButtonFrameDown integer Privates
+---@field mButtonDownJump boolean Privates
+---@field mButtonFrameJump integer Privates
+---@field mButtonDownRun boolean Privates
+---@field mButtonFrameRun integer Privates
+---@field mButtonDownFly boolean Privates
+---@field mButtonFrameFly integer Privates
+---@field mButtonDownDig boolean Privates
+---@field mButtonFrameDig integer Privates
+---@field mButtonDownChangeItemR boolean Privates
+---@field mButtonFrameChangeItemR integer Privates
+---@field mButtonCountChangeItemR integer Privates<br>---<br>note these have special count property
+---@field mButtonDownChangeItemL boolean Privates
+---@field mButtonFrameChangeItemL integer Privates
+---@field mButtonCountChangeItemL integer Privates<br>---<br>note these have special count property
+---@field mButtonDownInventory boolean Privates
+---@field mButtonFrameInventory integer Privates
+---@field mButtonDownHolsterItem boolean Privates
+---@field mButtonFrameHolsterItem integer Privates
+---@field mButtonDownDropItem boolean Privates
+---@field mButtonFrameDropItem integer Privates
+---@field mButtonDownKick boolean Privates
+---@field mButtonFrameKick integer Privates
+---@field mButtonDownEat boolean Privates
+---@field mButtonFrameEat integer Privates
+---@field mButtonDownLeftClick boolean Privates<br>---<br>NOTE! Ignores gamepad, if mouse is pressed this will be true.
+---@field mButtonFrameLeftClick integer Privates<br>---<br>NOTE! Ignores gamepad, if mouse is pressed this will be true.
+---@field mButtonDownRightClick boolean Privates<br>---<br>NOTE! Ignores gamepad, if mouse is pressed this will be true.
+---@field mButtonFrameRightClick integer Privates<br>---<br>NOTE! Ignores gamepad, if mouse is pressed this will be true.
+---@field mButtonDownTransformLeft boolean Privates<br>---<br>NOT IN USE!
+---@field mButtonFrameTransformLeft integer Privates<br>---<br>NOT IN USE!
+---@field mButtonDownTransformRight boolean Privates<br>---<br>NOT IN USE!
+---@field mButtonFrameTransformRight integer Privates<br>---<br>NOT IN USE!
+---@field mButtonDownTransformUp boolean Privates<br>---<br>NOT IN USE!
+---@field mButtonFrameTransformUp integer Privates<br>---<br>NOT IN USE!
+---@field mButtonCountTransformUp integer Privates<br>---<br>NOT IN USE!
+---@field mButtonDownTransformDown boolean Privates<br>---<br>NOT IN USE!
+---@field mButtonFrameTransformDown integer Privates<br>---<br>NOT IN USE!
+---@field mButtonCountTransformDown integer Privates<br>---<br>NOT IN USE!
+---@field mFlyingTargetY number Privates
+---@field mAimingVector unsupported Privates
+---@field mAimingVectorNormalized unsupported Privates<br>---<br>Aiming vector normalized to unit sphere.
+---@field mAimingVectorNonZeroLatest unsupported Privates
+---@field mGamepadAimingVectorRaw unsupported Privates
+---@field mJumpVelocity unsupported Privates<br>---<br>used mostly by AI only?
+---@field mMousePosition unsupported Privates
+---@field mMousePositionRaw unsupported Privates
+---@field mMousePositionRawPrev unsupported Privates
+---@field mMouseDelta unsupported Privates
+---@field mGamepadIndirectAiming unsupported Privates
+---@field mGamePadCursorInWorld unsupported Privates<br>---<br>where the aiming cursor is in the world, updated by platformshooterplayer_system 
+---@field mButtonDownDelayLineFire integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineFire2 integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineRight integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineLeft integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineUp integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineDown integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineKick integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineThrow integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineJump integer Privates<br>---<br>Used to delay input for some game effects
+---@field mButtonDownDelayLineFly integer Privates<br>---<br>Used to delay input for some game effects
+---@field input_latency_frames integer Privates<br>---<br>Adds latency to some inputs. Used by some game effects. Max 31.
+
+---@class CrawlerAnimalComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CrawlerAnimalComponent
+
+---@class CrawlerAnimalComponent
+---@field ray_length number Members
+---@field ray_count integer Members
+---@field gravity number Members
+---@field terminal_velocity number Members
+---@field speed number Members
+---@field give_up_area_radius integer Members
+---@field give_up_time integer Members
+---@field attack_from_ceiling_check_ray_length number Members
+---@field attack_from_ceiling_check_every_n_frames integer Members
+---@field collision_damage number Members
+---@field collision_damage_radius number Members
+---@field collision_damage_frames_between integer Members
+---@field animate boolean Members
+---@field mDir boolean Privates
+---@field mFrameNextGiveUp integer Privates
+---@field mFrameNextDamage integer Privates
+---@field mFrameNextAttackFromCeilingCheck integer Privates
+---@field mMin unsupported Privates
+---@field mMax unsupported Privates
+---@field mPrevNonSnappedPosition unsupported Privates
+---@field mPrevCellPosition unsupported Privates
+---@field mPrevCellPosition2 unsupported Privates
+---@field mPrevCellPosition3 unsupported Privates
+---@field mPrevCellPosition4 unsupported Privates
+---@field mPrevCellPosition5 unsupported Privates
+---@field mPrevCellPosition6 unsupported Privates
+---@field mPrevCellPosition7 unsupported Privates
+---@field mPrevCellPosition8 unsupported Privates
+---@field mLatestPosition unsupported Privates
+---@field mPrevFalling boolean Privates
+---@field mIsInitialized boolean Privates
+---@field mVelocityY number Privates
+---@field mAngle number Privates
+---@field mMovementStepAccumulator number Privates
+
+---@class CutThroughWorldDoneHereComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr CutThroughWorldDoneHereComponent
+
+---@class CutThroughWorldDoneHereComponent
+---@field id_of_done_cut unsupported Members
+
+---@class DamageModelComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DamageModelComponent
+
+---@class DamageModelComponent
+---@field hp number Members<br>---<br>hit points at the moment
+---@field max_hp number Members<br>---<br>the maximum hp that this can have, we'll set this when loading
+---@field max_hp_cap number Members<br>---<br>the maximum 'max_hp' that this can have, <= 0 means no limits. Used by perks such as GLASS_CANNON
+---@field max_hp_old number Members<br>---<br>used for UI rendering
+---@field critical_damage_resistance number Members<br>---<br>0.0 = all critical damage multiplier is applied. 1.0 = no critical damage multiplier is applied
+---@field invincibility_frames integer Members<br>---<br>if positive, doesn't take damage
+---@field falling_damages boolean Members<br>---<br>do we take fall damage
+---@field falling_damage_height_min number Members<br>---<br>how far do we need to fall to take damage, we start with this height, the peasant takes min damage from this
+---@field falling_damage_height_max number Members<br>---<br>after this the peasant always takes the maximum fall damage
+---@field falling_damage_damage_min number Members<br>---<br>when we fall over height_min we take this much, lineary ramping to damage_max
+---@field falling_damage_damage_max number Members<br>---<br>when we fall over height_min we take this much, lineary ramping to damage_max
+---@field air_needed boolean Members<br>---<br>Do we breath, can we take damage from not breathing?
+---@field air_in_lungs number Members<br>---<br>How much air do we have in our lungs? - after the air runs out we take damage
+---@field air_in_lungs_max number Members<br>---<br>how much air can we have in our lungs, it's filled to this point if we're not in water
+---@field air_lack_of_damage number Members<br>---<br>(* dt)... damage in a second if we're in the water
+---@field minimum_knockback_force number Members<br>---<br>Minimum knockback force required to do the knockback
+---@field materials_damage boolean Members<br>---<br>should materials do damage or not?
+---@field material_damage_min_cell_count integer Members<br>---<br>if material damage is received from less than 'material_damage_min_cell_count' this frame, it is ignored
+---@field materials_that_damage string Members<br>---<br>list of materials that do damage, separated by ',' e.g. 'acid, fire, smoke'
+---@field materials_how_much_damage string Members<br>---<br>list of damage amount per material in materials_that_damage, separated by ','
+---@field materials_damage_proportional_to_maxhp boolean Members<br>---<br>if damage from materials is proportional to max hp, instead of just damage
+---@field physics_objects_damage boolean Members<br>---<br>if true, will take damage from physics objects that hit it
+---@field materials_create_messages boolean Members<br>---<br>should collisions with certain materials create messages or not?
+---@field materials_that_create_messages string Members<br>---<br>list of materials that generate CollisionWithCell messages, separated by ',' e.g. 'acid, fire, smoke'
+---@field ragdoll_filenames_file string Members<br>---<br>the file from which to load a ragdoll on death'
+---@field ragdoll_material string Members<br>---<br>what material is the ragdoll made out of
+---@field ragdoll_offset_x number Members<br>---<br>where should the ragdoll be created relative to our entity position'
+---@field ragdoll_offset_y number Members<br>---<br>where should the ragdoll be created relative to our entity position'
+---@field blood_material string Members<br>---<br>this is the material that gets thrown as particles when this entity takes damage
+---@field blood_spray_material string Members<br>---<br>this is the material that gets thrown as particles when this entity sprays blood on death
+---@field blood_spray_create_some_cosmetic boolean Members<br>---<br>if true, we force some blood spray particles to be cosmetic (can be enabled to avoid making a huge mess of blood spray)
+---@field blood_multiplier number Members<br>---<br>how much blood, this is the multiplier used for sprouting lots or little blood
+---@field ragdoll_blood_amount_absolute integer Members<br>---<br>if > -1, this is the absolute amount of blood we share between particle emitters in the ragdoll
+---@field blood_sprite_directional string Members<br>---<br>this sprite is loaded at damage position if we take damage that creates a blood effect
+---@field blood_sprite_large string Members<br>---<br>this sprite is loaded at damage position if we take explosion/heavy damage
+---@field healing_particle_effect_entity string Members<br>---<br>if this is set, will load this entity as a child of this entity, when this entity is healed
+---@field create_ragdoll boolean Members<br>---<br>if 0, we skip ragdoll creation on death
+---@field ragdollify_child_entity_sprites boolean Members<br>---<br>if 1, we ragdollify child entity sprites
+---@field ragdollify_root_angular_damping number Members<br>---<br>If ragdoll_filenames_file= and > 0, the angular damping of the first ragdoll body is set to this value.
+---@field ragdollify_disintegrate_nonroot boolean Members<br>---<br>If ragdoll_filenames_file= and true, all but the first sprite on the root entity will be disintegrated instead of being turned into physics bodies.
+---@field wait_for_kill_flag_on_death boolean Members<br>---<br>if 1, we wont kill the entity along with kill fx and ragdoll until 'kill' is 1
+---@field kill_now boolean Members<br>---<br>if 1, we wont kill the entity along with kill fx and ragdoll until 'kill_now' is 1
+---@field drop_items_on_death boolean Members<br>---<br>drop the abilities as items on death?
+---@field ui_report_damage boolean Members<br>---<br>If 1, damage numbers are displayed when this entity is damaged
+---@field ui_force_report_damage boolean Members<br>---<br>If 1, damage numbers are displayed when this entity is damaged, even if the numbers are disabled in settings
+---@field in_liquid_shooting_electrify_prob integer Members<br>---<br>when shooting underwater how likely are we to electrify the water
+---@field wet_status_effect_damage number Members<br>---<br>how much damage per 10 frames is done if entity has 'wet' status effect
+---@field is_on_fire boolean Members<br>---<br>Tells us we're on fire or not
+---@field fire_probability_of_ignition number Members<br>---<br>what is the probability that we'll ignite, 0 means won't ever ignite
+---@field fire_how_much_fire_generates integer Members<br>---<br>how many fire particles do we generate each frame
+---@field fire_damage_ignited_amount number Members<br>---<br>how much damage does being ignited do?
+---@field fire_damage_amount number Members<br>---<br>how much damage does fire do?, 0.2 is pretty good
+---@field mLastElectricityResistanceFrame integer Members<br>---<br>Last frame electricity has no effect. Should not be private!
+---@field mLastFrameReportedBlock integer Members<br>---<br>Last frame a damage block message was displayed for this entity
+---@field mLastMaxHpChangeFrame integer Members<br>---<br>used for UI rendering
+---@field damage_multipliers unsupported Objects<br>---<br>the multipliers applied to different types of damage
+---@field ragdoll_fx_forced noita_ragdoll_fx Custom data types<br>---<br>if set, will force this ragdoll fx to happen everytime
+---@field mIsOnFire boolean Privates<br>---<br>private variable to check when we're on fire and not
+---@field mFireProbability integer Privates<br>---<br>this gets decreased if we can't ignite anything else
+---@field mFireFramesLeft integer Privates<br>---<br>this is the remaining frames we're on fire
+---@field mFireDurationFrames integer Privates<br>---<br>this is the total duration in frames we're on fire
+---@field mFireTriedIgniting boolean Privates<br>---<br>private variable to check when we could have been ignited or not
+---@field mLastCheckX integer Privates<br>---<br>an optimization, so we don't have to check everything every frame
+---@field mLastCheckY integer Privates<br>---<br>an optimization, so we don't have to check everything every frame
+---@field mLastCheckTime integer Privates<br>---<br>an optimization, so we don't have to check everything every frame
+---@field mLastMaterialDamageFrame integer Privates<br>---<br>this is the last frame we took material damage
+---@field mFallIsOnGround boolean Privates<br>---<br>for fall damage, keeps a private variable about if we're on ground or not
+---@field mFallHighestY number Privates<br>---<br>private var to keep track of how high have we flown to
+---@field mFallCount integer Privates<br>---<br>how many times have we fallen? This is used to make sure we don't take damage from the first fall
+---@field mAirAreWeInWater boolean Privates<br>---<br>a private variable to track our state in drowning
+---@field mAirFramesNotInWater integer Privates<br>---<br>how many frames have been with air to breathe
+---@field mAirDoWeHave boolean Privates<br>---<br>a private variable to track our state in drowning
+---@field mTotalCells integer Privates<br>---<br>how many cells are there total
+---@field mLiquidCount integer Privates<br>---<br>how many of the cells are liquid
+---@field mLiquidMaterialWeAreIn integer Privates<br>---<br>stores the liquid material we're in... may not be the most accurate
+---@field int unsupported Privates<br>---<br>NOTE! Sorted! a list of materials that do damage (materials_that_damage)
+---@field float unsupported Privates<br>---<br>NOTE! Sorted! a list of materials that do damage (materials_that_damage)
+---@field int unsupported Privates<br>---<br>NOTE! Sorted! a list of materials that create messages (materials_that_create_messages)
+---@field int unsupported Privates<br>---<br>Number of cells per collided with this frame. Order matches mCollisionMessageMaterials
+---@field float unsupported Privates<br>---<br>A list of damage per material that damages us. In same order as materials
+---@field mFallDamageThisFrame number Privates<br>---<br>Amount of fall damage received this frame
+---@field mElectricityDamageThisFrame number Privates<br>---<br>Amount of electricity damage received this frame
+---@field mPhysicsDamageThisFrame number Privates<br>---<br>max physics damage we have taken this round
+---@field mPhysicsDamageVecThisFrame unsupported Privates<br>---<br>direction of physics damage
+---@field mPhysicsDamageLastFrame integer Privates<br>---<br>frame number when we took physics damage
+---@field mPhysicsDamageEntity integer Privates<br>---<br>the physics entity that hit us
+---@field mPhysicsDamageTelekinesisCasterEntity integer Privates<br>---<br>who moved an object that hit us via telekinesis
+---@field mLastDamageFrame integer Privates<br>---<br>frame number when we took any damage
+---@field mHpBeforeLastDamage number Privates<br>---<br>how much hp did we have a while ago?
+---@field mFireDamageBuffered number Privates<br>---<br>used to optimized cases where lots of entities are taking fire damage
+---@field mFireDamageBufferedNextDeliveryFrame integer Privates
+
+---@class DamageNearbyEntitiesComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DamageNearbyEntitiesComponent
+
+---@class DamageNearbyEntitiesComponent
+---@field radius number Members
+---@field damage_min number Members
+---@field damage_max number Members
+---@field target_vec_max_len number Members
+---@field knockback_multiplier number Members
+---@field time_between_damaging integer Members
+---@field damage_description string Members
+---@field target_tag string Members
+---@field damage_type unsupported Custom data types<br>---<br>the damage type
+---@field ragdoll_fx noita_ragdoll_fx Custom data types
+---@field mVelocity unsupported Privates
+---@field mNextDamageFrame integer Privates
+
+---@class DebugFollowMouseComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DebugFollowMouseComponent
+
+---@class DebugFollowMouseComponent
+
+---@class DebugLogMessagesComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DebugLogMessagesComponent
+
+---@class DebugLogMessagesComponent
+---@field TEMP_TEMPY number Members
+---@field TEMP_TEMP_TEMP number Members
+
+---@class DebugSpatialVisualizerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DebugSpatialVisualizerComponent
+
+---@class DebugSpatialVisualizerComponent
+---@field min_x number Members
+---@field min_y number Members
+---@field max_x number Members
+---@field max_y number Members
+---@field int unsupported Members
+
+---@class DieIfSpeedBelowComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DieIfSpeedBelowComponent
+
+---@class DieIfSpeedBelowComponent
+---@field min_speed number Members<br>---<br>The entity that owns this component is killed if its speed (via VelocityComponent) falls below this value.
+---@field mMinSpeedSquared number Members
+
+---@class DroneLauncherComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DroneLauncherComponent
+
+---@class DroneLauncherComponent
+---@field drone_entity_file string Members
+
+---@class DrugEffectComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DrugEffectComponent
+
+---@class DrugEffectComponent
+---@field drug_fx_target unsupported Objects
+---@field m_drug_fx_current unsupported Objects
+
+---@class DrugEffectModifierComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr DrugEffectModifierComponent
+
+---@class DrugEffectModifierComponent
+---@field fx_add unsupported Objects
+---@field fx_multiply unsupported Objects
+
+---@class ElectricChargeComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ElectricChargeComponent
+
+---@class ElectricChargeComponent
+---@field charge_time_frames integer Members
+---@field fx_velocity_max number Members
+---@field electricity_emission_interval_frames integer Members
+---@field fx_emission_interval_min integer Members
+---@field fx_emission_interval_max integer Members
+---@field charge integer Members
+
+---@class ElectricityComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ElectricityComponent
+
+---@class ElectricityComponent
+---@field energy integer Members
+---@field probability_to_heat number Members
+---@field speed integer Members
+---@field splittings_min integer Members
+---@field splittings_max integer Members
+---@field splitting_energy_min integer Members
+---@field splitting_energy_max integer Members
+---@field hack_is_material_crack boolean Members
+---@field hack_crack_ice boolean Members
+---@field hack_is_set_fire boolean Members<br>---<br>if set will set the thing on fire where this is located at
+---@field mSplittingsLeft integer Privates
+---@field mSplittingEnergy integer Privates
+---@field mAvgDir unsupported Privates
+---@field mPrevPos unsupported Privates
+---@field mPrevMaterial integer Privates
+---@field mShouldPlaySound boolean Privates
+
+---@class ElectricityReceiverComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ElectricityReceiverComponent
+
+---@class ElectricityReceiverComponent
+---@field offset_x integer Members
+---@field offset_y integer Members
+---@field radius integer Members
+---@field active_time_frames integer Members
+---@field switch_on_msg_interval_frames integer Members
+---@field electrified_msg_interval_frames integer Members
+---@field mLastFrameElectrified integer Privates
+---@field mNextElectrifiedMsgFrame integer Privates
+---@field mNextSwitchOnMsgFrame integer Privates
+
+---@class ElectricitySourceComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ElectricitySourceComponent
+
+---@class ElectricitySourceComponent
+---@field radius integer Members
+---@field emission_interval_frames integer Members
+---@field mNextFrameEmitElectricity integer Privates
+
+---@class EndingMcGuffinComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr EndingMcGuffinComponent
+
+---@class EndingMcGuffinComponent
+---@field TEMP_TEMPY number Members
+---@field TEMP_TEMP_TEMP number Members
+
+---@class EnergyShieldComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr EnergyShieldComponent
+
+---@class EnergyShieldComponent
+---@field radius number Members
+---@field damage_multiplier number Members
+---@field max_energy number Members
+---@field energy_required_to_shield number Members
+---@field recharge_speed number Members
+---@field sector_degrees number Members<br>---<br>if less than 180 we only provide partial cover to the current direction of the entity
+---@field energy number Members
+---@field mPrevPosition unsupported Privates
+
+---@class ExplodeOnDamageComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ExplodeOnDamageComponent
+
+---@class ExplodeOnDamageComponent
+---@field explode_on_death_percent number Members<br>---<br>rolls a dice (0 - 1) if we explode on death
+---@field explode_on_damage_percent number Members<br>---<br>rolls a dice (0 - 1) if we explode on damage
+---@field physics_body_modified_death_probability number Members<br>---<br>if we get message about the physics body being modified, do we explode on what percent
+---@field physics_body_destruction_required number Members<br>---<br>how big of percent of our body, do we need to lose before we explode
+---@field config_explosion unsupported Objects<br>---<br>if we have explosion, it's the setup for it
+---@field mDone boolean Privates
+
+---@class ExplosionComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ExplosionComponent
+
+---@class ExplosionComponent
+---@field timeout_frames integer Members<br>---<br>for timer
+---@field timeout_frames_random integer Members<br>---<br>a random value between 0 and 'timout_frames_random' is added to timer
+---@field kill_entity boolean Members<br>---<br>if 1, we kill the entity when exploding
+---@field mTimerTriggerFrame integer Members
+---@field config_explosion unsupported Objects<br>---<br>setup for out explosion
+
+---@class FishAIComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr FishAIComponent
+
+---@class FishAIComponent
+---@field direction integer Members
+---@field speed number Members
+---@field aabb_min unsupported Custom data types
+---@field aabb_max unsupported Custom data types
+---@field velocity unsupported Privates
+---@field stuck_counter integer Privates
+---@field mLastCheckPos unsupported Privates
+
+---@class FlyingComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr FlyingComponent
+
+---@class FlyingComponent
+---@field type integer Members<br>---<br>type of flight, 1 = perlin noise
+---@field perlin_freq number Members<br>---<br>frequency of the perlin noise sampling
+---@field perlin_time_freq number Members<br>---<br>t *= perlin_time_freq
+---@field perlin_wind_x number Members<br>---<br>wind velocity that gets added to the samples
+---@field perlin_wind_y number Members<br>---<br>wind velocity that gets added to the samples
+
+---@class FogOfWarRadiusComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr FogOfWarRadiusComponent
+
+---@class FogOfWarRadiusComponent
+---@field radius number Members<br>---<br>256 is the default player has
+
+---@class FogOfWarRemoverComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr FogOfWarRemoverComponent
+
+---@class FogOfWarRemoverComponent
+---@field radius number Members
+
+---@class GameAreaEffectComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GameAreaEffectComponent
+
+---@class GameAreaEffectComponent
+---@field radius number Members<br>---<br>what's the radius (in pixels) of the area effect
+---@field collide_with_tag string Members<br>---<br>the tags we're looking for
+---@field frame_length integer Members<br>---<br>if not 0 will reapply this effect after this many frames have gone by
+---@field game_effect_entitities unsupported Custom data types<br>---<br>just a vector of the game_effect entities
+---@field mEntitiesAppliedOutTo unsupported Privates
+---@field mEntitiesAppliedFrame unsupported Privates
+
+---@class GameEffectComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GameEffectComponent
+
+---@class GameEffectComponent
+---@field custom_effect_id string Members<br>---<br>if 'effect' is set to 'CUSTOM', this will define effect uniqueness.
+---@field frames integer Members<br>---<br>how many frames does it affect -1 = forever
+---@field exclusivity_group integer Members<br>---<br>if > 0, previous game effects with the same exclusivity group as new one will be removed when calling LoadGameEffectEntityTo
+---@field report_block_msg boolean Members<br>---<br>to disable the block message that rises
+---@field disable_movement boolean Members<br>---<br>if set, will disable movement
+---@field ragdoll_effect_custom_entity_file string Members<br>---<br>an entity that is loaded to each ragdoll part if 'ragdoll_effect' is set to 'CUSTOM_RAGDOLL_ENTITY'
+---@field ragdoll_fx_custom_entity_apply_only_to_largest_body boolean Members<br>---<br>if 1, 'ragdoll_effect_custom_entity_file' is loaded only to the largest piece in the ragdoll 
+---@field polymorph_target string Members<br>---<br>when doing a polymorph, this is what we convert it to
+---@field mSerializedData unsupported Members<br>---<br>polymorph stores the serialized entity here...
+---@field mCaster integer Members<br>---<br>Contains a handle to the caster of this GameEffect
+---@field mCasterHerdId integer Members<br>---<br>Contains the herd if of the caster of this GameEffect
+---@field teleportation_probability integer Members<br>---<br>How likely is it that we teleport, larger = less often
+---@field teleportation_delay_min_frames integer Members<br>---<br>Never teleports more often that this
+---@field teleportation_radius_min number Members
+---@field teleportation_radius_max number Members
+---@field teleportations_num integer Members<br>---<br>How many times has this GameEffectComponent teleported the owner?
+---@field no_heal_max_hp_cap number Members<br>---<br>If current hp is less than this, we store it here. Then we make sure the hp never exceeds this.
+---@field caused_by_ingestion_status_effect boolean Members<br>---<br>Did this effect occur because someone ate something?
+---@field caused_by_stains boolean Members<br>---<br>was this caused by stains
+---@field mCharmDisabledCameraBound boolean Members<br>---<br>When charmed, will try to disable CameraBound. This keeps track if we've done it, so we can enable it back
+---@field mCharmEnabledTeleporting boolean Members<br>---<br>When charmed, will try to enable teleporting (tag:teleportable_NOT). This keeps track if we've done it, so we can disable it again
+---@field mInvisible boolean Members<br>---<br>Are we invisible?
+---@field mCounter integer Members<br>---<br>Counts stuff
+---@field mCooldown integer Members<br>---<br>Counts cooldown
+---@field mIsExtension boolean Members<br>---<br>If 1, this is an effect extension and shouldn't create an extension when removed
+---@field mIsSpent boolean Members<br>---<br>NOTE( Petri ): 29.4.2024 - this is used internally to make RESPAWN perk disabled in the UI
+---@field effect noita_effect_enum Custom data types<br>---<br>GAME_EFFECT
+---@field ragdoll_effect noita_ragdoll_fx Custom data types<br>---<br>if set, will use this for ragdoll effect
+---@field ragdoll_material integer Custom data types<br>---<br>converts to string name of the material that ragdoll is made out of
+---@field causing_status_effect unsupported Custom data types<br>---<br>Status effect that caused this game effect, if any
+
+---@class GameLogComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GameLogComponent
+
+---@class GameLogComponent
+---@field report_death boolean Members<br>---<br>switches on reporting things
+---@field report_damage boolean Members<br>---<br>if set, will report when receiving damage
+---@field report_new_biomes boolean Members<br>---<br>if false, won't report when player enters new biomes
+---@field mVisitiedBiomes unsupported Custom data types<br>---<br>list of visited biomes
+---@field mNewBiomeCheckFrame integer Privates
+
+---@class GameStatsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GameStatsComponent
+
+---@class GameStatsComponent
+---@field name string Members<br>---<br>no one uses the name variable on entity, so we have to do this to make it happen
+---@field stats_filename string Members<br>---<br>also generated from the gunk
+---@field is_player boolean Members<br>---<br>if true, will use the session file for loading stats
+---@field extra_death_msg string Members<br>---<br>set when e.g. polymorphed
+---@field dont_do_logplayerkill boolean Members<br>---<br>if 1, StatsLogPlayerKill must be manually called from lua
+---@field player_polymorph_count integer Members<br>---<br>skip loading of stats if this higher than 0 and decrament this by one
+
+---@class GasBubbleComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GasBubbleComponent
+
+---@class GasBubbleComponent
+---@field acceleration number Members
+---@field max_speed number Members
+---@field mVelocity number Privates
+
+---@class GenomeDataComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GenomeDataComponent
+
+---@class GenomeDataComponent
+---@field is_predator boolean Members<br>---<br>Predators are considered threats by other species and hunt for food.
+---@field food_chain_rank number Members<br>---<br>0 means king of the hill. Greater number = more likely to get eaten by other species.
+---@field berserk_dont_attack_friends boolean Members<br>---<br>if 1, this animal will not try to attack player who would normally be its friend
+---@field herd_id integer Custom data types<br>---<br>This is used for example to separate people in different tribes.
+---@field friend_thundermage boolean Privates<br>---<br>if 1, thunder mage doesn't attack this
+---@field friend_firemage boolean Privates<br>---<br>if 1, fire mage doesn't attack this
+
+---@class GhostComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GhostComponent
+
+---@class GhostComponent
+---@field speed number Members<br>---<br>pixels per second
+---@field new_hunt_target_check_every integer Members<br>---<br>how often do we look for targets
+---@field hunt_box_radius number Members
+---@field aggressiveness number Members<br>---<br>if higher than relations then will attack
+---@field max_distance_from_home number Members<br>---<br>how far from home can we go?
+---@field die_if_no_home boolean Members<br>---<br>if set to false will die, if it can't find home
+---@field target_tag string Members<br>---<br>if something else (like mortal), will attack the home
+---@field velocity unsupported Custom data types
+---@field mEntityHome integer Privates<br>---<br>where is our home?
+---@field mFramesWithoutHome integer Privates
+---@field mTargetPosition unsupported Privates
+---@field mTargetEntityId integer Privates
+---@field mRandomTarget unsupported Privates
+---@field mNextTargetCheckFrame integer Privates
+
+---@class GodInfoComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GodInfoComponent
+
+---@class GodInfoComponent
+---@field mana_current number Members<br>---<br>How much mana the player now has to use
+---@field mana_max number Members<br>---<br>Max size of the mana pool
+---@field gold number Members<br>---<br>How much gold the player has
+---@field god_entity unsupported Privates
+
+---@class GunComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr GunComponent
+
+---@class GunComponent
+---@field mLuaManager unsupported Privates
+
+---@class HealthBarComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr HealthBarComponent
+
+---@class HealthBarComponent
+
+---@class HitEffectComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr HitEffectComponent
+
+---@class HitEffectComponent
+---@field value integer Members<br>---<br>Usage depends on selected 'effect_hit'
+---@field value_string string Members<br>---<br>Usage depends on selected 'effect_hit'
+---@field condition_effect noita_effect_enum Custom data types<br>---<br>Hit entity needs to have this 'GAME_EFFECT' for effects to apply. If both 'condition_effect' and 'condition_status' are set, they are combined with AND logic
+---@field condition_status unsupported Custom data types<br>---<br>Hit entity needs to have this 'STATUS_EFFECT' for effects to apply
+---@field effect_hit unsupported Custom data types<br>---<br>What kind of 'HIT_EFFECT' is applied to hit entity if condition is true
+
+---@class HitboxComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr HitboxComponent
+
+---@class HitboxComponent
+---@field is_player boolean Members
+---@field is_enemy boolean Members
+---@field is_item boolean Members
+---@field aabb_min_x number Members
+---@field aabb_max_x number Members
+---@field aabb_min_y number Members
+---@field aabb_max_y number Members
+---@field damage_multiplier number Members<br>---<br>All damage from hits to this hitbox is multiplied with this value before applying it.
+---@field offset unsupported Custom data types
+---@field dead boolean Privates
+
+---@class HomingComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr HomingComponent
+
+---@class HomingComponent
+---@field target_tag string Members
+---@field target_who_shot boolean Members<br>---<br>If 1, targets who shot the projectile, ignores 'target_tag'.
+---@field detect_distance number Members
+---@field homing_velocity_multiplier number Members
+---@field homing_targeting_coeff number Members
+---@field just_rotate_towards_target boolean Members<br>---<br>the default accelerates towards a target. If true will only rotate towards the target.
+---@field max_turn_rate number Members<br>---<br>radians. If just_rotate_towards_target then this is the maximum radians it can turn per frame
+---@field predefined_target integer Members<br>---<br>If set, we track this entity
+---@field look_for_root_entities_only boolean Members<br>---<br>if set, will only look for entities that are _not_ child entities.
+
+---@class HotspotComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr HotspotComponent
+
+---@class HotspotComponent
+---@field transform_with_scale boolean Members
+---@field sprite_hotspot_name string Members
+---@field offset unsupported Custom data types
+
+---@class IKLimbAttackerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr IKLimbAttackerComponent
+
+---@class IKLimbAttackerComponent
+---@field radius number Members
+---@field leg_velocity_coeff number Members
+---@field targeting_radius number Members
+---@field targeting_raytrace boolean Members
+---@field target_entities_with_tag string Members
+---@field mTarget unsupported Custom data types
+---@field mTargetEntity integer Privates
+---@field mState unsupported Privates
+---@field mStateTimer number Privates
+
+---@class IKLimbComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr IKLimbComponent
+
+---@class IKLimbComponent
+---@field length number Members
+---@field thigh_extra_lenght number Members
+---@field mJointSideInterpolation number Members
+---@field end_position unsupported Custom data types
+---@field mJointWorldPos unsupported Custom data types
+---@field mEndPrevPos unsupported Custom data types
+---@field mPart0PrevPos unsupported Privates
+---@field mPart0PrevRotation number Privates
+---@field mPart1PrevPos unsupported Privates
+---@field mPart1PrevRotation number Privates
+
+---@class IKLimbWalkerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr IKLimbWalkerComponent
+
+---@class IKLimbWalkerComponent
+---@field ground_attachment_min_spread number Members
+---@field ground_attachment_max_tries integer Members
+---@field ground_attachment_max_angle number Members
+---@field ground_attachment_ray_length_coeff number Members
+---@field leg_velocity_coeff number Members
+---@field affect_flying boolean Members<br>---<br>if set, will cause the mFlyingTime (in CharacterDataComponent) of the parent to be 0 or 1 depending on if we're touching anything
+---@field mState integer Members<br>---<br>0 = detached, 1 = attached
+---@field ray_skip_material integer Custom data types<br>---<br>String name of material to not cast rays against. Defaults to 'aluminium'
+---@field mTarget unsupported Custom data types
+---@field mPrevTarget unsupported Custom data types
+---@field mPrevCenterPosition unsupported Custom data types
+
+---@class IKLimbsAnimatorComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr IKLimbsAnimatorComponent
+
+---@class IKLimbsAnimatorComponent
+---@field future_state_samples integer Members<br>---<br>The number of future animation states evaluated to find the next state
+---@field ground_attachment_ray_length_coeff number Members<br>---<br>Limb raycast length is (ground_attachment_ray_length_coeff * limb length)
+---@field leg_velocity_coeff number Members<br>---<br>Limbs are moved towards target position at a pace affected by this value.
+---@field affect_flying boolean Members<br>---<br>If set, will cause the mFlyingTime (in CharacterDataComponent) of the entity to be 0 or 1 depending on if the limbs are touching ground
+---@field large_movement_penalty_coeff number Members<br>---<br>The movement score is multiplied by this value if a large move would occur
+---@field no_ground_attachment_penalty_coeff number Members<br>---<br>If a limb movement would make it not collide with ground, the movement score is multiplied with this value. Use lower values to make the limbs prioritize attaching to walls.
+---@field is_limp boolean Members<br>---<br>If 1, will apply verlet animation to simulate ragdoll-like limbs
+---@field ray_skip_material integer Custom data types<br>---<br>String name of material to not cast rays against. Defaults to 'aluminium'
+---@field mPrevBodyPosition unsupported Custom data types
+---@field mLimbStates unsupported Privates
+---@field mHasGroundAttachmentOnAnyLeg boolean Privates<br>---<br>Will be set to true if at least one leg is attached to ground.
+
+---@class IngestionComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr IngestionComponent
+
+---@class IngestionComponent
+---@field ingestion_size integer Members<br>---<br>How many units of material we currently store
+---@field ingestion_capacity integer Members<br>---<br>How many units of material we can store
+---@field ingestion_cooldown_delay_frames unsupported Members<br>---<br>How many frames is ingestion_size retained after last time eating?
+---@field ingestion_reduce_every_n_frame unsupported Members<br>---<br>One unit of ingestion_size is removed every N frame
+---@field overingestion_damage number Members<br>---<br>How much damage per overingested cell is applied
+---@field blood_healing_speed number Members<br>---<br>affects healing speed if entity has HEALING_BLOOD game effect. The amount of hp restored per one blood cell.
+---@field ingestion_satiation_material_tag string Members<br>---<br>If set, only materials with this tag will increase satiation level
+---@field m_ingestion_cooldown_frames integer Members<br>---<br>Next frame ingestion_size cooldown can occur
+---@field m_next_overeating_msg_frame integer Privates
+---@field m_ingestion_satiation_material_tag_cached string Privates
+---@field m_ingestion_satiation_material_cache unsupported Privates
+---@field m_damage_effect_lifetime integer Privates
+
+---@class InheritTransformComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr InheritTransformComponent
+
+---@class InheritTransformComponent
+---@field use_root_parent boolean Members<br>---<br>if 1, we use the root of our entity hierarchy instead of the immediate parent
+---@field only_position boolean Members<br>---<br>if 1, we only inherit position. it is calculated as follows: parent_position + parent_offset * parent_scale
+---@field parent_hotspot_tag string Members<br>---<br>if set, we apply the offset of parent HotSpot with this tag
+---@field parent_sprite_id integer Members<br>---<br>if >= 0, the Nth sprite transform in parent entity is inherited
+---@field always_use_immediate_parent_rotation boolean Members<br>---<br>if 1, we use the immediate parent for rotation, no matter what other properties say
+---@field rotate_based_on_x_scale boolean Members<br>---<br>if 1, the rotation is set to 0 deg if scale >= 0 else to 180 deg
+---@field Transform unsupported Custom data types
+---@field mUpdateFrame integer Privates
+
+---@class InteractableComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr InteractableComponent
+
+---@class InteractableComponent
+---@field radius number Members<br>---<br>Distance from entity position where interaction is possible
+---@field ui_text string Members<br>---<br>key or string for the text to display
+---@field name string Members<br>---<br>this name is called to the on_interacted function on LuaComponents
+---@field exclusivity_group integer Members<br>---<br>If > 0, only 1 instance of this interaction can be display at the same time
+
+---@class Inventory2ComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr Inventory2Component
+
+---@class Inventory2Component
+---@field quick_inventory_slots integer Members
+---@field full_inventory_slots_x integer Members
+---@field full_inventory_slots_y integer Members
+---@field mSavedActiveItemIndex unsupported Members<br>---<br>Used to retain active item across save/load. Don't touch this unless you know what you're doing!
+---@field mActiveItem integer Privates<br>---<br>NOTE: Don't attempt to directly change the value of this field via lua code. It will probably break the game logic in obvious or subtle ways.
+---@field mActualActiveItem integer Privates<br>---<br>NOTE: Don't attempt to directly change the value of this field via lua code. It will probably break the game logic in obvious or subtle ways.
+---@field mActiveStash integer Privates
+---@field mThrowItem integer Privates<br>---<br>Is used to store the item that is being thrown, instead of mActiveItem, since the player can switch items (mActiveItem) during the throwing animation
+---@field mItemHolstered boolean Privates
+---@field mInitialized boolean Privates
+---@field mForceRefresh boolean Privates
+---@field mDontLogNextItemEquip boolean Privates
+---@field mSmoothedItemXOffset number Privates
+---@field mLastItemSwitchFrame integer Privates
+---@field mIntroEquipItemLerp number Privates
+---@field mSmoothedItemAngleVec unsupported Privates
+
+---@class InventoryComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr InventoryComponent
+
+---@class InventoryComponent
+---@field ui_container_type integer Members<br>---<br>UI_CONTAINER_TYPES enum
+---@field ui_element_sprite string Members<br>---<br>ui back sprite
+---@field actions string Members<br>---<br>list of actions, used for serialization
+---@field ui_container_size unsupported Custom data types<br>---<br>ui size, how many items x*y we can fit in
+---@field ui_element_size unsupported Custom data types<br>---<br>ui size
+---@field ui_position_on_screen unsupported Custom data types<br>---<br>where do we load this on screen
+---@field items unsupported Privates
+
+---@class InventoryGuiComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr InventoryGuiComponent
+
+---@class InventoryGuiComponent
+---@field has_opened_inventory_edit boolean Members
+---@field wallet_money_target integer Members
+---@field mDisplayFireRateWaitBar boolean Members<br>---<br>hax, don't touch!
+---@field imgui unsupported Privates
+---@field mLastFrameInteracted integer Privates
+---@field mLastFrameActionsVisible integer Privates
+---@field mLastPurchasedAction unsupported Privates
+---@field mActive boolean Privates
+---@field mAlpha number Privates
+---@field mBackgroundOverlayAlpha number Privates
+---@field mFrameShake_ReloadBar integer Privates<br>---<br>for animations of shaking them bars
+---@field mFrameShake_ManaBar integer Privates<br>---<br>for animations of shaking them bars
+---@field mFrameShake_FlyBar integer Privates<br>---<br>for animations of shaking them bars
+---@field mFrameShake_FireRateWaitBar integer Privates<br>---<br>for animations of shaking them bars
+
+---@class ItemAIKnowledgeComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemAIKnowledgeComponent
+
+---@class ItemAIKnowledgeComponent
+---@field is_ranged_weapon boolean Members
+---@field is_throwable_weapon boolean Members
+---@field is_melee_weapon boolean Members
+---@field is_self_healing boolean Members
+---@field is_other_healing boolean Members
+---@field is_self_buffing boolean Members
+---@field is_other_buffing boolean Members
+---@field is_weapon boolean Members
+---@field is_known boolean Members
+---@field is_safe boolean Members
+---@field is_consumed boolean Members
+---@field never_use boolean Members
+---@field ranged_min_distance number Members
+
+---@class ItemActionComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemActionComponent
+
+---@class ItemActionComponent
+---@field action_id string Members<br>---<br>the name ID of the action
+
+---@class ItemAlchemyComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemAlchemyComponent
+
+---@class ItemAlchemyComponent
+---@field material_make_always_cast integer Custom data types
+---@field material_remove_shuffle integer Custom data types
+---@field material_animate_wand integer Custom data types
+---@field material_animate_wand_alt integer Custom data types
+---@field material_increase_uses_remaining integer Custom data types
+---@field material_sacrifice integer Custom data types
+
+---@class ItemChestComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemChestComponent
+
+---@class ItemChestComponent
+---@field item_count_min integer Members
+---@field item_count_max integer Members
+---@field level integer Members
+---@field enemy_drop boolean Members<br>---<br>enemy_drop, if set will modify the item_count_min, item_count_max...
+---@field actions string Members<br>---<br>e.g. 'bullet,bullet,damage' ... actions are parsed into a string
+---@field action_uses_remaining string Members<br>---<br>e.g. '10,10,-1' ... action uses remaining counts are parsed into a string
+---@field other_entities_to_spawn string Members<br>---<br>file names of other entities we should spawn from this chest, comma separated
+---@field int unsupported Members<br>---<br>this is used to figure out what we spawn from this chest
+
+---@class ItemComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemComponent
+
+---@class ItemComponent
+---@field item_name string Members<br>---<br>the name of the item
+---@field is_stackable boolean Members<br>---<br>does this item stack on other items the same 'item_name' in the inventory?
+---@field is_consumable boolean Members<br>---<br>if 1, using this item will reduce 'uses_remaining'. When it reaches zero the item is destroyed
+---@field stats_count_as_item_pick_up boolean Members<br>---<br>does this count as an item that was picked up in the stats
+---@field auto_pickup boolean Members<br>---<br>if 1, item will be automatically picked up, no pickup hint is shown
+---@field permanently_attached boolean Members<br>---<br>if 1, this item can't be removed from a container once it is put inside one
+---@field uses_remaining integer Members<br>---<br>how many times can this item be used? -1 = unlimited, will be reset to gun_actions.lua max_uses by inventorygui_system, -2 = unlimited unlimited
+---@field is_identified boolean Members<br>---<br>is it known what this item does?
+---@field is_frozen boolean Members<br>---<br>if 1, this item can't be modified or moved from a wand
+---@field collect_nondefault_actions boolean Members<br>---<br>does player keep this item when respawning?
+---@field remove_on_death boolean Members<br>---<br>is this entity destroyed when it's in an inventory and the inventory owner dies?
+---@field remove_on_death_if_empty boolean Members<br>---<br>is this entity destroyed when it's in an inventory, empty and the inventory owner dies?
+---@field remove_default_child_actions_on_death boolean Members<br>---<br>if true, the default AbilityComponent.child_actions in this items will be removed when it dies
+---@field play_hover_animation boolean Members<br>---<br>if 1, the item will play a hovering animation
+---@field play_spinning_animation boolean Members<br>---<br>if 1, the item will play a spinning animation, if player_hover_animation is 0
+---@field is_equipable_forced boolean Members<br>---<br>if 1, the default logic for determining if an item can be equiped in inventory is overridden and this can be always equipped
+---@field play_pick_sound boolean Members<br>---<br>if 1, plays a default sound when picked
+---@field drinkable boolean Members<br>---<br>if 0 you cannot drink this, default is 1, because that's how it was implemented and backwards compatibility
+---@field max_child_items integer Members<br>---<br>number of items this can hold inside itself. TODO: get rid of all uses of 'ability->gun_config.deck_capacity' and replace them with this!
+---@field ui_sprite string Members<br>---<br>sprite displayed for the item in various UIs. If not empty overrides sprites declared by Ability and ItemAction
+---@field ui_description string Members<br>---<br>item description displayed in various UIs
+---@field enable_orb_hacks boolean Members
+---@field is_all_spells_book boolean Members
+---@field always_use_item_name_in_ui boolean Members
+---@field custom_pickup_string string Members<br>---<br>if set, this is used for the 'Press $0 to pick $1' message
+---@field ui_display_description_on_pick_up_hint boolean Members
+---@field next_frame_pickable integer Members
+---@field npc_next_frame_pickable integer Members<br>---<br>NPC have their own next_frame_pickable, because this is used to make NPCs not pick up gold, which also meant player couldn't pick up that gold
+---@field is_pickable boolean Members<br>---<br>can this be picked up and placed on someone's inventory
+---@field is_hittable_always boolean Members<br>---<br>to override the weirdness that is is_pickable, which affects if this is hittable or not. If true, will always be hittable regardless of is_pickable
+---@field item_pickup_radius number Members<br>---<br>how many pixels away can this item be picked up from
+---@field camera_max_distance number Members<br>---<br>how far can we move the camera from the player when this item is equipped
+---@field camera_smooth_speed_multiplier number Members<br>---<br>how quickly does the camera follow player?
+---@field has_been_picked_by_player boolean Members
+---@field mFramePickedUp integer Members
+---@field spawn_pos unsupported Custom data types<br>---<br>the position where this item spawned
+---@field preferred_inventory unsupported Custom data types<br>---<br>Which inventory do we go to when we're picked up, if it's not full.
+---@field inventory_slot unsupported Custom data types<br>---<br>our preferred slot (x,y) in the inventory
+---@field mItemUid integer Privates
+---@field mIsIdentified boolean Privates
+
+---@class ItemCostComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemCostComponent
+
+---@class ItemCostComponent
+---@field cost integer Members
+---@field stealable boolean Members<br>---<br>if set - will check that it's within an area called shop
+---@field mExCost integer Privates<br>---<br>used to change the text on the sprite
+
+---@class ItemPickUpperComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemPickUpperComponent
+
+---@class ItemPickUpperComponent
+---@field is_in_npc boolean Members
+---@field pick_up_any_item_buggy boolean Members<br>---<br>If true, will pick up _any_ item. Breaks all kinds of things, but maybe mods will find this fun to mess around with
+---@field is_immune_to_kicks boolean Members<br>---<br>if set, won't drop the wand if kicked. Mainly used by wand ghosts.
+---@field only_pick_this_entity integer Members<br>---<br>picks up this entity and only this entity. Overrides the is_in_npc checks that try to limit things to pickuppable wands
+---@field drop_items_on_death boolean Members<br>---<br>if true, will drop all items. E.g. if true for player, player drops their wands
+---@field mLatestItemOverlapInfoBoxPosition unsupported Custom data types
+
+---@class ItemRechargeNearGroundComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemRechargeNearGroundComponent
+
+---@class ItemRechargeNearGroundComponent
+---@field TEMP_TEMPY number Members
+---@field TEMP_TEMP_TEMP number Members
+
+---@class ItemStashComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ItemStashComponent
+
+---@class ItemStashComponent
+---@field throw_openable_cooldown_frames integer Members
+---@field init_children boolean Members
+---@field mNextFrameOpenable integer Privates
+---@field mFrameOpened integer Privates
+
+---@class KickComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr KickComponent
+
+---@class KickComponent
+---@field can_kick boolean Members<br>---<br>e.g. telekinetic kick disables this
+---@field kick_radius number Members
+---@field telekinesis_throw_speed number Members<br>---<br>this is here, so that STRONG_KICK -perk can affect telekinetic kick as well
+---@field kick_entities string Members<br>---<br>comma separated list of entities that are loaded when player kicks
+---@field max_force number Custom data types
+---@field player_kickforce number Custom data types
+---@field kick_damage number Custom data types<br>---<br>( 1.f / 25.f )
+---@field kick_knockback number Custom data types<br>---<br>knockback force for entities
+
+---@class LaserEmitterComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LaserEmitterComponent
+
+---@class LaserEmitterComponent
+---@field is_emitting boolean Members<br>---<br>If 1, will emit all the time
+---@field emit_until_frame integer Members<br>---<br>Can be used to activate a laser temporarily
+---@field laser_angle_add_rad number Members<br>---<br>Beam angle = entity angle + laser_angle_add_rad
+---@field laser unsupported Objects
+
+---@class LevitationComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LevitationComponent
+
+---@class LevitationComponent
+---@field radius number Members<br>---<br>the radius in which we look for entities / bodies to float
+---@field entity_force number Members<br>---<br>how much do we apply the mouse movements to the entitiy
+---@field box2d_force number Members<br>---<br>how much do we apply the mouse movements to the entitiy
+---@field effect_lifetime_frames integer Members
+
+---@class LifetimeComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LifetimeComponent
+
+---@class LifetimeComponent
+---@field lifetime integer Members<br>---<br>if anything else than -1 will kill this entity when this many frames have passed
+---@field fade_sprites boolean Members<br>---<br>if 1, sprites will be faded as lifetime gets lower
+---@field kill_parent boolean Members<br>---<br>if 1, will kill the parent entity
+---@field kill_all_parents boolean Members<br>---<br>if 1, will kill all the parents entity
+---@field serialize_duration boolean Members<br>---<br>if 1, will retain kill_frame and creation_frame over serialization
+---@field kill_frame_serialized integer Members<br>---<br>frame that this is killed at
+---@field creation_frame_serialized integer Members<br>---<br>frame that this is killed at
+---@field randomize_lifetime unsupported Custom data types<br>---<br>this is added to the lifetime
+---@field creation_frame integer Privates<br>---<br>we'll set this to GG.GetFrameNum() when this component is created
+---@field kill_frame integer Privates<br>---<br>frame that this is killed at
+
+---@class LightComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LightComponent
+
+---@class LightComponent
+---@field update_properties boolean Members<br>---<br>turn this on if you expect this to function like the other components
+---@field radius number Members<br>---<br>The radius of the light in world pixels.
+---@field int unsupported Members<br>---<br>Color red 0-255
+---@field int unsupported Members<br>---<br>Color green 0-255
+---@field int unsupported Members<br>---<br>Color blue 0-255
+---@field offset_x number Members<br>---<br>Offset from the center of entity.
+---@field offset_y number Members<br>---<br>Offset from the center of entity.
+---@field fade_out_time number Members<br>---<br>time in seconds, if not 0, this is how long this takes to die, when the component is destroyed
+---@field blinking_freq number Members<br>---<br>if less than 1, will blink randomly when rand() < blinking_freq
+---@field mAlpha number Privates
+---@field mSprite unsupported Privates
+
+---@class LightningComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LightningComponent
+
+---@class LightningComponent
+---@field sprite_lightning_file string Members<br>---<br>particle effect, from where the file is loaded that lightning is generated from
+---@field is_projectile boolean Members<br>---<br>if this is true, it's a projectile lightning and looks for ProjectileComponent and uses the data from there to move it
+---@field explosion_type integer Members<br>---<br>1 = lightning trail
+---@field arc_lifetime integer Members<br>---<br>remaining number of frames the arc exists
+---@field config_explosion unsupported Objects
+---@field mExPosition unsupported Privates<br>---<br>stores the ex position of this entity
+---@field mArcTarget integer Privates<br>---<br>if 'mArcTarget' points to an existing entity a lighting arc will be created between this entity and 'mArcTarget'
+
+---@class LimbBossComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LimbBossComponent
+
+---@class LimbBossComponent
+---@field state integer Members
+---@field mStatePrev integer Privates
+---@field mMoveToPositionX number Privates
+---@field mMoveToPositionY number Privates
+
+---@class LiquidDisplacerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LiquidDisplacerComponent
+
+---@class LiquidDisplacerComponent
+---@field radius integer Members
+---@field velocity_x number Members
+---@field velocity_y number Members
+---@field mPrevX integer Privates
+---@field mPrevY integer Privates
+
+---@class LoadEntitiesComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LoadEntitiesComponent
+
+---@class LoadEntitiesComponent
+---@field entity_file string Members<br>---<br>path to the entity file we should load
+---@field kill_entity boolean Members<br>---<br>if 1, we kill our entity when it is created
+---@field timeout_frames integer Members<br>---<br>for timer
+---@field mTimerTriggerFrame integer Members
+---@field count unsupported Custom data types<br>---<br>how many entities should be loaded (random range)
+
+---@class LocationMarkerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LocationMarkerComponent
+
+---@class LocationMarkerComponent
+---@field id integer Members
+
+---@class LooseGroundComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LooseGroundComponent
+
+---@class LooseGroundComponent
+---@field probability number Members<br>---<br>how often do we do this... shoots a ray in random direction and does the loosening
+---@field max_durability integer Members<br>---<br>if material durability > max_durability, it is not loosened
+---@field max_distance number Members<br>---<br>how far raytraces to find things to loosen up
+---@field max_angle number Members<br>---<br>how much raytraces go to different directions around the up-vector. pi=full circle
+---@field min_radius integer Members<br>---<br>the minimum radius of our loosening of pixels
+---@field max_radius integer Members<br>---<br>the maximum radius of our loosening of pixels
+---@field chunk_probability number Members<br>---<br>if > 0, will drop box2d chunks of the ceiling
+---@field chunk_max_angle number Members<br>---<br>how much raytraces go to different directions around the up-vector. pi=full circle
+---@field chunk_count integer Members<br>---<br>how many chunks are we allowed to do, -1 = infinite
+---@field collapse_images string Members<br>---<br>loads these files randomly to do the collapse shapes
+---@field chunk_material integer Custom data types<br>---<br>String name of chunk material
+---@field mChunkCount integer Privates<br>---<br>how many chunks are we allowed to do, -1 = infinite
+
+---@class LuaComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr LuaComponent
+
+---@class LuaComponent
+---@field script_source_file string Members
+---@field execute_on_added boolean Members
+---@field execute_on_removed boolean Members
+---@field execute_every_n_frame integer Members<br>---<br>1 = execute every frame. 2 = execute every second frame. 3 = execute every third frame and so on. -1 = execute only on add/remove/event
+---@field execute_times integer Members<br>---<br>How many times should the script be executed? < 1 means infinite
+---@field limit_how_many_times_per_frame integer Members<br>---<br>-1 = infinite. Use this to limit how many times this can be executed per frame. Currently only used to limit script_shot from being executed forever.
+---@field limit_to_every_n_frame integer Members<br>---<br>-1 = no limit. Currently only used to limit script_shot from being executed every frame.
+---@field limit_all_callbacks boolean Members<br>---<br>NOTE( Petri ): 19.8.2023 - by default limit_how_many_times_per_frame and limit_to_every_n_frame only works for script_shot. If this is set to true, will limit all callbacks. Also note that this limit is shared within this component. So if this is true and both script_shot and script_damage_received and both are called within limit_to_every_n_frame frames, only one of them will be called.
+---@field remove_after_executed boolean Members
+---@field enable_coroutines boolean Members
+---@field call_init_function boolean Members<br>---<br> if 1, calls function init( entity_id:int ) after running the code in the file scope of script_source_file along with all mod appends. Does nothing if execute_on_added is 0
+---@field script_enabled_changed string Members<br>---<br>if set, calls function 'enabled_changed( entity_id:int, is_enabled:bool )' when the IsEnabled status of this LuaComponent is changed
+---@field script_damage_received string Members<br>---<br>if set, calls function 'damage_received( damage:number, message:string, entity_thats_responsible:int, is_fatal:bool, projectile_thats_responsible:int )' when we receive a message about damage (Message_DamageReceived)
+---@field script_damage_about_to_be_received string Members<br>---<br>if set, calls function 'damage_about_to_be_received( damage:number, x:number, y:number, entity_thats_responsible:int, critical_hit_chance:int )' when we receive a message (Message_DamageAboutToBeReceived) -> new_damage:number,new_critical_hit_chance:int
+---@field script_item_picked_up string Members<br>---<br>if set, calls function 'item_pickup( int entity_item, int entity_pickupper, string item_name )' when message 'Message_ItemPickUp' is called
+---@field script_shot string Members<br>---<br>if set, calls function 'shot( projectile_entity_id )' when we receive Message_Shot
+---@field script_collision_trigger_hit string Members<br>---<br>if set, calls function 'collision_trigger( colliding_entity_id )' when we receive Message_CollisionTriggerHit
+---@field script_collision_trigger_timer_finished string Members<br>---<br>if set, calls function 'collision_trigger_timer_finished()' when we receive Message_CollisionTriggerTimerFinished
+---@field script_physics_body_modified string Members<br>---<br>if set, calls function 'physics_body_modified( is_destroyed )' when physics body has been modified
+---@field script_pressure_plate_change string Members<br>---<br>if set, calls function 'pressure_plate_change( new_state )' when PressurePlateComponent decides that things have change
+---@field script_inhaled_material string Members<br>---<br>if set, calls function 'inhaled_material( material_name, count )' once per second for each inhaled material
+---@field script_death string Members<br>---<br>if set, calls function 'death( int damage_type_bit_field, string damage_message, int entity_thats_responsible, bool drop_items )' when we receive message Message_Death
+---@field script_throw_item string Members<br>---<br>if set, calls function 'throw_item( from_x, from_y, to_x, to_y )' when we receive message Message_ThrowItem
+---@field script_material_area_checker_failed string Members<br>---<br>if set, calls function 'material_area_checker_failed( pos_x, pos_y, )' when we receive message Message_MaterialAreaCheckerFailed
+---@field script_material_area_checker_success string Members<br>---<br>if set, calls function 'material_area_checker_success( pos_x, pos_y, )' when we receive message Message_MaterialAreaCheckerSuccess
+---@field script_electricity_receiver_switched string Members<br>---<br>if set, calls function 'electricity_receiver_switched( bool is_electrified )' when we receive message Message_ElectricityReceiverSwitched
+---@field script_electricity_receiver_electrified string Members<br>---<br>if set, calls function 'electricity_receiver_electrified()' when we receive message Message_ElectricityReceiverElectrified
+---@field script_kick string Members<br>---<br>if set, calls function 'kick( entity_who_kicked )' when we receive message Message_Kick
+---@field script_interacting string Members<br>---<br>if set, calls function 'interacting( entity_who_interacted, entity_interacted, interactable_name )' when we receive message Message_Interaction
+---@field script_audio_event_dead string Members<br>---<br>if set, calls function 'audio_event_dead( bank_file, event_root )' when we receive message Message_AudioEventDead
+---@field script_wand_fired string Members<br>---<br>if set, calls function 'wand_fired( gun_entity_id )' when we receive Message_WandFired
+---@field script_teleported string Members<br>---<br>if set, calls function 'teleported( from_x, from_y, to_x, to_y, bool portal_teleport )' when we receive Message_Teleported
+---@field script_portal_teleport_used string Members<br>---<br>if set, calls function 'portal_teleport_used( entity_that_was_teleported, from_x, from_y, to_x, to_y )' when we receive Message_PortalTeleportUsed
+---@field script_polymorphing_to string Members<br>---<br>if set, calls function 'polymorphing_to( string_entity_we_are_about_to_polymorph_to )' when we receive Message_PolymorphingTo
+---@field script_biome_entered string Members<br>---<br>if set, calls function 'biome_entered( string_biome_name, string_biome_old_name )' when this entity changes biomes. Requires BiomeTrackerComponent
+---@field mLastExecutionFrame integer Members
+---@field mTimesExecutedThisFrame integer Members<br>---<br>tracks how many times we've executed this frame. This will linger on and store the old value of the old frames. Used internally.
+---@field mModAppendsDone boolean Members
+---@field vm_type unsupported Custom data types<br>---<br>Do we share a single Lua virtual machine for everyone who runs 'script_source_file' ('SHARED_BY_MANY_COMPONENTS'), create one VM per one LuaComponent and reuse the VM in case the component runs the script multiple times ('ONE_PER_COMPONENT_INSTANCE'), or create a new VM every time the script is executed ('CREATE_NEW_EVERY_EXECUTION', deprecated)?
+---@field mNextExecutionTime integer Privates
+---@field mTimesExecuted integer Privates
+---@field mLuaManager unsupported Privates
+---@field mPersistentValues unsupported Privates
+
+---@class MagicConvertMaterialComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MagicConvertMaterialComponent
+
+---@class MagicConvertMaterialComponent
+---@field radius integer Members
+---@field min_radius integer Members<br>---<br>allows for convert to happen from x pixels from the center
+---@field is_circle boolean Members
+---@field steps_per_frame integer Members
+---@field from_material_tag string Members<br>---<br>the tag of material, e.g. [liquid]
+---@field from_any_material boolean Members<br>---<br>if 1, converts any cells of any material to 'to_materia'
+---@field clean_stains boolean Members
+---@field extinguish_fire boolean Members
+---@field fan_the_flames integer Members<br>---<br>if > 0, will call UpdateFire() fan_the_flames times
+---@field temperature_reaction_temp integer Members<br>---<br>if != 0, will use the 'cold_freezes_to_materials' and 'warmth_melts_to_materials' in CellData to convert cells different materials
+---@field ignite_materials integer Members<br>---<br>if > 0, will call Ignite() with ingite_materials as probability_of_fire
+---@field loop boolean Members
+---@field kill_when_finished boolean Members
+---@field convert_entities boolean Members<br>---<br>if 1, kills entities with a damagemodel and converts them to 'to_material'
+---@field stain_frozen boolean Members<br>---<br>petri hax
+---@field reaction_audio_amount number Members<br>---<br>if > 0, will generate chemical reaction audio at converted cells
+---@field convert_same_material boolean Members<br>---<br>9.10.2020 - added this because at the end this caused the 'white ring' to appear, set it to false if you don't want constant whiteout
+---@field from_material_array string Members
+---@field to_material_array string Members
+---@field mRadius integer Members
+---@field from_material integer Custom data types
+---@field to_material integer Custom data types
+---@field mUseArrays boolean Privates
+---@field mFromMaterialArray unsupported Privates
+---@field mToMaterialArray unsupported Privates
+
+---@class MagicXRayComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MagicXRayComponent
+
+---@class MagicXRayComponent
+---@field radius integer Members
+---@field steps_per_frame integer Members
+---@field mStep integer Members
+---@field mRadius integer Members
+
+---@class ManaReloaderComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ManaReloaderComponent
+
+---@class ManaReloaderComponent
+
+---@class MaterialAreaCheckerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MaterialAreaCheckerComponent
+
+---@class MaterialAreaCheckerComponent
+---@field update_every_x_frame integer Members<br>---<br>if something other than 0 or 1, will only update_every_x_frames 
+---@field look_for_failure boolean Members<br>---<br>if true, will send message Message_MaterialAreaCheckerFailed if the material doesn't exist. If false, will send a message Message_MaterialAreaCheckerSuccess if the aabb is full of material and material2
+---@field count_min integer Members<br>---<br>If > 0, and look_for_failure=0, will send message if material count exceeds this number of cells
+---@field always_check_fullness boolean Members<br>---<br>if 1, and look_for_failure=0, will always check the whole area for cells
+---@field kill_after_message boolean Members<br>---<br>will kill this entity after sending the message
+---@field area_aabb unsupported Custom data types<br>---<br>aabb offset, we check that this aabb contains only material
+---@field material integer Custom data types<br>---<br>String name of material that we check that the aabb contains
+---@field material2 integer Custom data types<br>---<br>String name of material2 that we check that the aabb contains
+---@field mPosition integer Privates<br>---<br>keeps track where we are
+---@field mLastFrameChecked integer Privates<br>---<br>keeps track of how often we've checked
+
+---@class MaterialInventoryComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MaterialInventoryComponent
+
+---@class MaterialInventoryComponent
+---@field drop_as_item boolean Members<br>---<br>if true, drops a bag that the player can big up
+---@field on_death_spill boolean Members<br>---<br>if true, on the death this will explode all the materials into air
+---@field leak_gently boolean Members<br>---<br>NOTE( Petri ): 11.8.2023 - set this to false for old style leaky hidden piles situation.
+---@field leak_on_damage_percent number Members<br>---<br>if higher than 0 then it might leak when projectile damage happens
+---@field leak_pressure_min number Members<br>---<br>leak pressure coefficient
+---@field leak_pressure_max number Members<br>---<br>leak pressure coefficient
+---@field min_damage_to_leak number Members<br>---<br>the minimum damage that has to be done in order for a leak to occur
+---@field b2_force_on_leak number Members<br>---<br>if 0, nothing happens, elsewise will add a b2 force to the particleemitter which will push the b2body
+---@field death_throw_particle_velocity_coeff number Members<br>---<br>how far do we throw material particles on death?
+---@field kill_when_empty boolean Members<br>---<br>if set, will send MessageDeath when materials are drained
+---@field halftime_materials boolean Members<br>---<br>if true, will multiply the materials with the given halftimes
+---@field do_reactions integer Members<br>---<br>NOTE( Petri ): 15.8.2023 - if > 0, will do CellReactions between the materials. Value is the percent chance of how often. 100 = every frame 
+---@field do_reactions_explosions boolean Members<br>---<br>requires do_reactions > 0 - are we allowed to do reaction explosions?
+---@field do_reactions_entities boolean Members<br>---<br>requires do_reactions > 0 - are we allowed to load entities when doing reactions?
+---@field reaction_speed integer Members<br>---<br>Note( Petri ): 17.8.2023 - how 'fast' do we let reactions happen. How many pixels of material do we convert at one time (5-10) seems like a nice speed.
+---@field reactions_shaking_speeds_up boolean Members<br>---<br>Note( Petri ): 17.8.2023 - added the ability of shaking the bottle to cause reactions to happen quicker. 
+---@field max_capacity number Members<br>---<br>how much materials we can store in total. < 0 = infinite
+---@field audio_collision_size_modifier_amount number Members<br>---<br>if > 0, 'fullness of this container' * 'audio_collision_size_modifier_amount' is added to collision audio event size
+---@field last_frame_drank integer Members<br>---<br>last frame someone ingested from this via IngestionSystem
+---@field count_per_material_type unsupported Custom data types<br>---<br>Count of each material indexed by material type ID
+---@field is_death_handled boolean Privates
+---@field ex_position unsupported Privates<br>---<br>used to figure out movement velocity
+---@field ex_angle number Privates<br>---<br>used to figure out movement velocity
+
+---@class MaterialSeaSpawnerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MaterialSeaSpawnerComponent
+
+---@class MaterialSeaSpawnerComponent
+---@field speed integer Members<br>---<br>How many pixels to cover per one direction per one frame
+---@field sine_wavelength number Members<br>---<br>Parameters for sine wave that affects material spawn pattern
+---@field sine_amplitude number Members<br>---<br>Parameters for sine wave that affects material spawn pattern
+---@field noise_scale number Members<br>---<br>Parameters for noise that affects material spawn pattern
+---@field noise_threshold number Members<br>---<br>Parameters for noise that affects material spawn pattern
+---@field m_position integer Members
+---@field frames_run integer Members<br>---<br>to help keep the effect
+---@field material integer Custom data types<br>---<br>String name of material this creates
+---@field size unsupported Custom data types<br>---<br>Size of the area to cover
+---@field offset unsupported Custom data types<br>---<br>Offset of the center of the area to cover
+
+---@class MaterialSuckerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MaterialSuckerComponent
+
+---@class MaterialSuckerComponent
+---@field material_type integer Members<br>---<br>0 = liquid, 1 = sand, 2 = gas (arbitary order)
+---@field barrel_size integer Members<br>---<br>how many pixels can we suck up
+---@field num_cells_sucked_per_frame integer Members<br>---<br>How many cells at max can we suck per frame?
+---@field set_projectile_to_liquid boolean Members<br>---<br>if set, will set the projectile what ever we're sucking...?
+---@field last_material_id integer Members<br>---<br>hax... this is set if we use set_projectile_to_liquid
+---@field suck_gold boolean Members<br>---<br>if set will just suck gold and update wallet
+---@field suck_health boolean Members<br>---<br>if set will just suck healthium material and add 1 hp every sucked healthium
+---@field suck_static_materials boolean Members<br>---<br>will suck static materials from the world
+---@field suck_tag string Members<br>---<br>if set, will only suck materials with this tag. NOTE, will also require the correct material_type to be set
+---@field mAmountUsed integer Members<br>---<br>how full are we
+---@field randomized_position unsupported Custom data types<br>---<br>random offset for pos, where we look for pixels
+---@field mGoldAccumulator integer Privates<br>---<br>accumulates amount of gold picked during consecutive frames
+---@field mLastFramePickedGold integer Privates<br>---<br>last frame we picked gold
+
+---@class MoveToSurfaceOnCreateComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MoveToSurfaceOnCreateComponent
+
+---@class MoveToSurfaceOnCreateComponent
+---@field lookup_radius number Members
+---@field offset_from_surface number Members
+---@field ray_count integer Members
+---@field verlet_min_joint_distance number Members
+
+---@class MusicEnergyAffectorComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr MusicEnergyAffectorComponent
+
+---@class MusicEnergyAffectorComponent
+---@field energy_target number Members<br>---<br>the energy this makes music go towards
+---@field fade_range number Members<br>---<br>if > 0, fade between 0 and energy_target based on distance to this entity
+---@field trigger_danger_music boolean Members<br>---<br>if 1, attempts to trigger danger music no matter what energy level is reached
+---@field fog_of_war_threshold integer Members<br>---<br>if fog of war at position of this entity is greater than 'fog_of_war_threshold', this has  no effect
+---@field is_enemy boolean Members
+---@field energy_lerp_up_speed_multiplier number Members
+
+---@class NinjaRopeComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr NinjaRopeComponent
+
+---@class NinjaRopeComponent
+---@field max_length number Members
+---@field mLength number Members
+
+---@class NullDamageComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr NullDamageComponent
+
+---@class NullDamageComponent
+---@field null_chance number Members<br>---<br>if less than 1, then will roll the die to see if it will NULL all damage. Stick this into your projectile entity
+
+---@class OrbComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr OrbComponent
+
+---@class OrbComponent
+---@field orb_id integer Members<br>---<br>must be unique for every orb in the world
+
+---@class ParticleEmitterComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ParticleEmitterComponent
+
+---@class ParticleEmitterComponent
+---@field emitted_material_name string Members
+---@field create_real_particles boolean Members<br>---<br>used to be emit_real_particles - creates these particles in the grid, if that happens velocity and lifetime are ignored
+---@field emit_real_particles boolean Members<br>---<br>this creates particles that will behave like particles, but work outside of the screen
+---@field emit_cosmetic_particles boolean Members<br>---<br>particle does have collisions, but no other physical interactions with the world. the particles are culled outside camera region
+---@field cosmetic_force_create boolean Members<br>---<br>cosmetic particles are created inside grid cells
+---@field render_back boolean Members<br>---<br>for cosmetic particles, if they are rendered on front or in the back...
+---@field render_ultrabright boolean Members<br>---<br>if 1, particles made of a glowing material will be 3x as bright as usually
+---@field collide_with_grid boolean Members<br>---<br>for cosmetic particles, if 1 the particles collide with grid and only exist in screen space
+---@field collide_with_gas_and_fire boolean Members<br>---<br>does it collide with gas and fire, works with create_real_particles and raytraced images 
+---@field particle_single_width boolean Members<br>---<br>for cosmetic particles, forces them (gas,fire) to be only 1 pixel wide 
+---@field emit_only_if_there_is_space boolean Members<br>---<br>This is turned for potions after they take some damage and start leaking
+---@field emitter_lifetime_frames integer Members<br>---<br>emitter lifetime in frames. -1 = infinite
+---@field fire_cells_dont_ignite_damagemodel boolean Members<br>---<br>if set, and fire cells are created, this changes their default behaviour of igniting DamageModels
+---@field color_is_based_on_pos boolean Members<br>---<br>if true, will get the particle color based on the world position (instead of randomizing it)
+---@field custom_alpha number Members<br>---<br>if >= 0, will use this as particle alpha
+---@field x_pos_offset_min number Members
+---@field y_pos_offset_min number Members
+---@field x_pos_offset_max number Members
+---@field y_pos_offset_max number Members
+---@field area_circle_sector_degrees number Members
+---@field x_vel_min number Members
+---@field x_vel_max number Members
+---@field y_vel_min number Members
+---@field y_vel_max number Members
+---@field direction_random_deg number Members
+---@field velocity_always_away_from_center number Members<br>---<br>if set, will make the velocity's rotation always away from center of randomized aabb
+---@field lifetime_min number Members
+---@field lifetime_max number Members
+---@field airflow_force number Members
+---@field airflow_time number Members
+---@field airflow_scale number Members
+---@field friction number Members
+---@field attractor_force number Members<br>---<br>If > 0, an attractor is created at the position of the entity that owns this component
+---@field emission_interval_min_frames integer Members
+---@field emission_interval_max_frames integer Members
+---@field emission_chance integer Members
+---@field delay_frames integer Members<br>---<br>if set will delay this many frames until starts
+---@field is_emitting boolean Members
+---@field use_material_inventory boolean Members<br>---<br>if set, it'll use MaterialInventoryComponent as the source of the particles emitted
+---@field is_trail boolean Members<br>---<br>if set, will do a trail based on the previous position and current position
+---@field trail_gap number Members<br>---<br>if > 0, trail particles will be generated this far from each other between our old and new position, else [count_min-count_max] particles will be generated on the line
+---@field render_on_grid boolean Members<br>---<br>if set, particle render positions will be snapped to cell grid
+---@field fade_based_on_lifetime boolean Members<br>---<br>if set, particle's position in its lifetime will determine the rendering alpha
+---@field draw_as_long boolean Members<br>---<br>if set, particle will rendered as a trail along it's movement vector
+---@field b2_force number Members<br>---<br>if 0 nothing happens, if 1 will apply a force to the physics body (if has one), also requires that we use the material inventory
+---@field set_magic_creation boolean Members<br>---<br>if set will set the magic creation 1 in the cells and do the white glow effect
+---@field image_animation_file string Members<br>---<br>file to use for image-based animation
+---@field image_animation_colors_file string Members<br>---<br>file to use for image-based animation
+---@field image_animation_speed number Members<br>---<br>how long do we stay on one frame of image-based animation. 0.5 means two game frames per one animation frame. 2.0 means two animation frames per one game frame, and so on. 0 means we always emit at time 0 of the animation.
+---@field image_animation_loop boolean Members<br>---<br>does image-based animation keep looping while this component is active?
+---@field image_animation_phase number Members<br>---<br>the point in time [0,1] where the image-based animation will start the first cycle
+---@field image_animation_emission_probability number Members<br>---<br>[0,1], probability of emitting image based particles is multiplied with this
+---@field image_animation_raytrace_from_center boolean Members<br>---<br>enable this to disable image_animations (from the center) going through the world
+---@field image_animation_use_entity_rotation boolean Members<br>---<br>if 1, image animation emission will be rotated based on entity rotation
+---@field ignore_transform_updated_msg boolean Members<br>---<br>if 1, mExPosition and m_last_emit_position will not be updated when receiving Message_TransformUpdated
+---@field color unsupported Custom data types
+---@field offset unsupported Custom data types
+---@field area_circle_radius unsupported Custom data types<br>---<br>If > 0, the particles will be emitted inside a circular area defined by the min and max bounds of 'area_circle_radius'.
+---@field gravity unsupported Custom data types
+---@field count_min integer Custom data types
+---@field count_max integer Custom data types
+---@field mExPosition unsupported Privates<br>---<br>is used with is_trail
+---@field mMaterialInventoryMax integer Privates<br>---<br>this is how we figure out the pressure, when using material_inventory
+---@field m_material_id integer Privates
+---@field m_next_emit_frame integer Privates
+---@field m_has_emitted boolean Privates
+---@field m_last_emit_position unsupported Privates
+---@field m_image_based_animation_time number Privates
+---@field m_collision_angles unsupported Privates
+---@field m_particle_attractor_id unsupported Privates
+
+---@class PathFindingComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PathFindingComponent
+
+---@class PathFindingComponent
+---@field search_depth_max_no_goal integer Members<br>---<br>TODO: Comment
+---@field iterations_max_no_goal integer Members<br>---<br>TODO: Comment
+---@field search_depth_max_with_goal integer Members<br>---<br>TODO: Comment
+---@field iterations_max_with_goal integer Members<br>---<br>TODO: Comment
+---@field cost_of_flying number Members<br>---<br>TODO: Comment
+---@field distance_to_reach_node_x integer Members<br>---<br>TODO: Comment
+---@field distance_to_reach_node_y integer Members<br>---<br>TODO: Comment
+---@field frames_to_get_stuck integer Members<br>---<br>TODO: Comment
+---@field frames_between_searches integer Members<br>---<br>TODO: Comment
+---@field y_walking_compensation number Members<br>---<br>TODO: Comment
+---@field can_fly boolean Members<br>---<br>TODO: Comment
+---@field can_walk boolean Members<br>---<br>TODO: Comment
+---@field can_jump boolean Members<br>---<br>TODO: Comment
+---@field can_dive boolean Members<br>---<br>TODO: Comment
+---@field can_swim_on_surface boolean Members<br>---<br>TODO: Comment
+---@field never_consider_line_of_sight boolean Members<br>---<br>if 1, we require a path to have an entity at the goal, having line of sight to the entity is not enough
+---@field space_required number Members<br>---<br>how far (in cells) must a point on our route be from the nearest wall to consider it passable?
+---@field max_jump_distance_from_camera number Members<br>---<br>TODO: Comment
+---@field jump_speed number Members<br>---<br>TODO: Comment
+---@field initial_jump_lob number Members<br>---<br>TODO: Comment
+---@field initial_jump_max_distance_x number Members<br>---<br>TODO: Comment
+---@field initial_jump_max_distance_y number Members<br>---<br>TODO: Comment
+---@field read_state integer Members<br>---<br>Read only value to get mState as an integer. Used to detect when the worst cheesers are trying to cheese our beloved squidward.
+---@field jump_trajectories unsupported Custom data types<br>---<br>TODO: Comment
+---@field input unsupported Privates<br>---<br>TODO: Comment
+---@field waiting_for boolean Privates<br>---<br>TODO: Comment
+---@field next_search_frame integer Privates<br>---<br>TODO: Comment
+---@field path unsupported Privates<br>---<br>TODO: Comment
+---@field path_next_node unsupported Privates<br>---<br>TODO: Comment
+---@field path_next_node_vector_to unsupported Privates<br>---<br>TODO: Comment
+---@field path_next_node_distance_to number Privates<br>---<br>TODO: Comment
+---@field path_previous_node unsupported Privates<br>---<br>TODO: Comment
+---@field path_frames_stuck integer Privates<br>---<br>TODO: Comment
+---@field path_is_stuck boolean Privates<br>---<br>TODO: Comment
+---@field path_last_frame_with_job integer Privates<br>---<br>TODO: Comment
+---@field mLogic unsupported Privates<br>---<br>this defines what is an acceptable path
+---@field mFallbackLogic unsupported Privates<br>---<br>we use this to define an acceptable path if mLogic doesn't return one
+---@field mSelectedLogic unsupported Privates<br>---<br>TODO: Comment
+---@field mEnabled boolean Privates<br>---<br>TODO: Comment
+---@field mTimesStuck integer Privates<br>---<br>TODO: Comment
+---@field mNextClearDontApproachListFrame integer Privates<br>---<br>TODO: Comment
+---@field mNodeProximityCheckCorrectionY number Privates<br>---<br>TODO: Comment
+---@field debug_path unsupported Privates<br>---<br>TODO: Comment
+---@field jump_velocity_multiplier number Privates<br>---<br>TODO: Comment
+
+---@class PathFindingGridMarkerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PathFindingGridMarkerComponent
+
+---@class PathFindingGridMarkerComponent
+---@field marker_work_flag integer Members
+---@field marker_offset_x number Members
+---@field marker_offset_y number Members
+---@field player_marker_radius number Members
+---@field mNode unsupported Privates<br>---<br>we change the work state of this node. thus we need to keep a reference to it
+
+---@class PhysicsAIComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsAIComponent
+
+---@class PhysicsAIComponent
+---@field target_vec_max_len number Members
+---@field force_coeff number Members
+---@field force_balancing_coeff number Members
+---@field force_max number Members
+---@field torque_coeff number Members
+---@field torque_balancing_coeff number Members
+---@field torque_max number Members
+---@field torque_damaged_max number Members
+---@field torque_jump_random number Members
+---@field damage_deactivation_probability integer Members
+---@field damage_deactivation_time_min integer Members
+---@field damage_deactivation_time_max integer Members
+---@field die_on_remaining_mass_percentage number Members
+---@field levitate boolean Members
+---@field v0_jump_logic boolean Members
+---@field v0_swim_logic boolean Members
+---@field v0_body_id_logic boolean Members
+---@field swim_check_y_min integer Members
+---@field swim_check_y_max integer Members
+---@field swim_check_side_x integer Members
+---@field swim_check_side_y integer Members
+---@field keep_inside_world boolean Members<br>---<br>fix to the bug in which the spiders spawned inside the holy mountain, if set will try not to go into places which aren't loaded 
+---@field free_if_static boolean Members<br>---<br>set true for the boss, because box2d might turn this body into a static body, if it thinks it's glitching out. 
+---@field rotation_speed number Privates
+---@field mStartingMass number Privates
+---@field mMainBodyFound boolean Privates
+---@field mNextFrameActive integer Privates
+---@field mRotationTarget number Privates
+---@field mLastPositionWhenHadPath unsupported Privates
+---@field mHasLastPosition boolean Privates
+
+---@class PhysicsBody2ComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsBody2Component
+
+---@class PhysicsBody2Component
+---@field mBodyId unsupported Members<br>---<br>this is mBody->GetBodyId() - not to be confused with uid, has to be tracked separately, since the mBody pointer is not unique
+---@field linear_damping number Members
+---@field angular_damping number Members
+---@field allow_sleep boolean Members
+---@field fixed_rotation boolean Members
+---@field is_bullet boolean Members
+---@field is_static boolean Members
+---@field buoyancy number Members
+---@field hax_fix_going_through_ground boolean Members<br>---<br>if 1, will lift the body upwards if it is inside ground
+---@field hax_fix_going_through_sand boolean Members<br>---<br>hax_fix_going_through_ground has to be set, if set will lift the body upwards if it is inside sand
+---@field hax_wait_till_pixel_scenes_loaded boolean Members
+---@field go_through_sand boolean Members<br>---<br>if 1, will go through sand PhysicsBridge::mGoThroughSand = 1
+---@field auto_clean boolean Members<br>---<br>if 1, the simulation might destroy this body if it's hidden under sand. Problematic if you have a small piece with joint attached to something like the wheels of minecart. Set to 0 in cases like that
+---@field force_add_update_areas boolean Members<br>---<br>if 1, we will mark our predicted aabb as a box2d update area.
+---@field update_entity_transform boolean Members
+---@field kill_entity_if_body_destroyed boolean Members<br>---<br>if 1, will kill the entity when physics body is destroyed
+---@field kill_entity_after_initialized boolean Members<br>---<br>if 1, will destroy the entity after initialization has been done based the entity's PhysicsBodyComponents and JointComponents
+---@field manual_init boolean Members<br>---<br>if 1, initialization occurs only when done via for example lua component and Physic2InitFromComponents()
+---@field destroy_body_if_entity_destroyed boolean Members<br>---<br>if 1, root body is destroyed if the entity is destroyed
+---@field root_offset_x number Members<br>---<br>TODO
+---@field root_offset_y number Members<br>---<br>TODO
+---@field init_offset_x number Members<br>---<br>TODO
+---@field init_offset_y number Members<br>---<br>TODO
+---@field mActiveState boolean Members<br>---<br>private variable, please don't mess around with this
+---@field mPixelCountOrig unsupported Members<br>---<br>the number of pixels the body had when it was originally created
+---@field mLocalPosition unsupported Custom data types<br>---<br>private variable, please don't mess around with this
+---@field mBody unsupported Privates
+---@field mInitialized boolean Privates<br>---<br>private variable, please don't mess around with this
+---@field mPixelCount unsupported Privates<br>---<br>if set, tracks the number of csolidcells the body has
+---@field mRefreshed boolean Privates<br>---<br>this is sure the bodies are only parsed once
+
+---@class PhysicsBodyCollisionDamageComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsBodyCollisionDamageComponent
+
+---@class PhysicsBodyCollisionDamageComponent
+---@field speed_threshold number Members
+---@field damage_multiplier number Members
+
+---@class PhysicsBodyComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsBodyComponent
+
+---@class PhysicsBodyComponent
+---@field is_external boolean Members<br>---<br>if mBody is set from outside, will ignore all the things
+---@field hax_fix_going_through_ground boolean Members<br>---<br>if set will lift the body upwards if it is inside ground
+---@field hax_fix_going_through_sand boolean Members<br>---<br>hax_fix_going_through_ground has to be set, if set will lift the body upwards if it is inside sand
+---@field hax_wait_till_pixel_scenes_loaded boolean Members
+---@field uid integer Members<br>---<br>if the entity has multiple physics bodies and has specific shapes for those and possible joints, you should use this. 0 is default for shapes
+---@field is_enabled boolean Members<br>---<br>Use this to kill the physics body of. if is_enabled is set to false, will destroy the physics body
+---@field linear_damping number Members
+---@field angular_damping number Members
+---@field allow_sleep boolean Members
+---@field fixed_rotation boolean Members
+---@field buoyancy number Members
+---@field gravity_scale_if_has_no_image_shapes number Members
+---@field is_bullet boolean Members
+---@field is_static boolean Members
+---@field is_kinematic boolean Members
+---@field is_character boolean Members<br>---<br>if it is a character, then we need to few interesting things from time to time
+---@field go_through_sand boolean Members<br>---<br>if set, will go through sand PhysicsBridge::mGoThroughSand = 1
+---@field gridworld_box2d boolean Members<br>---<br>default is 1. You should only change this if you know the body isn't going to touch gridworld
+---@field auto_clean boolean Members<br>---<br>if set, the simulation might destroy this body if it's hidden under sand. Problematic if you have a small piece with joint attached to something like the wheels of minecart. Set to 0 in cases like that
+---@field on_death_leave_physics_body boolean Members<br>---<br>if set, will leave the b2body into the world, even if the entity is killed
+---@field on_death_really_leave_body boolean Members<br>---<br>camera bound... god damn... we need something special when we want to leave the body
+---@field update_entity_transform boolean Members<br>---<br>WARNING! Don't touch this unless you know what you're doing. If false, doesn't update the entitys transform to match the physics body. This is used with multi body entities, to use the correct body to update the entity, e.g. minecart
+---@field force_add_update_areas boolean Members<br>---<br>if 1, we will mark our predicted aabb as a box2d update area.
+---@field kills_entity boolean Members<br>---<br>if set, will kill the entity when physics body is destroyed
+---@field projectiles_rotate_toward_velocity boolean Members<br>---<br>for physics projectiles, if true will initially rotate the body based on the velocity
+---@field randomize_init_velocity boolean Members<br>---<br>randomizes the init velocity
+---@field mActiveState boolean Members<br>---<br>private variable, please don't mess around with this
+---@field initial_velocity unsupported Custom data types<br>---<br>if you want a velocity at the start, set it here
+---@field mBody unsupported Privates
+---@field mBodyId unsupported Privates<br>---<br>this is mBody->GetBodyId() - not to be confused with uid shit, has to be tracked separately, since the mBody pointer is not unique
+---@field mPixelCount integer Privates<br>---<br>if set, tracks the number of csolidcells the body has
+---@field mLocalPosition unsupported Privates
+---@field mRefreshed boolean Privates<br>---<br>this is sure the bodies are only parsed once
+
+---@class PhysicsImageShapeComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsImageShapeComponent
+
+---@class PhysicsImageShapeComponent
+---@field is_root boolean Members<br>---<br>if 1, PhysicsBody2Component will use this to figure out where the entity is located
+---@field body_id integer Members<br>---<br>used to figure out which bodies are attached to each other when creating joints
+---@field use_sprite boolean Members<br>---<br>will try to find the SpriteComponent and use that
+---@field is_circle boolean Members<br>---<br>tries to fit this into a circle, looks at bounding box of the pixels and sets the circle to the center of that with radius being the line from there to a straight edge
+---@field centered boolean Members<br>---<br>if this is true, moves offset to be in the center of the image, overwrites the offset_x, offset_y
+---@field offset_x number Members<br>---<br>offset x in pixels
+---@field offset_y number Members<br>---<br>offset y in pixels
+---@field z number Members<br>---<br>offset in the z direction
+---@field image_file string Members<br>---<br>the png file from which the body is created from
+---@field material integer Custom data types<br>---<br>the material from which the body is created
+---@field mBody unsupported Privates<br>---<br>used in joint creation phase
+
+---@class PhysicsJoint2ComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsJoint2Component
+
+---@class PhysicsJoint2Component
+---@field joint_id unsupported Members<br>---<br>Use this to create a relation between PhysicsJointMutator and a joint. The PhysicsJointMutator must exist when the physics objects are initialized for the first time. This id should be unique inside one entity. Defaults to 0
+---@field break_force number Members<br>---<br>if > 0, will break if theres a force too strong.
+---@field break_distance number Members<br>---<br>if > 0, will break if the anchors on the bodies get further than this.
+---@field break_on_body_modified boolean Members<br>---<br>if > 1, will break if an attached body is modified
+---@field break_on_shear_angle_deg number Members<br>---<br>if > 0, will break if the angle between the linked bodies becomes greater than this
+---@field body1_id integer Members
+---@field body2_id integer Members
+---@field offset_x number Members
+---@field offset_y number Members
+---@field ray_x number Members
+---@field ray_y number Members
+---@field surface_attachment_offset_x number Members
+---@field surface_attachment_offset_y number Members
+---@field type unsupported Custom data types<br>---<br>Enum - REVOLUTE_JOINT, WELD_JOINT, REVOLUTE_JOINT_ATTACH_TO_NEARBY_SURFACE or WELD_JOINT_ATTACH_TO_NEARBY_SURFACE
+
+---@class PhysicsJoint2MutatorComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsJoint2MutatorComponent
+
+---@class PhysicsJoint2MutatorComponent
+---@field joint_id unsupported Members<br>---<br>Use this to create a relation between PhysicsJointMutator and a joint created by PhysicsJoint2Component. The PhysicsJoint2Mutator must exist when the physics objects are initialized for the first time.
+---@field destroy boolean Members<br>---<br>if 1, the joint will break and this component will be destroyed.
+---@field motor_speed number Members<br>---<br>if != 0 and this is linked to a revolute joint, the joint motor will be enabled at this speed
+---@field motor_max_torque number Members<br>---<br>max torque for motor
+---@field mBox2DJointId integer Members<br>---<br>Private, don't touch this! Stores the joint's id in the physics engine.
+---@field mPreviousMotorSpeed number Privates
+---@field mPreviousMotorMaxTorque number Privates
+
+---@class PhysicsJointComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsJointComponent
+
+---@class PhysicsJointComponent
+---@field nail_to_wall boolean Members
+---@field grid_joint boolean Members<br>---<br>if 1, will do a grid joint that works correctly with a body when it is destroyed / chipped away
+---@field breakable boolean Members<br>---<br>if 1, will break if theres a force too strong
+---@field body1_id integer Members
+---@field body2_id integer Members
+---@field pos_x number Members
+---@field pos_y number Members
+---@field delta_x number Members<br>---<br>For mouse joint only ... moves the mouse joint by *dt 
+---@field delta_y number Members<br>---<br>For mouse joint only ... moves the mouse joint by *dt 
+---@field mMotorEnabled boolean Members<br>---<br>enable motor, by setting this to true
+---@field mMotorSpeed number Members<br>---<br>if enabled this gets set to speed
+---@field mMaxMotorTorque number Members<br>---<br>max torque for motor
+---@field type unsupported Custom data types<br>---<br>Enum - JOINT_TYPE
+---@field mJoint unsupported Privates
+
+---@class PhysicsKeepInWorldComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsKeepInWorldComponent
+
+---@class PhysicsKeepInWorldComponent
+---@field check_whole_aabb boolean Members<br>---<br>All that is needed is to include one of the components with PhysicsBodyComponent or PhysicsBody2Component and it will be frozen when it hits outer edges of the world. NOTE! This will override the auto_clean variable, auto_clean will be set to false. If this is true, will check all the 4 corners of the bounding box
+---@field predict_aabb boolean Members<br>---<br>Will add the velocity * 1.5 to the aabb to predict where the body will end up at. This will greatly help keep the body inside simulated world.
+---@field keep_at_last_valid_pos boolean Members<br>---<br>Will try to keep the object at the latest valid position
+---@field mExPosition unsupported Privates
+---@field mExRotation number Privates
+
+---@class PhysicsPickUpComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsPickUpComponent
+
+---@class PhysicsPickUpComponent
+---@field pick_up_strength number Members
+---@field transform unsupported Custom data types
+---@field original_left_joint_pos unsupported Custom data types
+---@field original_right_joint_pos unsupported Custom data types
+---@field isBroken boolean Privates
+---@field leftJointPos unsupported Privates
+---@field rightJointPos unsupported Privates
+---@field leftJoint unsupported Privates
+---@field rightJoint unsupported Privates
+
+---@class PhysicsRagdollComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsRagdollComponent
+
+---@class PhysicsRagdollComponent
+---@field filename string Members<br>---<br>file that should include just a list of other files, that have all the parts
+---@field filenames string Members<br>---<br>a list of body parts as png images, separate the files by ','. e.g. 'data/temp/ragdoll/leg.png, data/temp/ragdoll/head.png,...'
+---@field offset_x number Members<br>---<br>offset of where the ragdoll will be created
+---@field offset_y number Members<br>---<br>offset of where the ragdoll will be created
+---@field bodies unsupported Privates
+
+---@class PhysicsShapeComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsShapeComponent
+
+---@class PhysicsShapeComponent
+---@field recreate boolean Members
+---@field is_circle boolean Members
+---@field is_box boolean Members
+---@field is_capsule boolean Members
+---@field is_based_on_sprite boolean Members<br>---<br>if set, will use sprite component to figure out a box that fits this
+---@field friction number Members
+---@field restitution number Members
+---@field density number Members
+---@field local_position_x number Members
+---@field local_position_y number Members
+---@field radius_x number Members
+---@field radius_y number Members
+---@field capsule_x_percent number Members
+---@field capsule_y_percent number Members
+---@field material integer Custom data types<br>---<br>the material to use for collision audio
+
+---@class PhysicsThrowableComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PhysicsThrowableComponent
+
+---@class PhysicsThrowableComponent
+---@field throw_force_coeff number Members
+---@field max_throw_speed number Members
+---@field min_torque number Members
+---@field max_torque number Members
+---@field tip_check_offset_min number Members
+---@field tip_check_offset_max number Members
+---@field tip_check_random_rotation_deg number Members
+---@field attach_min_speed number Members
+---@field attach_to_surfaces_knife_style boolean Members
+---@field hp integer Members<br>---<br>WIP WIP
+---@field mHasJoint boolean Privates
+
+---@class PixelSceneComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PixelSceneComponent
+
+---@class PixelSceneComponent
+---@field pixel_scene string Members<br>---<br>loads this pixel scene file
+---@field pixel_scene_visual string Members<br>---<br>this is the colors that get used for the pixels, if empty will use material colors
+---@field pixel_scene_background string Members<br>---<br>this is the background file that gets loaded, if empty won't do anything
+---@field background_z_index integer Members<br>---<br>the standard z_index of pixel scene backgrounds
+---@field offset_x number Members<br>---<br>how much off from the entity x,y will this be. Top left corner is where it loads the pixel scene
+---@field offset_y number Members
+---@field skip_biome_checks boolean Members<br>---<br>biome check is on by default - it will check that pixel scene is loaded so that every corner is in the same biome
+---@field skip_edge_textures boolean Members<br>---<br>if on - won't do the edge textures for the pixel scene
+
+---@class PixelSpriteComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PixelSpriteComponent
+
+---@class PixelSpriteComponent
+---@field image_file string Members<br>---<br>loads pixelsprite based on this file
+---@field anchor_x integer Members<br>---<br>the anchor and center_offset
+---@field anchor_y integer Members<br>---<br>the anchor and center_offset
+---@field material string Members<br>---<br>what's the material that things are made out of, TODO - change this into MetaCustom
+---@field diggable boolean Members<br>---<br>if 1, this can be broken with digger
+---@field clean_overlapping_pixels boolean Members<br>---<br>cleans up the pixels that are ovelapping in the world
+---@field kill_when_sprite_dies boolean Members<br>---<br>kills the entity, if the pixel sprite is dead (empty)
+---@field create_box2d_bodies boolean Members<br>---<br>if true, will create new pixel sprites with box2d bodies, instead of gridworld cells
+---@field mPixelSprite unsupported Custom data types
+
+---@class PlatformShooterPlayerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PlatformShooterPlayerComponent
+
+---@class PlatformShooterPlayerComponent
+---@field aiming_reticle_distance_from_character number Members
+---@field camera_max_distance_from_character number Members
+---@field alcohol_drunken_speed number Members
+---@field blood_fungi_drunken_speed number Members
+---@field blood_worm_drunken_speed number Members
+---@field eating_cells_per_frame integer Members
+---@field eating_probability integer Members
+---@field eating_delay_frames integer Members
+---@field stoned_speed number Members
+---@field center_camera_on_this_entity boolean Members
+---@field move_camera_with_aim boolean Members<br>---<br>if true, moves camera with the aim.
+---@field eating_area_min unsupported Custom data types
+---@field eating_area_max unsupported Custom data types
+---@field mSmoothedCameraPosition unsupported Privates
+---@field mSmoothedAimingVector unsupported Privates
+---@field mCameraRecoil number Privates
+---@field mCameraRecoilTarget number Privates
+---@field mCrouching boolean Privates
+---@field mCameraDistanceLerped number Privates
+---@field mRequireTriggerPull boolean Privates
+---@field mWarpDelay integer Privates
+---@field mItemTemporarilyHidden integer Privates
+---@field mDesiredCameraPos unsupported Privates
+---@field mHasGamepadControlsPrev boolean Privates
+---@field mForceFireOnNextUpdate boolean Privates
+---@field mFastMovementParticlesAlphaSmoothed number Privates
+---@field mTeleBoltFramesDuringLastSecond integer Privates
+---@field mCamCorrectionTeleSmoothed number Privates
+---@field mCamCorrectionGainSmoothed unsupported Privates
+---@field mCameraErrorPrev unsupported Privates
+---@field mCamErrorAveraged unsupported Privates
+---@field mCamMovingFastPrev boolean Privates
+---@field mCamFrameStartedMovingFast integer Privates
+---@field mCamFrameLastMovingFastExplosion integer Privates
+---@field mCessationDo boolean Privates
+---@field mCessationLifetime integer Privates
+
+---@class PlayerCollisionComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PlayerCollisionComponent
+
+---@class PlayerCollisionComponent
+---@field getting_crushed_threshold integer Members
+---@field moving_up_before_getting_crushed_threshold integer Members
+---@field getting_crushed_counter integer Privates<br>---<br>1.12.2018 - Is this still used?
+---@field stuck_in_ground_counter integer Privates<br>---<br>used this mostly for player to figure out if it's stuck in ground
+---@field DEBUG_stuck_in_static_ground integer Privates<br>---<br>used to report error + also to free the player in case something horrible has gone wrong
+---@field mCollidedHorizontally boolean Privates
+---@field mPhysicsCollisionHax unsupported Privates<br>---<br>hax
+
+---@class PlayerStatsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PlayerStatsComponent
+
+---@class PlayerStatsComponent
+---@field lives integer Members
+---@field max_hp number Members
+---@field speed number Members
+
+---@class PositionSeedComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PositionSeedComponent
+
+---@class PositionSeedComponent
+---@field pos_x number Members
+---@field pos_y number Members
+
+---@class PotionComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PotionComponent
+
+---@class PotionComponent
+---@field spray_velocity_coeff number Members
+---@field spray_velocity_normalized_min number Members
+---@field body_colored boolean Members
+---@field throw_bunch boolean Members
+---@field throw_how_many integer Members
+---@field dont_spray_static_materials boolean Members<br>---<br>NOTE( Petri ): 15.8.2023 - if this is set to true, will only spray dynamic materials, that dont cause bugs (i.e. will not spray hard rock, box2d materials)
+---@field dont_spray_just_leak_gas_materials boolean Members<br>---<br>NOTE( Petri ): 15.8.2023 - if this is set to true, will only leak gas materials instead of 'spraying' them.
+---@field never_color boolean Members<br>---<br>Petri: body_colored didn't seem to work, so I added never_color. It can be set to true if you never want the potion to be colored
+---@field custom_color_material integer Custom data types<br>---<br>if set, will always use the color from this material
+
+---@class PressurePlateComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr PressurePlateComponent
+
+---@class PressurePlateComponent
+---@field check_every_x_frames integer Members<br>---<br>how often do we check the world
+---@field state integer Members<br>---<br>0 is up, 1 is down
+---@field material_percent number Members<br>---<br>how much material should there be in the aabbs that we go down 
+---@field aabb_min unsupported Custom data types
+---@field aabb_max unsupported Custom data types
+---@field mNextFrame integer Privates
+
+---@class ProjectileComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ProjectileComponent
+
+---@class ProjectileComponent
+---@field lifetime integer Members<br>---<br>lifetime, -1 means it's endless, otherwise it's the frame count
+---@field lifetime_randomness integer Members<br>---<br>final lifetime will be lifetime + random(-lifetime_randomness,lifetime_randomness)
+---@field on_lifetime_out_explode boolean Members<br>---<br>when lifetime runs out, should we explode?
+---@field collide_with_world boolean Members<br>---<br>true by default. Some projectiles you don't want to collide with the world, e.g. blackholes
+---@field speed_min number Members
+---@field speed_max number Members
+---@field friction number Members
+---@field direction_random_rad number Members<br>---<br>when fired, randomizes the velocity -this, this
+---@field direction_nonrandom_rad number Members<br>---<br>when fired, multiplies this with projectile_i and adds it to direction
+---@field lob_min number Members
+---@field lob_max number Members
+---@field camera_shake_when_shot number Members
+---@field shoot_light_flash_radius number Members
+---@field int unsupported Members
+---@field int unsupported Members
+---@field int unsupported Members
+---@field create_shell_casing boolean Members<br>---<br>should we create shell casings?
+---@field shell_casing_material string Members<br>---<br>material of the shell casing
+---@field muzzle_flash_file string Members<br>---<br>this entity is created along with the projectile, oriented along the projectile's path
+---@field bounces_left integer Members
+---@field bounce_energy number Members<br>---<br>when bouncing, velocity is multiplied by this
+---@field bounce_always boolean Members<br>---<br>if true, will do a fake bounce if can't do the proper bounce, but will always try to bounce
+---@field bounce_at_any_angle boolean Members<br>---<br>if true, will bounce at any reflection angle
+---@field attach_to_parent_trigger boolean Members<br>---<br>if true, will attach to the projectile entity that created this projectile via a trigger
+---@field bounce_fx_file string Members<br>---<br>this entity is created at the bounce position. it gets the bounce angle as rotation.
+---@field angular_velocity number Members<br>---<br>this is only applied if velocity_sets_rotation == false
+---@field velocity_sets_rotation boolean Members<br>---<br>whether we set the rotation based on velocity, as in spear or if we update the rotation with angular_velocity
+---@field velocity_sets_scale boolean Members<br>---<br>if true, the sprite width is made equal to the distance traveled since last frame
+---@field velocity_sets_scale_coeff number Members<br>---<br>Larger value means velocity affects the scale more
+---@field velocity_sets_y_flip boolean Members<br>---<br>if true, the sprite is flipped based on which side the projectile is currently traveling
+---@field velocity_updates_animation number Members<br>---<br>updates the animation based on far the sprite moved
+---@field ground_penetration_coeff number Members<br>---<br>if > 0, this, along with VelocityComponent.mass affects how far we penetrate in materials
+---@field ground_penetration_max_durability_to_destroy integer Members<br>---<br>if 0, will not penetrate into materials with durability greater than this
+---@field go_through_this_material string Members<br>---<br>if set, we never collide with this material
+---@field do_moveto_update boolean Members<br>---<br>this should probably be true, to get normal projectile behaviour, but you might want to disable this for some physics-based projectiles, like bombs
+---@field on_death_duplicate_remaining integer Members<br>---<br>if greater than 0, the projectile creates two clones of itself on death. 'on_death_duplicate_remaining' on the clones is reduced by one
+---@field on_death_gfx_leave_sprite boolean Members<br>---<br>if true, finds all the sprites and leaves as sand cells into the grid
+---@field on_death_explode boolean Members<br>---<br>if true, does explosion with config_explosion
+---@field on_death_emit_particle boolean Members<br>---<br>if true, emits on_death_emit_particle_type on death
+---@field on_death_emit_particle_count integer Members<br>---<br>how many particles should we emit
+---@field die_on_liquid_collision boolean Members<br>---<br>if true, dies on collision with liquids
+---@field die_on_low_velocity boolean Members<br>---<br>if true, dies when speed goes below die_on_low_velocity_limit
+---@field die_on_low_velocity_limit number Members<br>---<br>please see die_on_low_velocity
+---@field on_death_emit_particle_type string Members
+---@field on_death_particle_check_concrete boolean Members<br>---<br>if you want it to stick as concrete, you should enable this
+---@field ground_collision_fx boolean Members<br>---<br>if 1, spurt some particles when colliding with mortals
+---@field explosion_dont_damage_shooter boolean Members<br>---<br>if true, explosion doesn't damage the entity who shot this
+---@field on_death_item_pickable_radius number Members<br>---<br>if > 0, makes items closer than this radius pickable on death
+---@field penetrate_world boolean Members<br>---<br>if true, the projectile doesn't collide with ground, liquids, physical objects etc
+---@field penetrate_world_velocity_coeff number Members<br>---<br>if 'penetrate_world' is true, the projectile moves with a velocity multiplied by this value when inside world
+---@field penetrate_entities boolean Members<br>---<br>if true, the projectile doesn't stop when it collides with entities. damages each entity only once
+---@field on_collision_die boolean Members<br>---<br>if true, this is killed as soon as it hits the ground
+---@field on_collision_remove_projectile boolean Members<br>---<br>if true, ProjectileComponent is removed from the entitiy
+---@field on_collision_spawn_entity boolean Members<br>---<br>if true, spawns the spawn_entity
+---@field spawn_entity string Members<br>---<br>this is spawned if hit something an on_collision_spawn_entity = 1
+---@field spawn_entity_is_projectile boolean Members<br>---<br>if true, will use ShootProjectile instead of LoadEntity()
+---@field physics_impulse_coeff number Members<br>---<br>projectile applies an impulse to physics bodies it hits. Impulse = physics_impulse_coeff * velocity
+---@field damage_every_x_frames integer Members<br>---<br>if set != -1, will only do damage every x frames, used for fields and such, which would otherwise do damage every frame
+---@field damage_scaled_by_speed boolean Members<br>---<br>if 1, damage is multiplied by (projectile speed / original projectile speed) ratio
+---@field damage_scale_max_speed number Members<br>---<br>if > 0 and damage_scaled_by_speed = 1, will use this instead of mInitialSpeed when calculating the damage
+---@field collide_with_entities boolean Members<br>---<br>if 1, looks for entities with tag, collide_with_tag and collides with them, giving them damage
+---@field collide_with_tag string Members<br>---<br>default: mortal, if you needed can be changed to something more specific
+---@field dont_collide_with_tag string Members<br>---<br>if set will ignore entities with this tag
+---@field collide_with_shooter_frames integer Members<br>---<br>remember friendly_fire 1, if -1 won't collide with shooter at all, otherwise uses the value as frame count and while it's running won't damage the shooter 
+---@field friendly_fire boolean Members<br>---<br>if true, will damage same herd id
+---@field damage number Members<br>---<br>how much Projectile damage does this do when it hits something
+---@field knockback_force number Members<br>---<br>How far do entities get thrown if a knockback occurs. final_knockback = ProjectileComponent.knockback_force * VelocityComponent.mVelocity * VelocityComponent.mass / who_we_hit.mass
+---@field ragdoll_force_multiplier number Members<br>---<br>velocity * ragdoll_force_multiplier is applied to any ragdolls that are created by entities killed by this
+---@field hit_particle_force_multiplier number Members<br>---<br>hit particle velocity = projectile_velocity * hit_particle_force_multiplier * some randomness
+---@field blood_count_multiplier number Members<br>---<br>how much blood does this projectile cause
+---@field damage_game_effect_entities string Members<br>---<br>a list of game_effects entities separated with ','. e.g. 'data/entities/misc/effect_electrocution.xml,data/entities/misc/effect_on_fire.xml' 
+---@field never_hit_player boolean Members<br>---<br>If 1, does not hit player no matter what herds this and player belong to
+---@field collect_materials_to_shooter boolean Members<br>---<br>if 1, looks up the 'who_shot' entity and its MaterialInventoryComponent on destruction and updates it based on the cells destroyed on our explosion.
+---@field play_damage_sounds boolean Members
+---@field mLastFrameDamaged integer Members
+---@field config unsupported Objects
+---@field config_explosion unsupported Objects<br>---<br>if we have explosion, it's the setup for it
+---@field damage_by_type unsupported Objects<br>---<br>the amounts of different types of damage this does
+---@field damage_critical unsupported Objects<br>---<br>config for critical hit
+---@field projectile_type unsupported Custom data types
+---@field shell_casing_offset unsupported Custom data types<br>---<br>where the shell casing will be created relative to projectile, y is flipped if projectile direction is to the left.
+---@field ragdoll_fx_on_collision noita_ragdoll_fx Custom data types<br>---<br>if not NORMAL, do a special ragdoll
+---@field mWhoShot integer Privates<br>---<br>entity (creature) that shot this
+---@field mWhoShotEntityTypeID integer Privates<br>---<br>used for stats
+---@field mShooterHerdId integer Privates<br>---<br>the herdid of mWhoShot, unless friendly fire
+---@field mStartingLifetime integer Privates
+---@field mEntityThatShot integer Privates<br>---<br>for triggers, if shot from a trigger this should point to the projectile entity that shot this. Otherwise this should be the same as mWhoShot. NOTE! Not really tested properly so might break.
+---@field mTriggers unsupported Privates
+---@field mDamagedEntities unsupported Privates
+---@field mInitialSpeed number Privates
+
+---@class RotateTowardsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr RotateTowardsComponent
+
+---@class RotateTowardsComponent
+---@field entity_with_tag string Members<br>---<br>will rotate this entity towards the closest entity with tag
+
+---@class SetLightAlphaFromVelocityComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SetLightAlphaFromVelocityComponent
+
+---@class SetLightAlphaFromVelocityComponent
+---@field max_velocity number Members
+---@field mPrevPosition unsupported Privates
+
+---@class SetStartVelocityComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SetStartVelocityComponent
+
+---@class SetStartVelocityComponent
+---@field velocity unsupported Custom data types<br>---<br>This is added together with random velocity
+---@field randomize_angle unsupported Custom data types<br>---<br>Random angle min max range in radians, clockwise. 0.0 points directly rightward.
+---@field randomize_speed unsupported Custom data types<br>---<br>Random speed min max range
+
+---@class ShotEffectComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr ShotEffectComponent
+
+---@class ShotEffectComponent
+---@field extra_modifier string Members<br>---<br>name of modifier function executed per projectile from 'gun_extra_modifiers.lua'
+---@field condition_effect noita_effect_enum Custom data types<br>---<br>Shooting entity needs to have this 'GAME_EFFECT' for effects to apply. If both 'condition_effect' and 'condition_status' are set, they are combined with AND logic
+---@field condition_status unsupported Custom data types<br>---<br>Shooting entity needs to have this 'STATUS_EFFECT' for effects to apply
+
+---@class SimplePhysicsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SimplePhysicsComponent
+
+---@class SimplePhysicsComponent
+---@field can_go_up boolean Members<br>---<br>if set, will not try to move this upwards
+---@field mOldPosition unsupported Privates<br>---<br>used for box2d simple physics
+
+---@class SineWaveComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SineWaveComponent
+
+---@class SineWaveComponent
+---@field sinewave_freq number Members<br>---<br>sinewave_m * sinf( sinewave_freq * lifetime++)
+---@field sinewave_m number Members<br>---<br>sinewave_m * sinf( sinewave_freq * lifetime++)
+---@field lifetime integer Members<br>---<br>-1 seems to fix some problems with this... sinewave_m * sinf( sinewave_freq * lifetime++)
+
+---@class SpriteAnimatorComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SpriteAnimatorComponent
+
+---@class SpriteAnimatorComponent
+---@field target_sprite_comp_name string Members
+---@field rotate_to_surface_normal boolean Members
+---@field mStates unsupported Privates
+---@field mCachedTargetSpriteTag unsupported Privates
+---@field mSendOnFinishedMessageName string Privates
+
+---@class SpriteComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SpriteComponent
+
+---@class SpriteComponent
+---@field image_file string Members
+---@field ui_is_parent boolean Members<br>---<br>Adds this to the GG.GetUISprite() as a child, instead of the mSpriteContainer
+---@field is_text_sprite boolean Members<br>---<br>if you want to load a text sprite, set this to true and image_file to a font file
+---@field offset_x number Members
+---@field offset_y number Members
+---@field alpha number Members
+---@field visible boolean Members
+---@field emissive boolean Members
+---@field additive boolean Members
+---@field fog_of_war_hole boolean Members<br>---<br>if 1, the alpha channel of this texture punctures a hole in the fog of war
+---@field smooth_filtering boolean Members
+---@field rect_animation string Members
+---@field next_rect_animation string Members
+---@field text string Members
+---@field z_index number Members<br>---<br>0 = world grid, -1 = enemies, -1.5 = items in world, player = 0.6
+---@field update_transform boolean Members
+---@field update_transform_rotation boolean Members
+---@field kill_entity_after_finished boolean Members
+---@field has_special_scale boolean Members<br>---<br>if this is set, sets special_scale_x and _y to scale
+---@field special_scale_x number Members<br>---<br>this overrides the scale of the entity, if has_special_scale
+---@field special_scale_y number Members<br>---<br>this overrides the scale of the entity, if has_special_scale
+---@field never_ragdollify_on_death boolean Members
+---@field transform_offset unsupported Custom data types
+---@field offset_animator_offset unsupported Custom data types<br>---<br>used by SpriteOffsetAnimator
+---@field mSprite unsupported Privates
+---@field mRenderList unsupported Privates
+---@field mRenderListHandle integer Privates
+
+---@class SpriteOffsetAnimatorComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SpriteOffsetAnimatorComponent
+
+---@class SpriteOffsetAnimatorComponent
+---@field x_amount number Members
+---@field x_speed number Members
+---@field y_amount number Members
+---@field y_speed number Members
+---@field sprite_id integer Members
+---@field x_phase number Members
+---@field x_phase_offset number Members
+
+---@class SpriteParticleEmitterComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SpriteParticleEmitterComponent
+
+---@class SpriteParticleEmitterComponent
+---@field sprite_file string Members<br>---<br>filepath to the sprite(s), supports the $[0-3] syntax
+---@field sprite_centered boolean Members<br>---<br>sets the offset to the center of the image
+---@field sprite_random_rotation boolean Members<br>---<br>rotates the sprite randomly in 90 degree angles
+---@field render_back boolean Members<br>---<br>if true, will set this particle to be behind entities (won't emit light)
+---@field delay number Members<br>---<br>delay in seconds...
+---@field lifetime number Members<br>---<br>lifetime in seconds...
+---@field additive boolean Members<br>---<br>if 1, the sprites will be rendered using additive blending
+---@field emissive boolean Members<br>---<br>if 1, the sprites will be rendered onto the emissive render target
+---@field velocity_slowdown number Members<br>---<br>what percent of the velocity is slowed by *dt
+---@field rotation number Members<br>---<br>original rotation in rads
+---@field angular_velocity number Members<br>---<br>how much rotation there is in a second
+---@field use_velocity_as_rotation boolean Members<br>---<br>do we rotate the sprite based on the velocity
+---@field use_rotation_from_velocity_component boolean Members<br>---<br>if set, will set the initial rotation based on the velocity component's velocity
+---@field use_rotation_from_entity boolean Members<br>---<br>if set, will 'inherit' rotation from the entity
+---@field entity_velocity_multiplier number Members<br>---<br>0 = doesn't use the velocity from spawning entity at all, 1 = uses all
+---@field z_index number Members<br>---<br>Depth of created particles
+---@field randomize_position_inside_hitbox boolean Members<br>---<br>if set, will randomize position inside the hitbox aabb
+---@field velocity_always_away_from_center boolean Members<br>---<br>if set, will make the velocity's rotation always away from center of randomized aabb
+---@field camera_bound boolean Members<br>---<br>if true, will be culled if not near the camera
+---@field camera_distance number Members<br>---<br>if the distance from camera (edges) is higher than this, this will be culled
+---@field is_emitting boolean Members<br>---<br>disable this from emitting...
+---@field count_min integer Members<br>---<br>how many particles do we spawn at one time
+---@field count_max integer Members<br>---<br>how many particles do we spawn at one time
+---@field emission_interval_min_frames integer Members<br>---<br>how often do we emit particles
+---@field emission_interval_max_frames integer Members<br>---<br>how often do we emit particles
+---@field entity_file string Members<br>---<br>if set, this entity is loaded to the emission position by the emitter when it emits
+---@field color unsupported Custom data types<br>---<br>original color
+---@field color_change unsupported Custom data types<br>---<br>how much the color changes in a second
+---@field velocity unsupported Custom data types<br>---<br>original velocity
+---@field gravity unsupported Custom data types<br>---<br>gravity
+---@field scale unsupported Custom data types<br>---<br>original scale
+---@field scale_velocity unsupported Custom data types<br>---<br>scale velocity per second
+---@field randomize_lifetime unsupported Custom data types<br>---<br>this is added to the lifetime
+---@field randomize_position unsupported Custom data types<br>---<br>random offset for pos
+---@field randomize_velocity unsupported Custom data types<br>---<br>add this randomized velocity inside this o the velocity
+---@field randomize_scale unsupported Custom data types<br>---<br>add this randomized vector2 to scale
+---@field randomize_rotation unsupported Custom data types<br>---<br>this is added to the rotation 
+---@field randomize_angular_velocity unsupported Custom data types<br>---<br>this is added to angular_velocity
+---@field randomize_alpha unsupported Custom data types<br>---<br>this is added to the alpha
+---@field randomize_animation_speed_coeff unsupported Custom data types<br>---<br>if set, animation speed is multiplied by a random value inside this range
+---@field expand_randomize_position unsupported Custom data types<br>---<br>will add dt*this to randomize_position_aabb every frame
+---@field mNextEmitFrame integer Privates
+
+---@class SpriteStainsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr SpriteStainsComponent
+
+---@class SpriteStainsComponent
+---@field sprite_id integer Members<br>---<br>which sprite (in the order in which they appear in the entity) are we going to stain?
+---@field fade_stains_towards_srite_top boolean Members<br>---<br>if 1, shades get less opaque near the top of the sprite
+---@field stain_shaken_drop_chance_multiplier integer Custom data types<br>---<br>how quickly stains are dropped relative to normal drop speed
+---@field mData unsupported Custom data types
+---@field mTextureHandle unsupported Privates
+---@field mState unsupported Privates
+
+---@class StatusEffectDataComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr StatusEffectDataComponent
+
+---@class StatusEffectDataComponent
+---@field stain_effects unsupported Custom data types
+---@field stain_effect_cooldowns unsupported Custom data types
+---@field effects_previous unsupported Custom data types
+---@field ingestion_effects unsupported Custom data types
+---@field ingestion_effect_causes unsupported Custom data types
+---@field ingestion_effect_causes_many unsupported Custom data types
+---@field mLastAttackingPlayerFrame integer Privates
+---@field mStainEffectsSmoothedForUI unsupported Privates
+---@field mHasChildIconsCached boolean Privates
+
+---@class StreamingKeepAliveComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr StreamingKeepAliveComponent
+
+---@class StreamingKeepAliveComponent
+---@field TEMP_TEMPY number Members
+---@field TEMP_TEMP_TEMP number Members
+
+---@class TelekinesisComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr TelekinesisComponent
+
+---@class TelekinesisComponent
+---@field min_size unsupported Members<br>---<br>Minimum size of physics body that can be grabbed, in cells/pixels
+---@field max_size unsupported Members<br>---<br>Maximum size of physics body that can be grabbed, in cells/pixels
+---@field radius number Members<br>---<br>Maximum object search distance
+---@field throw_speed number Members<br>---<br>Affects object speed when it is thrown
+---@field target_distance number Members<br>---<br>Affects how far objects float from owner when held. Object size will also affect the floating distance.
+---@field kick_to_use boolean Members<br>---<br>If 1, telekinesis interaction will occur when kick input is detected in root entity's ControlsComponent
+---@field mState integer Members
+---@field mBodyID integer Members
+---@field mStartBodyMaxExtent number Members
+---@field mStartAimAngle number Members
+---@field mStartBodyAngle number Members
+---@field mStartBodyDistance number Members
+---@field mStartTime number Members
+---@field mMinBodyDistance number Members
+---@field mInteract boolean Members<br>---<br>If set to true, telekinesis interaction will occur. Will automatically turn to false at the end of component update.
+
+---@class TeleportComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr TeleportComponent
+
+---@class TeleportComponent
+---@field target_x_is_absolute_position boolean Members<br>---<br>If set, target position x is in world coordinates, otherwise it's an offset
+---@field target_y_is_absolute_position boolean Members<br>---<br>If set, target position y is in world coordinates, otherwise it's an offset
+---@field source_particle_fx_file string Members<br>---<br>This entity is loaded at the source position when teleportation occurs
+---@field target_particle_fx_file string Members<br>---<br>This entity is loaded at the target position when teleportation occurs
+---@field load_collapse_entity boolean Members<br>---<br>if we don't want things to collapse after the teleport
+---@field target unsupported Custom data types<br>---<br>Where should we teleport
+---@field safety_counter integer Privates<br>---<br>used to keep track that we're not stuck in waiting for a pixel scene to load, that is not going to be loaded
+---@field teleported_entities unsupported Privates
+---@field source_location_camera_aabb unsupported Privates
+
+---@class TeleportProjectileComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr TeleportProjectileComponent
+
+---@class TeleportProjectileComponent
+---@field min_distance_from_wall number Members
+---@field actionable_lifetime integer Members
+---@field reset_shooter_y_vel boolean Members<br>---<br>If 1, will set shooter y velocity to 0 on teleport
+---@field mWhoShot integer Privates
+
+---@class TextLogComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr TextLogComponent
+
+---@class TextLogComponent
+---@field key string Members
+---@field image_filename string Members
+---@field mCachedName string Privates
+
+---@class TorchComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr TorchComponent
+
+---@class TorchComponent
+---@field probability_of_ignition_attempt integer Members<br>---<br>how likely are we to ignite colliding cells
+---@field suffocation_check_offset_y number Members<br>---<br>check offset in world coordinates from our position
+---@field frames_suffocated_to_extinguish integer Members<br>---<br>how many frames the torch needs to be suffocated before it stops emitting fire
+---@field extinguishable boolean Members<br>---<br>if 1, the torch needs to be re-ignited in case it is turned off
+---@field fire_audio_weight number Members<br>---<br>how loud is the sound of our fire? 0 = no sound
+---@field mFlickerOffset number Privates
+---@field mFramesSuffocated integer Privates
+---@field mIsOn boolean Privates
+---@field mFireIsBurningPrev boolean Privates
+
+---@class UIIconComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr UIIconComponent
+
+---@class UIIconComponent
+---@field icon_sprite_file string Members
+---@field name string Members
+---@field description string Members
+---@field display_above_head boolean Members
+---@field display_in_hud boolean Members
+---@field is_perk boolean Members
+
+---@class UIInfoComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr UIInfoComponent
+
+---@class UIInfoComponent
+---@field name string Members
+
+---@class VariableStorageComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr VariableStorageComponent
+
+---@class VariableStorageComponent
+---@field name string Members
+---@field value_string string Members
+---@field value_int integer Members
+---@field value_bool boolean Members
+---@field value_float number Members
+
+---@class VelocityComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr VelocityComponent
+
+---@class VelocityComponent
+---@field gravity_x number Members
+---@field gravity_y number Members
+---@field mass number Members
+---@field air_friction number Members
+---@field terminal_velocity number Members
+---@field apply_terminal_velocity boolean Members
+---@field updates_velocity boolean Members
+---@field displace_liquid boolean Members
+---@field affect_physics_bodies boolean Members<br>---<br>if true, will move the physics body by the difference of mVelocity to the previous frame
+---@field limit_to_max_velocity boolean Members<br>---<br>if true will limit the velocity to 61440. You can turn this off, but it's not recommended, since there are some nasty bugs that can happen with extremely high velocities.
+---@field liquid_death_threshold integer Members<br>---<br>if > 0, entity will die if liquid hit count is greater than this.
+---@field liquid_drag number Members<br>---<br>1 = slows down in liquid, 0 = doesn't slow down at all
+---@field mVelocity unsupported Custom data types
+---@field mPrevVelocity unsupported Privates<br>---<br>used to update physics bodies
+---@field mLatestLiquidHitCount integer Privates
+---@field mAverageLiquidHitCount integer Privates
+---@field mPrevPosition unsupported Privates
+
+---@class VerletPhysicsComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr VerletPhysicsComponent
+
+---@class VerletPhysicsComponent
+---@field num_points integer Members
+---@field num_links integer Members
+---@field width integer Members
+---@field resting_distance number Members
+---@field mass_min number Members
+---@field mass_max number Members
+---@field stiffness number Members
+---@field velocity_dampening number Members
+---@field liquid_damping number Members<br>---<br>how much we dampen when in liquid
+---@field gets_entity_velocity_coeff number Members
+---@field collide_with_cells boolean Members
+---@field simulate_gravity boolean Members
+---@field simulate_wind boolean Members
+---@field wind_change_speed number Members
+---@field constrain_stretching boolean Members
+---@field pixelate_sprite_transforms boolean Members
+---@field scale_sprite_x boolean Members
+---@field follow_entity_transform boolean Members
+---@field animation_amount number Members
+---@field animation_speed number Members
+---@field animation_energy number Members
+---@field cloth_sprite_z_index number Members
+---@field stain_cells_probability integer Members<br>---<br>0 = never, 1 = most likely, 10 = less likely - and so on
+---@field m_is_culled_previous boolean Members<br>---<br>Developer note: this needs to be serialized in case we serialize SpriteComponent.is_visible
+---@field type unsupported Custom data types
+---@field animation_target_offset unsupported Custom data types
+---@field cloth_color_edge unsupported Custom data types
+---@field cloth_color unsupported Custom data types
+---@field m_position_previous unsupported Custom data types
+---@field colors unsupported Custom data types
+---@field materials unsupported Custom data types
+---@field masses unsupported Privates
+---@field positions unsupported Privates
+---@field positions_prev unsupported Privates
+---@field velocities unsupported Privates
+---@field dampenings unsupported Privates
+---@field freedoms unsupported Privates
+---@field links unsupported Privates
+---@field sprite unsupported Privates
+
+---@class VerletWeaponComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr VerletWeaponComponent
+
+---@class VerletWeaponComponent
+---@field damage_radius number Members
+---@field physics_force_radius number Members
+---@field damage_min_step number Members
+---@field damage_max number Members
+---@field damage_coeff number Members
+---@field impulse_coeff number Members
+---@field fade_duration_frames integer Members
+---@field physics_impulse_coeff number Members
+---@field mPlayerCooldownEnd integer Privates
+
+---@class VerletWorldJointComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr VerletWorldJointComponent
+
+---@class VerletWorldJointComponent
+---@field verlet_point_index integer Members<br>---<br>Index of the verlet point we attach
+---@field world_position unsupported Custom data types<br>---<br>Where we attach the verlet point
+---@field mUpdated boolean Privates
+---@field mCell unsupported Privates
+
+---@class WalletComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr WalletComponent
+
+---@class WalletComponent
+---@field money integer Members
+---@field money_spent integer Members<br>---<br>tracks how much money the player has spent
+---@field mMoneyPrevFrame integer Members<br>---<br>HAX to give player towards infinite moneys
+---@field mHasReachedInf boolean Members<br>---<br>once it hits this value... keep it there
+
+---@class WalletValuableComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr WalletValuableComponent
+
+---@class WalletValuableComponent
+---@field money_value integer Members
+
+---@class WorldStateComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr WorldStateComponent
+
+---@class WorldStateComponent
+---@field is_initialized boolean Members
+---@field time number Members
+---@field time_total number Members
+---@field time_dt number Members<br>---<br>to make the time go really fast or slow?
+---@field day_count integer Members
+---@field rain number Members<br>---<br>should be called clouds, controls amount of cloud cover in the sky
+---@field rain_target number Members<br>---<br>should be called clouds_target, controls amount of cloud cover in the sky
+---@field fog number Members
+---@field fog_target number Members
+---@field intro_weather boolean Members<br>---<br>if set, will set the weather to be nice all the time
+---@field wind number Members
+---@field wind_speed number Members
+---@field wind_speed_sin_t number Members
+---@field wind_speed_sin number Members
+---@field clouds_01_target number Members
+---@field clouds_02_target number Members
+---@field gradient_sky_alpha_target number Members
+---@field sky_sunset_alpha_target number Members
+---@field lightning_count integer Members<br>---<br>this gets decreased to 0, this is the frame count of how many times do we do our awesome lightning effect
+---@field next_portal_id unsupported Members
+---@field session_stat_file string Members<br>---<br>if empty, we'll create one. This tracks the play time, death, kills... etch
+---@field player_polymorph_count integer Members<br>---<br>how many times player has been polymorphed
+---@field player_polymorph_random_count integer Members<br>---<br>how many times player has been random polymorphed
+---@field player_did_infinite_spell_count integer Members<br>---<br>how many times player has done a secret trick
+---@field player_did_damage_over_1milj integer Members<br>---<br>how many times player has player done damage of over 1000000
+---@field player_living_with_minus_hp integer Members<br>---<br>how many times player has been detected with minus health
+---@field global_genome_relations_modifier number Members<br>---<br>Genome_GetHerdRelation adds this value to the results. 100 = good relations, 0 is bad 
+---@field mods_have_been_active_during_this_run boolean Members
+---@field twitch_has_been_active_during_this_run boolean Members
+---@field next_cut_through_world_id unsupported Members
+---@field perk_infinite_spells boolean Members<br>---<br>if true, almost all spells will have unlimited uses. (black holes, matter eater, heals excluded
+---@field perk_trick_kills_blood_money boolean Members<br>---<br>if true, trick kills will produce blood money (heals player)
+---@field perk_hp_drop_chance integer Members<br>---<br>if > 0, then there's chance that killing an enemy will drop bloodmoney_50
+---@field perk_gold_is_forever boolean Members<br>---<br>drop_money.lua - checks if this is true and removes Lifetime_Component from gold nuggets
+---@field perk_rats_player_friendly boolean Members<br>---<br>if 1, rats don't attack player herd and the other way round. this is a persistent change
+---@field EVERYTHING_TO_GOLD boolean Members<br>---<br>if true everything will be gold + used to track if the wallet should go to infinite
+---@field material_everything_to_gold string Members
+---@field material_everything_to_gold_static string Members
+---@field INFINITE_GOLD_HAPPENING boolean Members<br>---<br>the secret ending with infinite gold
+---@field ENDING_HAPPINESS_HAPPENING boolean Members<br>---<br>if true, will do the animations for happiness ending
+---@field ENDING_HAPPINESS_FRAMES integer Members<br>---<br>to keep track of the animation
+---@field ENDING_HAPPINESS boolean Members<br>---<br>this is set if ending happiness has happened
+---@field mFlashAlpha number Members<br>---<br>to keep track of the animation
+---@field DEBUG_LOADED_FROM_AUTOSAVE integer Members<br>---<br>how many times have loaded from autosaves
+---@field DEBUG_LOADED_FROM_OLD_VERSION integer Members<br>---<br>how many times have we loaded from an old version of the game
+---@field player_spawn_location unsupported Custom data types
+---@field lua_globals unsupported Custom data types
+---@field pending_portals unsupported Custom data types
+---@field apparitions_per_level unsupported Custom data types
+---@field npc_parties unsupported Custom data types
+---@field orbs_found_thisrun unsupported Custom data types
+---@field flags unsupported Custom data types
+---@field changed_materials unsupported Custom data types<br>---<br>pairs of materials changed via ConvertMaterialEverywhere(). stored so these can be restored when loading a save
+---@field cuts_through_world unsupported Custom data types
+---@field gore_multiplier integer Custom data types
+---@field trick_kill_gold_multiplier integer Custom data types
+---@field damage_flash_multiplier number Custom data types
+---@field open_fog_of_war_everywhere boolean Custom data types<br>---<br>same as the trailer mode, open fog of war everywhere
+---@field consume_actions boolean Custom data types<br>---<br>same as the trailer mode, spells with limited uses are not consumed if this is false
+---@field rain_target_extra number Privates
+---@field fog_target_extra number Privates
+---@field perk_rats_player_friendly_prev boolean Privates
+
+---@class WormAIComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr WormAIComponent
+
+---@class WormAIComponent
+---@field speed number Members
+---@field speed_hunt number Members
+---@field direction_adjust_speed number Members
+---@field direction_adjust_speed_hunt number Members
+---@field random_target_box_radius number Members
+---@field new_hunt_target_check_every integer Members
+---@field new_random_target_check_every integer Members
+---@field hunt_box_radius number Members
+---@field cocoon_food_required integer Members<br>---<br>how much food do we need to consume before we can cocoon
+---@field cocoon_entity string Members<br>---<br>if empty, won't cocoon, if set it'll spawn this after it's eaten enough
+---@field give_up_area_radius number Members
+---@field give_up_time_frames integer Members
+---@field debug_follow_mouse boolean Members
+---@field mRandomTarget unsupported Privates
+---@field mTargetEntityId integer Privates
+---@field mNextTargetCheckFrame integer Privates
+---@field mNextHuntTargetCheckFrame integer Privates
+---@field mGiveUpStarted integer Privates
+---@field mGiveUpAreaMinX integer Privates
+---@field mGiveUpAreaMinY integer Privates
+---@field mGiveUpAreaMaxX integer Privates
+---@field mGiveUpAreaMaxY integer Privates
+
+---@class WormAttractorComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr WormAttractorComponent
+
+---@class WormAttractorComponent
+---@field direction integer Members<br>---<br>1 = attracts worms, -1 detracts worms
+---@field radius number Members<br>---<br>radius of detracting worms
+
+---@class WormComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr WormComponent
+
+---@class WormComponent
+---@field speed number Members
+---@field acceleration number Members
+---@field gravity number Members
+---@field tail_gravity number Members
+---@field part_distance number Members
+---@field ground_check_offset integer Members
+---@field hitbox_radius number Members
+---@field bite_damage number Members<br>---<br>how much damage does this do when it hits an entity
+---@field target_kill_radius number Members
+---@field target_kill_ragdoll_force number Members
+---@field jump_cam_shake number Members
+---@field jump_cam_shake_distance number Members
+---@field eat_anim_wait_mult number Members
+---@field ragdoll_filename string Members
+---@field is_water_worm boolean Members<br>---<br>if true, tries to stay in liquids
+---@field max_speed number Members<br>---<br>max speed, used when attracted to a point
+---@field ground_decceleration number Custom data types
+---@field mTargetVec unsupported Privates
+---@field mGravVelocity number Privates
+---@field mSpeed number Privates
+---@field mTargetPosition unsupported Privates
+---@field mTargetSpeed number Privates
+---@field mOnGroundPrev boolean Privates
+---@field mMaterialIdPrev integer Privates
+---@field mFrameNextDamage integer Privates
+---@field mDirectionAdjustSpeed number Privates
+---@field mPrevPositions unsupported Privates
+
+---@class WormPlayerComponentClass
+---@field comp_id integer
+---@field enable boolean
+---@field attr WormPlayerComponent
+
+---@class WormPlayerComponent
+---@field mPrevPosition unsupported Privates
+---@field mDirection unsupported Privates<br>---<br>if mDirection == 0,0 nothings works
+

@@ -245,7 +245,7 @@ local UpdateFn = function(_click, isBtn)
                     end
                 end
                 local text, code
-                if handle == nil and code1 ~= 200 and code2 ~= 200 then --完全失败
+                if handle == nil or (code1 ~= 200 and code2 ~= 200) then --完全失败
                     code = false
                 else
                     text, code = handle:get()
