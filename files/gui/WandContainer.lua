@@ -441,10 +441,31 @@ local function SpellPicker(ScrollID, id, wandEntity, wandData, spellData, k, v, 
             local flag, t = CheckSpells(ClipboardData)
             if flag then
                 for i = #t, 1, -1 do
-					if t[i] ~= 'nil' then
-						InsertTableSpells(wandData, false, t[i].id, k, t[i].uses_remaining)
-					end
+                    if t[i] ~= 'nil' then
+                        InsertTableSpells(wandData, false, t[i].id, k, t[i].uses_remaining)
+                    end
                 end
+                InitWand(wandData, wandEntity)
+                this.OnceCallOnExecute(function()
+                    RefreshHeldWands()
+                end)
+            end
+		elseif (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) and InputIsKeyJustDown(Key_b) and hover then
+            local ClipboardData = Cpp.GetClipboard()
+            local flag, t = CheckSpells(ClipboardData)
+            if flag then
+                for i = #t, 1, -1 do
+                    InsertTableSpells(wandData, false, "wand_editor_temp_spell_id", k) --伪造
+                end
+				local count = 1
+                for i = #t, 1, -1 do
+                    if t[count] == "nil" then
+                        wandData.spells.spells[k + #t - i] = "nil"
+                    else
+                        wandData.spells.spells[k + #t - i] = { id = t[count].id, is_frozen = false, isAlways = false, uses_remaining = t[count].uses_remaining }
+                    end
+					count = count + 1
+				end
                 InitWand(wandData, wandEntity)
 				this.OnceCallOnExecute(function()
 					RefreshHeldWands()
