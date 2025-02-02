@@ -35,9 +35,10 @@ local function GetModEnableList()
 end
 local mustReload = false
 local LastRealUnlimitedSpells = ModSettingGet(ModID .. "Last_real_unlimited_spells") or false
+local RealUnlimitedSpells = ModSettingGet("wand_editor.real_unlimited_spells") or false
 local RefreshRealUnlimitedSpells = false
-if LastRealUnlimitedSpells ~= ModSettingGet("wand_editor.real_unlimited_spells") then
-    ModSettingSet(ModID .. "Last_real_unlimited_spells", ModSettingGet("wand_editor.real_unlimited_spells") or false)
+if LastRealUnlimitedSpells ~= RealUnlimitedSpells then
+    ModSettingSet(ModID .. "Last_real_unlimited_spells", RealUnlimitedSpells)
     mustReload = true
 	RefreshRealUnlimitedSpells = true
 end
